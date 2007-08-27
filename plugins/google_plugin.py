@@ -1,0 +1,53 @@
+#===istalismanplugin===
+# -*- coding: utf-8 -*-
+google_last_res = []
+import google
+
+def google_remove_html(text):
+	nobold = text.replace('<b>', '').replace('</b>', '')
+	nobreaks = nobold.replace('<br>', ' ')
+	noescape = nobreaks.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"')
+	return noescape
+
+def google_search(query, cont=False):
+	global google_last_res
+	if cont:
+		if not google_last_res:
+			return 'нет ничего для тебя :('
+	else:
+		if query:
+			data = google.doGoogleSearch(query)
+		else:
+			return u'а чё искать-то?'
+	try:
+		if not cont:
+			first = data.results[0]
+			google_last_res = data.results[1:]
+		else:
+			first = google_last_res[0]
+			google_last_res = google_last_res[1:]
+		url = first.URL
+		title = google_remove_html(first.title)
+		if first.summary:
+			summary = google_remove_html(first.summary)
+		else:
+			summary = google_remove_html(first.snippet)
+		if cont:
+			return url + '\n' + title + '\n' + summary
+		else:
+			searchtime = str(round(data.meta.searchTime, 3))
+			total = str(data.meta.estimatedTotalResultsCount)
+			return url + '\n' + title + '\n' + summary
+	except:
+		return 'ничё не нашёл :('
+
+def handler_google_google(type, source, parameters):
+	results = google_search(parameters, parameters == u'еще')
+	reply(type, source, results)
+
+def handler_google_xepsearch(type, source, parameters):
+	results = google_search('allinurl: XEP-'+ parameters + ' site:http://www.xmpp.org/extensions')
+	reply(type, source, results)
+
+register_command_handler(handler_google_google, {1: 'гугль', 2: 'search', 3: '!google'}, ['инфо','все'], 10, 'Искать что-то в инете.', 'search <запрос>', ['search что-то'])
+register_command_handler(handler_google_xepsearch, {1: 'хер', 2: 'xep', 3: '!xep'}, ['инфо','все'], 10, 'Ищет описание заданного XEP`а.', 'xep <номер>', ['xep 0045'])

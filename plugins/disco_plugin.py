@@ -1,0 +1,101 @@
+#===istalismanplugin===
+# -*- coding: utf-8 -*-
+####### all by Als. parsing help - dimichxp #######
+
+from re import match
+
+disco_pending=[]
+	
+def handler_disco(type, source, parameters):
+	iq = xmpp.Iq('get')
+	id='dis'+str(random.randrange(1000, 9999))
+	globals()['disco_pending'].append(id)
+	iq.setID(id)
+	iq.addChild('query', {}, [], 'http://jabber.org/protocol/disco#items')
+	if parameters:
+		parst=string.split(parameters, ' ', 1)
+		if len(parst)==2:
+			stop=parst[1]
+			if type == 'public':
+				if int(stop)>30:
+					stop='30'
+			else:
+				stop='150'
+			iq.setTo(parst[0])
+		else:
+			if type == 'public':
+				stop='10'
+			if type == 'private':
+				stop='50'
+			iq.setTo(parameters)
+	else:
+		reply(type,source,u'и чё?')
+		return
+	JCON.SendAndCallForResponse(iq, handler_disco_ext, {'type': type, 'source': source, 'stop': stop, 'parameters': parameters})
+
+def handler_disco_ext(coze, res, type, source, stop, parameters):
+	test1=string.split(parameters, ' ', 1)
+	test2=string.split(test1[0], '@', 1)
+	if len(test2)==2:
+		trig=0
+	else:
+		trig=1
+	disco=[]
+	rep=''
+	id=res.getID()
+	if id in globals()['disco_pending']:
+		globals()['disco_pending'].remove(id)
+	else:
+		print 'someone is doing wrong...'
+		reply(type, source, u'глюк')
+		return
+	if res:
+		if res.getType() == 'result':
+			props=res.getQueryChildren()
+			for x in props:
+				att=x.getAttrs()
+				if trig:
+					if att.has_key('name'):
+						st=re.match('(.*) \(([0-9]+)\)$', att['name'])
+						if st:
+							st=st.groups()
+							disco.append([st[0],att['jid'],int(st[1])])
+							trig=1
+					else:
+						disco.append(att['jid'])
+						trig=2
+				else:
+					if att.has_key('name'):
+						disco.append(att['name'])
+						trig=0
+			handler_disco_answ(type,source,trig,stop,disco)
+			return
+		else:
+			rep = u'не могу'
+	else:
+		rep = u'аблом...'
+	reply(type, source, rep)
+	
+	
+def handler_disco_answ(type,source,trig,stop,disco):
+	total=0
+	rep = u'надискаверил:\n'
+	if trig==1:
+		disco.sort(lambda x,y: x[2] - y[2])
+		disco.reverse()
+		for x in disco:
+			total=total+1
+			rep += str(total)+u') '+x[0]+u' ['+x[1]+u']: '+str(x[2])+u'\n'
+			if str(total)==stop:
+				break
+	if trig==0 or trig==2:
+		disco.sort()
+		for x in disco:
+			total=total+1
+			rep += str(total)+u') '+x+u'\n'
+			if str(total)==stop:
+				break
+	reply(type, source, rep[:-1])
+	disco=[]
+			
+register_command_handler(handler_disco, {1: 'диско', 2: 'disco', 3: '!dis'}, ['мук','инфо','все'], 10, 'Показывает результату discovery для указанного сервера.', 'disco <сервер> <кол-во результатов>', ['disco jabber.aq','disco conference.jabber.aq 5'])
