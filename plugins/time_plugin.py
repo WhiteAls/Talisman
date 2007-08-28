@@ -155,40 +155,54 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 				tzo = p.getTagData('tzo')
 				utc = p.getTagData('utc')
 			if tzo and utc:
-				if tzo[0]=='-' or tzo[0]=='+':
-					tzoh=tzo[1:3]
-					if tzoh[0]=='0':
-						tzoh=tzoh[1]
-					if tzo[3:]!='00':
-						tzom=tzo[4:5]
-				else:
-					tzoh=tzo[0:2]
-					if tzoh[0]=='0':
-						tzoh=tzoh[1]
-					if tzo[2:]!='00':
-						tzom=tzo[4:5]
-				tzoop=tzo[0]
-				data=utc[:10]
-				hours=utc[11:13]
-				minutes=utc[14:16]
-				seconds=utc[17:19]
-				if tzoop=='+' or tzoop=='0':
-					hours=int(hours)+int(tzoh)	
-					if tzom:
+# why not to use regular expression to parse timezone instead of such a mess?
+#				if tzo[0]=='-' or tzo[0]=='+':
+#					tzoh=tzo[1:3]
+#					if tzoh[0]=='0':
+#						tzoh=tzoh[1]
+#					if tzo[3:]!='00':
+#						tzom=tzo[4:5]
+#				else:
+#					tzoh=tzo[0:2]
+#					if tzoh[0]=='0':
+#						tzoh=tzoh[1]
+#					if tzo[2:]!='00':
+#						tzom=tzo[4:5]
+#				tzoop=tzo[0]
+#				data=utc[:10]
+#				hours=utc[11:13]
+#				minutes=utc[14:16]
+#				seconds=utc[17:19]
+#				if tzoop=='+' or tzoop=='0':
+#					hours=int(hours)+int(tzoh)	
+#					if tzom:
+#						minutes=int(minutes)+int(tzom)
+#				else:
+#					hours=int(hours)-int(tzoh)
+#					if tzom:
+#						minutes=int(minutes)-int(tzom)
+# TODO: test this :)
+				try:
+					[sign, tzo, tzm] = re.match('(\+|-)?([0-9]+):([0-9]+)', tzo).groups()
+					[date, hours, minutes, seconds] = re.match('(.{10})T([0-9]+):([0-9]+):([0-9]+)').groups()
+				except:
+					return # failed to parse... nah
+					if (sign == '-'):
+						hours=int(hours)-int(tzoh)
+						minutes=minutes=int(minutes)-int(tzom)
+					else:
+						hours=int(hours)+int(tzoh)
 						minutes=int(minutes)+int(tzom)
-				else:
-					hours=int(hours)-int(tzoh)
-					if tzom:
-						minutes=int(minutes)-int(tzom)
+
 				if hours>=24:
 					hours=int(hours)-24
 				if minutes>=60:
 					minutes=int(minutes)-60
 				time=str(hours)+':'+str(minutes)+':'+seconds
 				if nick:
-					reply(type,source, u'у '+nick+u' сейчас '+time+' ('+data+')')
+					reply(type,source, u'у '+nick+u' сейчас '+time+' ('+date+')')
 				else:
-					reply(type,source, u'у тебя сейчас '+time+' ('+data+')')
+					reply(type,source, u'у тебя сейчас '+time+' ('+date+')')
 			else:
 				reply(type,source, u'твой клиент - глюк, инфы не хватает')
 	else:
