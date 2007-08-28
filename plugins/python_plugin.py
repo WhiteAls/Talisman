@@ -38,7 +38,7 @@ def handler_python_calc(type, source, parameters):
 		return_value = u'ты глюк'
 	reply(type, source, return_value)
 
-register_command_handler(handler_python_eval, {1: 'eval', 2: 'eval', 3: '!eval'}, ['суперадмин','все'], 100, 'Расчитывает и показывает заданное выражение питона.', 'eval <выражение>', ['eval 1+1'])
-register_command_handler(handler_python_exec, {1: 'exec', 2: 'exec', 3: '!exec'}, ['суперадмин','все'], 100, 'Выполняет выражение питона.', 'exec <выражение>', ['eval pass'])
-register_command_handler(handler_python_sh, {1: 'sh', 2: 'sh', 3: '!sh'}, ['суперадмин','все'], 100, 'Выполняет шелл команду.', 'sh <команда>', ['sh ls'])
-register_command_handler(handler_python_calc, {1: 'калк', 2: 'calcul', 3: '!calc'}, ['инфо','все'], 10, 'Калькулятор.', 'calcul <выражение>', ['calcul 1+2'])
+register_command_handler(handler_python_eval, 'eval', ['суперадмин','все'], 100, 'Расчитывает и показывает заданное выражение питона.', 'eval <выражение>', ['eval 1+1'])
+register_command_handler(handler_python_exec, 'exec', ['суперадмин','все'], 100, 'Выполняет выражение питона.', 'exec <выражение>', ['eval pass'])
+register_command_handler(handler_python_sh, 'sh', ['суперадмин','все'], 100, 'Выполняет шелл команду.', 'sh <команда>', ['sh ls'])
+register_command_handler(handler_python_calc, 'калк', ['инфо','все'], 10, 'Калькулятор.', 'калк <выражение>', ['калк 1+2'])

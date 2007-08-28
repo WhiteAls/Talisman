@@ -51,4 +51,4 @@ def handler_get_top_users(type, source, parameters):
 
 
 register_join_handler(handler_new_join)
-register_command_handler(handler_get_top_users, {1: 'топ', 2: 'muctop', 3: '!top'}, ['инфо','мук','все'], 10, 'Показывает рекорд посещаемости конфы. Сколько было юзеров одновременно онлайн и когда. ВРЕМЯ В UTC!!!', 'muctop', ['muctop'])
+register_command_handler(handler_get_top_users, 'топ', ['инфо','мук','все'], 10, 'Показывает рекорд посещаемости конфы. Сколько было юзеров одновременно онлайн и когда. ВРЕМЯ В UTC!!!', 'топ', ['топ'])

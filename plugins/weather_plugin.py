@@ -41,5 +41,5 @@ def handler_weather_weathercode(type, source, parameters):
 	else:
 		reply(type, source, u'хз')
 
-register_command_handler(handler_weather_weather, {1: 'погода', 2: 'weather', 3: '!wz'}, ['инфо','все'], 10, 'Смотрит погоду из NOAA', 'weather <4буквенное_обозначение_города>', ['weather ukhh'])
-register_command_handler(handler_weather_weathercode, {1: 'код', 2: 'wzcode', 3: '!wzcode'}, ['инфо','все'], 10, 'Показывает код города для просмотра погоды', 'wzcode <город>', ['wzcode orel'])
+register_command_handler(handler_weather_weather, 'погода', ['инфо','все'], 10, 'Смотрит погоду из NOAA', 'погодп <4буквенный_код_города>', ['погода ukhh'])
+register_command_handler(handler_weather_weathercode, 'код', ['инфо','все'], 10, 'Показывает код города для просмотра погоды', 'код <город>', ['код orel'])

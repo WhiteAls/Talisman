@@ -13,7 +13,9 @@ db={u'\u0432\u043e\u0434\u043e\u043b\u0435\u0439': u'11', u'\u0440\u0430\u043a':
 
 def handler_horoscope_globa(type, source, parameters):
 	if parameters:
-#		db = eval(read_file(ZODIAKSIGNS_FILE))
+		if parameters==u'знаки':
+			reply('private',source,', '.join(db.keys().decode('utf-8')))
+			return
 		if db.has_key(string.lower(parameters)):
 			req = urllib2.Request('http://horo.gala.net/?lang=ru&sign='+db[string.lower(parameters)])
 			req.add_header = ('User-agent', 'Mozilla/5.0')
@@ -49,4 +51,4 @@ def handler_horoscope_globa(type, source, parameters):
 def decode(text):
     return strip_tags.sub('', text.replace('<br>','\n')).replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('\t','').replace('>[:\n','')
 
-register_command_handler(handler_horoscope_globa, {1: 'гороскоп', 2: 'horo', 3: '!horo'}, ['инфо','фан','все'], 0, 'Показывает гороскоп для указзаного знака гороскопа.', 'horo [знак]', ['horo козерог','horo рыбы'])
+register_command_handler(handler_horoscope_globa, 'гороскоп', ['инфо','фан','все'], 0, 'Показывает гороскоп для указзаного знака гороскопа. Все знаки - "гороскоп знаки".', 'гороскоп [знак]', ['гороскоп козерог','гороскоп рыбы'])

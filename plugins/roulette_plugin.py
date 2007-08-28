@@ -41,4 +41,4 @@ def handler_roulette_answ(coze, res, type, source):
 		rep = u'аблом какой-то...'
 	reply(type, source, rep)	
 
-register_command_handler(handler_roulette, {1: 'рр', 2: 'roul', 3: '!roulette'}, ['фан','инфо','все'], 10, 'Старая добрая русская рулетка', 'roul', ['roul'])
+register_command_handler(handler_roulette, 'рр', ['фан','инфо','все'], 10, 'Старая добрая русская рулетка.', 'рр (русские буквы)', ['рр'])

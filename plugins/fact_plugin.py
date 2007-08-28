@@ -19,4 +19,4 @@ def handler_fact_tld(type, source, parameters):
 	reply(type, source, result)
 
 
-register_command_handler(handler_fact_tld, {1: 'нахождение', 2: 'nethost', 3: '!tld'}, ['инфо','все'], 10, 'Показвает нахождение домена первого уровня (географическое).', 'nethost <название/сокращение>', ['nethost ru', 'nethost russia'])
+register_command_handler(handler_fact_tld, 'тлд', ['инфо','все'], 10, 'Показвает нахождение домена первого уровня (географическое).', 'тлд <название/сокращение>', ['тлд ru', 'тлд russia'])

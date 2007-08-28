@@ -97,7 +97,7 @@ def handler_linuxorgru_get(type, source, parameters):
 def decode(text):
     return strip_tags.sub('', text.replace('<br>','\n')).replace('&nbsp;', ' ').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('\t','').replace('||||:]','').replace('>[:\n','')
 
-register_command_handler(handler_bashorgru_get, {1: 'бор', 2: 'bor', 3: '!bor'}, ['фан','инфо','все'], 0, 'Показывает случайную цитату из бора (bash.org.ru). Также может по заданному номеру вывести.', 'bor', ['bor 223344','bor'])
-register_command_handler(handler_bashorgru_abyss_get, {1: 'борб', 2: 'borb', 3: '!borb'}, ['фан','инфо','все'], 0, 'Показывает случпйную цитату из бездны бора (bash.org.ru).', 'borb', ['borb'])
-register_command_handler(handler_linuxorgru_get, {1: 'лор', 2: 'lor', 3: '!lor'}, ['фан','инфо','все'], 0, 'Показывает  последнюю новость с лора (linux.org.ru). Параметры игнорируются.', 'lor', ['lor'])
-register_command_handler(handler_bashorg_get, {1: 'бо', 2: 'bo', 3: '!bo'}, ['фан','инфо','все'], 0, 'Показывает случайную цитату из бора (bash.org). Также может по заданному номеру вывести.', 'bo', ['bo','bo 123456'])
+register_command_handler(handler_bashorgru_get, 'бор', ['фан','инфо','все'], 0, 'Показывает случайную цитату из бора (bash.org.ru). Также может по заданному номеру вывести.', 'бор', ['бор 223344','бор'])
+register_command_handler(handler_bashorgru_abyss_get, 'борб', ['фан','инфо','все'], 0, 'Показывает случпйную цитату из бездны бора (bash.org.ru).', 'борб', ['борб'])
+register_command_handler(handler_linuxorgru_get, 'лор', ['фан','инфо','все'], 0, 'Показывает  последнюю новость с лора (linux.org.ru). Параметры игнорируются.', 'лор', ['лор'])
+register_command_handler(handler_bashorg_get, 'бо', ['фан','инфо','все'], 0, 'Показывает случайную цитату из бора (bash.org). Также может по заданному номеру вывести.', 'бо', ['бо','бо 123456'])

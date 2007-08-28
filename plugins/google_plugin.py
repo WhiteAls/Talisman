@@ -49,5 +49,5 @@ def handler_google_xepsearch(type, source, parameters):
 	results = google_search('allinurl: XEP-'+ parameters + ' site:http://www.xmpp.org/extensions')
 	reply(type, source, results)
 
-register_command_handler(handler_google_google, {1: 'гугль', 2: 'search', 3: '!google'}, ['инфо','все'], 10, 'Искать что-то в инете.', 'search <запрос>', ['search что-то'])
-register_command_handler(handler_google_xepsearch, {1: 'хер', 2: 'xep', 3: '!xep'}, ['инфо','все'], 10, 'Ищет описание заданного XEP`а.', 'xep <номер>', ['xep 0045'])
+register_command_handler(handler_google_google, 'гугль', ['инфо','все'], 10, 'Искать что-то в инете.', 'гугль <запрос>', ['search что-то'])
+register_command_handler(handler_google_xepsearch, 'xep', ['инфо','все'], 10, 'Ищет описание заданного XEP\'а.', 'xep (англ. буквы) <номер>', ['xep 0045'])

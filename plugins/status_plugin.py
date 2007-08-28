@@ -42,4 +42,4 @@ def status_change(prs):
 	
 
 register_presence_handler(status_change)
-register_command_handler(handler_status, {1: 'статус', 2: 'sts', 3: '!status'}, ['инфо','мук','все'], 0, 'Показывает статус и статусное сообщение (если есть) определённого юзера или себя.', 'sts <юзер>', ['sts', 'sts guy'])
+register_command_handler(handler_status, 'статус', ['инфо','мук','все'], 0, 'Показывает статус и статусное сообщение (если есть) определённого юзера или себя.', 'статус <юзер>', ['статус', 'статус guy'])

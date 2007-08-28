@@ -62,4 +62,4 @@ def handler_version_answ(coze, res, type, source):
 		rep = u'нету такого'
 	reply(type, source, rep)
 	
-register_command_handler(handler_version, {1: 'версия', 2: 'ver', 3: '!v'}, ['инфо','мук','все'], 0, 'Показывает информацию о клиенте, который юзает юзер или сервер.', 'ver [ник\сервер]', ['ver','ver Nick','ver jabber.aq'])
+register_command_handler(handler_version, 'версия', ['инфо','мук','все'], 0, 'Показывает информацию о клиенте, который юзает юзер или сервер.', 'версия [ник\сервер]', ['версия','версия Nick','версия jabber.aq'])

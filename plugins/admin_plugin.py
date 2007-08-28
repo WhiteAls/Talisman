@@ -177,14 +177,14 @@ def handler_popups_startstop(type, source, parameters):
 
 
 
-register_command_handler(handler_admin_join, {1: 'зайти', 2: 'rjoin', 3: '!join'}, ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу.', 'rjoin <конфа> [причина]', ['rjoin ы@conference.jabber.aq', 'rjoin ы@conference.jabber.aq уря'])
-register_command_handler(handler_admin_leave, {1: 'свал', 2: 'rleave', 3: '!leave'}, ['админ','мук','все'], 20, 'Заставляет выйти из текущей или определённой конфы.', 'rleave <конфа> [причина]', ['rleave ы@conference.jabber.aq спать', 'rleave спать','rleave'])
-register_command_handler(handler_admin_msg, {1: 'мессага', 2: 'msg', 3: '!msg'}, ['админ','мук','все'], 30, 'Отправляет мессагу от имени бота определённому JID-у.', 'msg <jid> <мессага>', ['msg guy@jabber.aq здорово чувак!'])
-register_command_handler(handler_admin_say, {1: 'сказать', 2: 'say', 3: '!say'}, ['админ','мук','все'], 20, 'Отправляет мессагу в текущую конфу или на определённый JID конфы.', 'say <мессага>', ['say салют пиплы'])
-register_command_handler(handler_admin_restart, {1: 'рестарт', 2: 'restart', 3: '!restart'}, ['суперадмин','все'], 100, 'Рестартит бота.', 'restart [причина]', ['restart','restart гы'])
-register_command_handler(handler_admin_exit, {1: 'пшёл', 2: 'switchoff', 3: '!switchoff'}, ['суперадмин','все'], 100, 'Полный выход.', 'switchoff [причина]', ['switchoff','switchoff глюки'])
-register_command_handler(handler_glob_msg, {1: 'globmsg', 2: 'globmsg', 3: '!globmsg'}, ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
-register_command_handler(handler_glob_msg_help, {1: 'hglobmsg', 2: 'hglobmsg', 3: '!hglobmsg'}, ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
-register_command_handler(handler_popups_startstop, {1: 'popups', 2: 'popups', 3: '!popups'}, ['админ','мук','все'], 30, 'Отключает (0) или включает (1) сообщения о входах/выходах, рестартах/выключениях, а также глобальные новости для определённой конфы. Без параметра покажет текущее состояние.', 'popups [конфа] [1|0]', ['popups chat@conference.jabber.aq 1','popups chat@conference.jabber.aq 0','popups'])
+register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу.', 'зайти <конфа> [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря'])
+register_command_handler(handler_admin_leave, 'свал', ['админ','мук','все'], 20, 'Заставляет выйти из текущей или определённой конфы.', 'свал <конфа> [причина]', ['свал ы@conference.jabber.aq спать', 'свал спать','rleave'])
+register_command_handler(handler_admin_msg, 'мессага', ['админ','мук','все'], 30, 'Отправляет мессагу от имени бота определённому JID-у.', 'мессага <jid> <мессага>', ['мессага guy@jabber.aq здорово чувак!'])
+register_command_handler(handler_admin_say, 'сказать', ['админ','мук','все'], 20, 'Говорить через бота.', 'сказать <мессага>', ['сказать салют пиплы'])
+register_command_handler(handler_admin_restart, 'рестарт', ['суперадмин','все'], 100, 'Рестартит бота.', 'рестарт [причина]', ['рестарт','рестарт гы'])
+register_command_handler(handler_admin_exit, 'пшёл', ['суперадмин','все'], 100, 'Полный выход.', 'пшёл [причина]', ['пшёл','пшёл глюки'])
+register_command_handler(handler_glob_msg, 'globmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
+register_command_handler(handler_glob_msg_help, 'hglobmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
+register_command_handler(handler_popups_startstop, 'popups', ['админ','мук','все'], 30, 'Отключает (0) или включает (1) сообщения о входах/выходах, рестартах/выключениях, а также глобальные новости для определённой конфы. Без параметра покажет текущее состояние.', 'popups [конфа] [1|0]', ['popups chat@conference.jabber.aq 1','popups chat@conference.jabber.aq 0','popups'])
 
 register_groupchat_invite_handler(admin_groupchat_invite_handler)

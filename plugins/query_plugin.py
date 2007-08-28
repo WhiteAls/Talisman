@@ -101,8 +101,8 @@ def handler_query_count(type, source, parameters):
 
 	
 
-register_command_handler(handler_query_get_public, {1: '???', 2: 'wtf', 3: '???'}, ['инфо','wtf','все'], 10, 'Ищет ответ на вопрос в локальной базе (аналог wtf в сульцах).', '??? <запрос>', ['??? что-то', '??? что-то ещё'])
-register_command_handler(handler_query_get_private, {1: '!??', 2: '!??', 3: '!??'}, ['инфо','wtf','все'], 10, 'Ищет ответ на вопрос в локальной базе и посылает его в приват (аналог !word showpriv в глюксах).', '!?? <ник> <запрос>', ['!?? что-то', '!?? guy что-то'])
-register_command_handler(handler_query_set, {1: '!!!', 2: 'dfn', 3: '!!!'}, ['инфо','wtf','админ','все'], 11, 'Устанавливает ответ на вопрос в локальной базе (аналог dfn в сульцах).', '!!! <запрос> = <ответ>', ['!!! что-то = the best!', '!!! что-то ещё ='])
-register_command_handler(handler_query_count, {1: '???count', 2: 'wtfcount', 3: '???count'}, ['инфо','wtf','все'], 10, 'Показывает количество вопросов в базе конфы (аналог wtfcount в сульцах).', '!!! ???count', ['???count'])
-register_command_handler(handler_query_get_random, {1: '???rand', 2: 'wtfrand', 3: '???rand'}, ['инфо','wtf','все'], 10, 'Показывает случайно выбранный ответ на вопрос (аналог wtfrand в сульцах).', '???rand', ['???rand'])
+register_command_handler(handler_query_get_public, '???', ['инфо','wtf','все'], 10, 'Ищет ответ на вопрос в локальной базе (аналог wtf в сульцах).', '??? <запрос>', ['??? что-то', '??? что-то ещё'])
+register_command_handler(handler_query_get_private, '!??', ['инфо','wtf','все'], 10, 'Ищет ответ на вопрос в локальной базе и посылает его в приват (аналог !word showpriv в глюксах).', '!?? <ник> <запрос>', ['!?? что-то', '!?? guy что-то'])
+register_command_handler(handler_query_set, '!!!', ['инфо','wtf','админ','все'], 11, 'Устанавливает ответ на вопрос в локальной базе (аналог dfn в сульцах).', '!!! <запрос> = <ответ>', ['!!! что-то = the best!', '!!! что-то ещё ='])
+register_command_handler(handler_query_count, '???count', ['инфо','wtf','все'], 10, 'Показывает количество вопросов в базе конфы (аналог wtfcount в сульцах).', '!!! ???count', ['???count'])
+register_command_handler(handler_query_get_random, '???rand', ['инфо','wtf','все'], 10, 'Показывает случайно выбранный ответ на вопрос (аналог wtfrand в сульцах).', '???rand', ['???rand'])

@@ -27,4 +27,4 @@ def handler_temperature_temperature(type, source, parameters):
 		rep = u'на, переводи сам, раз хелпы юзать не хочешь :D\nC=(F-32)*5/9 F=C*9/5+32'
 	reply(type, source, rep)
 
-register_command_handler(handler_temperature_temperature, {1: 'температура', 2: 'temp', 3: '!temp'}, ['фан','инфо','все'], 10, 'Конвертирует температуру из Целий в Фаренгейты и наоборот', 'температура <#> <C/F>', ['температура 10 F', 'температура 29 C'])
+register_command_handler(handler_temperature_temperature, 'температура', ['фан','инфо','все'], 10, 'Конвертирует температуру из Целий в Фаренгейты и наоборот', 'температура <#> <C/F>', ['температура 10 F', 'температура 29 C'])

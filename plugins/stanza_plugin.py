@@ -16,5 +16,5 @@ def handler_stanza(source, type, parameters):
 #		return
 #	reply(source, type, u'глюк')
 
-register_command_handler(handler_stanza, {1: '!stanza', 2: '!stanza', 3: '!stanza'}, ['суперадмин','все','мук'], 100, 'топка', '!stanza <payload>', ['!stanza aaabbb'])
+register_command_handler(handler_stanza, '!stanza', ['суперадмин','все','мук'], 100, 'топка', '!stanza <payload>', ['!stanza aaabbb'])
 

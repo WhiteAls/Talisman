@@ -7,6 +7,9 @@ from re import match
 disco_pending=[]
 	
 def handler_disco(type, source, parameters):
+	if parameters==u'ограничения':
+		reply('private',source,u'В паблик может дать max 30 результатов, без указания кол-ва - 10.\n В приват может дать max 150, без указания кол-ва 50.')
+		return
 	iq = xmpp.Iq('get')
 	id='dis'+str(random.randrange(1000, 9999))
 	globals()['disco_pending'].append(id)
@@ -20,7 +23,8 @@ def handler_disco(type, source, parameters):
 				if int(stop)>30:
 					stop='30'
 			else:
-				stop='150'
+				if int(stop)>150:
+					stop='150'
 			iq.setTo(parst[0])
 		else:
 			if type == 'public':
@@ -98,4 +102,4 @@ def handler_disco_answ(type,source,trig,stop,disco):
 	reply(type, source, rep[:-1])
 	disco=[]
 			
-register_command_handler(handler_disco, {1: 'диско', 2: 'disco', 3: '!dis'}, ['мук','инфо','все'], 10, 'Показывает результату discovery для указанного сервера.', 'disco <сервер> <кол-во результатов>', ['disco jabber.aq','disco conference.jabber.aq 5'])
+register_command_handler(handler_disco, 'диско', ['мук','инфо','все'], 10, 'Показывает результату discovery для указанного сервера. Об ограничениях - "диско ограничния".', 'диско <сервер> <кол-во результатов>', ['диско jabber.aq','диско conference.jabber.aq 5'])

@@ -185,8 +185,11 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 				try:
 					[sign, tzo, tzm] = re.match('(\+|-)?([0-9]+):([0-9]+)', tzo).groups()
 					[date, hours, minutes, seconds] = re.match('(.{10})T([0-9]+):([0-9]+):([0-9]+)').groups()
+					print [sign, tzo, tzm]
+					print [date, hours, minutes, seconds]
 				except:
 					return # failed to parse... nah
+					print 'nah'
 				if (sign == '-'):
 					hours=int(hours)-int(tzoh)
 					minutes=minutes=int(minutes)-int(tzom)
@@ -208,4 +211,4 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 	else:
 		reply(type,source, u'что-то никак...')
 
-register_command_handler(handler_gettime_xep_disco, {1: 'часики', 2: 'clock', 3: '!time'}, ['мук','инфо','все'], 10, 'Показывает сколько сейчас времени у указанного ника.', 'clock <ник>', ['clock','clock guy'])
+register_command_handler(handler_gettime_xep_disco, 'часики', ['мук','инфо','все'], 10, 'Показывает сколько сейчас времени у указанного ника.', 'часики <ник>', ['часики','часики guy'])

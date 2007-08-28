@@ -36,4 +36,4 @@ def second_handler_SG(coze,stats,parameters,type,source):
 		reply(type,source,result)
 		
 		
-register_command_handler(handler_SG_get, {1: 'инфа', 2: 'statz', 3: '!stats'}, ['инфо','все'], 10, 'Возвращает статистику о сервере юзая XEP-0039.', 'statz <сервер>', ['statz jabber.aq'])
+register_command_handler(handler_SG_get, 'инфа', ['инфо','все'], 10, 'Возвращает статистику о сервере юзая XEP-0039.', 'инфа <сервер>', ['инфа jabber.aq'])

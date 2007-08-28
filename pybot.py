@@ -74,8 +74,6 @@ COMMAND_HANDLERS = {}
 GLOBACCESS = {}
 ACCBYCONF = {}
 
-COMSET = {}
-
 JCON = None
 
 CONFIGURATION = {}
@@ -175,17 +173,10 @@ def register_presence_handler(instance):
 def register_groupchat_invite_handler(instance):
 	GROUPCHAT_INVITE_HANDLERS.append(instance)
 
-def register_command_handler(instance, command={}, category=[], access=0, desc='', syntax='', examples=[]):
-	for x in command.keys():
-		comm = command[x].decode('utf-8')
-		if not COMMAND_HANDLERS.has_key(x):
-			COMMAND_HANDLERS[x]=x
-			COMMAND_HANDLERS[x]={}
-		COMMAND_HANDLERS[x][comm] = instance
-		if not COMMANDS.has_key(x):
-			COMMANDS[x]=x
-			COMMANDS[x]={}
-		COMMANDS[x][comm] = {'category': category, 'access': access, 'desc': desc, 'syntax': syntax, 'examples': examples}
+def register_command_handler(instance, command, category=[], access=0, desc='', syntax='', examples=[]):
+	command = command.decode('utf-8')
+	COMMAND_HANDLERS[command] = instance
+	COMMANDS[command] = {'category': category, 'access': access, 'desc': desc, 'syntax': syntax, 'examples': examples}
 
 def call_message_handlers(type, source, body):
 	for handler in MESSAGE_HANDLERS:
@@ -210,16 +201,12 @@ def call_groupchat_invite_handlers(source, groupchat, body):
 		thread.start_new(handler, (source, groupchat, body))
 
 def call_command_handlers(command, type, source, parameters, callee):
-	try:
-		comset=int(COMSET[source[1]])
-	except:
-		comset=1
 	real_access = MACROS.get_access(callee)
 	if real_access < 0:
-		real_access = COMMANDS[comset][command]['access']
-	if COMMAND_HANDLERS[comset].has_key(command):
+		real_access = COMMANDS[command]['access']
+	if COMMAND_HANDLERS.has_key(command):
 		if has_access(source, real_access, source[1]):
-			thread.start_new(COMMAND_HANDLERS[comset][command], (type, source, parameters))
+			thread.start_new(COMMAND_HANDLERS[command], (type, source, parameters))
 		else:
 			reply(type, source, 'ага, щаззз')
 
@@ -269,45 +256,7 @@ def load_initscript():
 	fp = file(INITSCRIPT_FILE)
 	exec fp in globals()
 	fp.close()
-	
-def get_comset():
-	possibilities = os.listdir('dynamic')
-	for possibility in possibilities:
-		try:
-			files = os.listdir('dynamic/'+possibility)
-			for x in files:
-				if x == 'config.cfg':
-					cfgfile='dynamic/'+possibility+'/config.cfg'
-					try:
-						cfg = eval(read_file(cfgfile))
-						if cfg.has_key('comset'):
-							comset=cfg['comset']
-							COMSET[possibility]=possibility
-							COMSET[possibility]=comset
-							comset_ontopres(possibility)
-					except:
-						pass
-		except:
-			pass
-	
-def comset_ontopres(groupchat):	
-	if groupchat in GROUPCHATS.keys():		
-		comset=COMSET[groupchat]
-		nick = get_nick(groupchat)
-		if comset==1:
-			comm=u'помощь'
-			desc=u'в данной конференции включен первый набор команд - русские без экранирования'
-		elif comset==2:
-			comm=u'helpme'
-			desc=u'в данной конференции включен второй набор команд - английские без экранирования'
-		elif comset==3:
-			comm=u'!help'
-			desc=u'в данной конференции включен третий набор команд - английские, экранированные симвоволом (!)'
-		presence=xmpp.protocol.Presence(groupchat+'/'+nick)
-		presence.setStatus(u'напишите "'+comm+u'" и следуйте указаниям, чтобы понять что к чему!\n'+desc)
-		presence.setTag('x',namespace=xmpp.NS_MUC).addChild('history',{'maxchars':'0','maxstanzas':'0'})
-		JCON.send(presence)
-			
+
 ################################################################################
 
 def get_conf_jid(gc, nick):
@@ -469,23 +418,12 @@ def join_groupchat(groupchat, nick=None):
 	else:
 		nick = get_nick(groupchat)
 	presence=xmpp.protocol.Presence(groupchat+'/'+nick)
-	presence.setStatus(u'напишите (wait) и следуйте указаниям, чтобы понять что к чему!')
+	presence.setStatus(u'напишите "помощь" и следуйте указаниям, чтобы понять что к чему!')
 	presence.setTag('x',namespace=xmpp.NS_MUC).addChild('history',{'maxchars':'0','maxstanzas':'0'})
 	JCON.send(presence)
 	if not GROUPCHATS.has_key(groupchat):
 		GROUPCHATS[groupchat] = {}
 		write_file(GROUPCHAT_CACHE_FILE, str(GROUPCHATS.keys()))
-	if not COMSET.has_key(groupchat):
-		CFGPATH='dynamic/'+groupchat+'/config.cfg'
-		if check_file(groupchat,'config.cfg'):
-			cfg = eval(read_file(CFGPATH))
-			if not cfg.has_key('comset'):
-				cfg['comset']=1
-				write_file(CFGPATH, str(cfg))
-				COMSET[groupchat]=groupchat
-				COMSET[groupchat]=1
-		else:
-			print u'бяка'
 		
 def leave_groupchat(groupchat):
 	JCON.send(xmpp.Presence(groupchat, 'unavailable'))
@@ -542,10 +480,6 @@ def messageCB(con, msg):
 	fromjid = msg.getFrom()
 	cbody = ''
 	rcmd = ''
-	try:
-		comset=int(COMSET[fromjid.getStripped()])
-	except:
-		comset=1
 	if body:
 		rcmd = body.split(' ')[0]
 		cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
@@ -565,11 +499,11 @@ def messageCB(con, msg):
 	if not msg.timestamp:
 		if msgtype == 'groupchat':
 				call_message_handlers('public', [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
-				if command in COMMANDS[comset]:
+				if command in COMMANDS:
 					call_command_handlers(command, 'public', [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 		else:
 			call_message_handlers('private', [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
-			if command in COMMANDS[comset]:
+			if command in COMMANDS:
 				call_command_handlers(command, 'private', [fromjid, fromjid.getStripped(), fromjid.getResource()], parameters, rcmd)
 	for x_node in msg.getTags('x', {}, 'jabber:x:conference'):
 		inviter_jid = None
@@ -699,11 +633,9 @@ def start():
 	MACROS.init()
 	for groupchat in groupchats:
 		join_groupchat(groupchat)
-		time.sleep(0.5)
+#		time.sleep(0.5)
 		
-	time.sleep(2)
 	load_plugins()
-	get_comset()
 
 	print '\nOk, i\'m ready to work :)'
 

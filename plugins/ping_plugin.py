@@ -50,4 +50,4 @@ def handler_ping_answ(coze, res, t0, mtype, source, param):
 		rep = u'не дождался :('
 	reply(mtype, source, rep)
 	
-register_command_handler(handler_ping, {1: 'пинг', 2: 'ring', 3: '!p'}, ['инфо','мук','все'], 0, 'Пинг тебя или определённый ник (не сервер!).', 'ring [ник]', ['ring guy','ring jabber.aq'])
+register_command_handler(handler_ping, 'пинг', ['инфо','мук','все'], 0, 'Пинг тебя или определённый ник или сервер.', 'пинг [ник]', ['пинг guy','пинг jabber.aq'])

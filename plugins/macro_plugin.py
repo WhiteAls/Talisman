@@ -59,9 +59,9 @@ def macroaccess_handler(type, source, parameters):
 			reply(type,source,u'что за бред?')
 
 
-register_command_handler(macroadd_handler, {1: 'macroadd', 2: 'macroadd', 3: '!macroadd'}, ['админ','макро','все'], 100, 'Добавить макро.', 'macroadd a `b`', ['macrodd a `b`'])
-register_command_handler(macrodel_handler, {1: 'macrodel', 2: 'macrodel', 3: '!macrodel'}, ['админ','макро','все'], 100, 'Удалить макро.', 'macrodel a', ['macrodel a'])
-register_command_handler(macroexpand_handler, {1: 'macroexp', 2: 'macroexp', 3: '!macroexp'}, ['админ','макро','инфо','все'], 100, 'Развернуть макро.', 'macroexp a b', ['macroexp a b'])
-register_command_handler(macroinfo_handler, {1: 'macroinfo', 2: 'macroinfo', 3: '!macroinfo'}, ['админ','макро','инфо','все'], 100, 'Открыть макро.', 'macroinfo', ['macroinfo','macroinfo a'])
-register_command_handler(macrolist_handler, {1: 'macrolist', 2: 'macrolist', 3: '!macrolist'}, ['хелп','макро','инфо','все'], 10, 'Список макро.', 'macrolist', ['macrolist'])
-register_command_handler(macroaccess_handler, {1: 'macroaccess', 2: 'macroaccess', 3: '!macroaccess'}, ['админ','макро','все'], 100, 'Доступ к определённому макро.', 'macroaccess [макро] [доступ]', ['macroaccess модер 20'])
+register_command_handler(macroadd_handler, 'macroadd', ['админ','макро','все'], 100, 'Добавить макро.', 'macroadd a `b`', ['macrodd a `b`'])
+register_command_handler(macrodel_handler, 'macrodel', ['админ','макро','все'], 100, 'Удалить макро.', 'macrodel a', ['macrodel a'])
+register_command_handler(macroexpand_handler, 'macroexp', ['админ','макро','инфо','все'], 100, 'Развернуть макро.', 'macroexp a b', ['macroexp a b'])
+register_command_handler(macroinfo_handler, 'macroinfo', ['админ','макро','инфо','все'], 100, 'Открыть макро.', 'macroinfo', ['macroinfo','macroinfo a'])
+register_command_handler(macrolist_handler, 'macrolist', ['хелп','макро','инфо','все'], 10, 'Список макро.', 'macrolist', ['macrolist'])
+register_command_handler(macroaccess_handler, 'macroaccess', ['админ','макро','все'], 100, 'Доступ к определённому макро.', 'macroaccess [макро] [доступ]', ['macroaccess модер 20'])

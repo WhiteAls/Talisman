@@ -51,6 +51,6 @@ def handler_bot_uptime(type, source, parameters):
 	reply(type, source, rep)
 
 
-register_command_handler(handler_getrealjid, {1: 'тружид', 2: 'truejid', 3: '!truejid'}, ['инфо','админ','мук','все'], 20, 'Показывает реальный жид указанного ника. Работает только если бот модер ессно', 'truejid <ник>', ['truejid guy'])
-register_command_handler(handler_total_in_muc, {1: 'тотал', 2: 'inmuc', 3: '!total'}, ['инфо','мук','все'], 10, 'Показывает количество юзеров находящихся в конференции.', 'inmuc', ['inmuc'])
-register_command_handler(handler_bot_uptime, {1: 'ботап', 2: 'botup', 3: '!botup'}, ['инфо','админ','все'], 20, 'Показывает сколько времени бот работает без падений.', 'botup', ['inmuc'])
+register_command_handler(handler_getrealjid, 'тружид', ['инфо','админ','мук','все'], 20, 'Показывает реальный жид указанного ника. Работает только если бот модер ессно', 'тружид <ник>', ['тружид guy'])
+register_command_handler(handler_total_in_muc, 'инмук', ['инфо','мук','все'], 10, 'Показывает количество юзеров находящихся в конференции.', 'инмук', ['инмук'])
+register_command_handler(handler_bot_uptime, 'ботап', ['инфо','админ','все'], 20, 'Показывает сколько времени бот работает без падений.', 'ботап', ['ботап'])

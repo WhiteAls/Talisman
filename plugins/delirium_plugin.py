@@ -44,7 +44,8 @@ def handler_kick_ass(type, source, parameters):
 
 	
 	
-register_command_handler(handler_eye_stick, {1: 'тык', 2: 'stick', 3: '!stick'}, ['фан','все'], 10, 'Ткнуть кого-то в глаз или во что-то.', 'stick <ник> <куда>', ['stick qwerty','stick qwerty в живот'])
-register_command_handler(handler_test, {1: 'тест', 2: 'test', 3: '!test'}, ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'test', ['test'])
-register_command_handler(handler_clean_conf, {1: 'фконфу', 2: 'cls', 3: '!clean'}, ['фан','мук','все'], 15, 'Очищает конференцию (считает до 20).', 'cls', ['cls'])
-register_command_handler(handler_kick_ass, {1: 'засрать', 2: 'torture', 3: '!ass'}, ['фан','суперадмин','мук','все'], 100, 'Засирает конфожид указанным количеством мессаг.', 'torture [ник] [кол-во]', ['torture Als 100'])
+register_command_handler(handler_eye_stick, 'тык', ['фан','все'], 10, 'Ткнуть кого-то в глаз или во что-то.', 'тык <ник> <куда>', ['тык qwerty','тык qwerty в живот'])
+register_command_handler(handler_test, 'тест', ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'тест', ['тест'])
+register_command_handler(handler_test, 'test', ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'test', ['test'])
+register_command_handler(handler_clean_conf, 'фконфу', ['фан','мук','все'], 15, 'Очищает конференцию (считает до 20). Предназначено для jabbus.org!!! Остальным юзать фконфу- (тире в конце).', 'фконфу', ['фконфу'])
+register_command_handler(handler_kick_ass, 'засрать', ['фан','суперадмин','мук','все'], 100, 'Засирает конфожид указанным количеством мессаг.', 'засрать [ник] [кол-во]', ['засрать Als 100'])

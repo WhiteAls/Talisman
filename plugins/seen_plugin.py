@@ -118,4 +118,4 @@ def nick_change(prs):
 
 register_presence_handler(nick_change)
 register_leave_handler(seen_rec)
-register_command_handler(handler_seen, {1: 'син', 2: 'see', 3: '!seen'}, ['инфо','мук','все'], 10, 'Показывает когда ник был последний раз в конфе.', 'see <ник>', ['see guy'])
+register_command_handler(handler_seen, 'син', ['инфо','мук','все'], 10, 'Показывает когда ник был последний раз в конфе.', 'син <ник>', ['син guy'])

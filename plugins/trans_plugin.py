@@ -48,4 +48,4 @@ def handler_google_trans(type,source,parameters):
 		reply(type,source,u'что это за язык?')
 		
 
-register_command_handler(handler_google_trans, {1: 'перевод', 2: 'trans', 3: '!tr'}, ['инфо','все'], 10, 'Переводит фразу на одном языке в другой. Подробнее - напишите "перевод языки".', 'trans <исходный_язык> <нужный_язык> <фраза>', ['trans er hello', 'trans re привет'])
+register_command_handler(handler_google_trans, 'перевод', ['инфо','все'], 10, 'Переводит фразу на одном языке в другой. Подробнее - напишите "перевод языки".', 'перевод <исходный_язык> <нужный_язык> <фраза>', ['перевод er hello', 'перевод re привет'])

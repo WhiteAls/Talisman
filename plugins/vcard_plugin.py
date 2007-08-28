@@ -84,4 +84,4 @@ def handler_vcardget_answ(coze, res, type, source, nick):
 
 
 
-register_command_handler(handler_vcardget, {1: 'визитка', 2: 'profile', 3: '!vcard'}, ['мук','инфо','все'], 10, 'Показывает vCard указанного пользователя.', 'profile [ник]', ['profile guy','profile'])
+register_command_handler(handler_vcardget, 'визитка', ['мук','инфо','все'], 10, 'Показывает vCard указанного пользователя.', 'визитка [ник]', ['визитка guy','визитка'])

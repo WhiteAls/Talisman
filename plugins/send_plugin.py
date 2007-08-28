@@ -42,4 +42,4 @@ def handler_new_join(groupchat, nick):
 			queue[tojid].remove(x)
 
 register_join_handler(handler_new_join)
-register_command_handler(handler_psay, {1: 'передать', 2: 'resend', 3: '!resend'}, ['мук','все'], 10, 'Запоминает сообщение в базе и передаёт его указанному нику как только он зайдёт в конференцию.', 'resend <кому> <что>', ['resend Nick привет! забань Nick666'])
+register_command_handler(handler_psay, 'передать', ['мук','все'], 10, 'Запоминает сообщение в базе и передаёт его указанному нику как только он зайдёт в конференцию.', 'передать <кому> <что>', ['передать Nick привет! забань Nick666'])

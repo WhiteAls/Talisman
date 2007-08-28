@@ -26,4 +26,4 @@ def handler_dns_dns(type, source, parameters):
 	else:
 		reply(type, source, 'чё-то ты не то написал...')
 
-register_command_handler(handler_dns_dns, {1: 'днс', 2: 'nslookup', 3: '!dns'}, ['инфо','все'], 10, 'Показывает ответ от DNS для определённого хоста или IP адреса.', 'nslookup <хост/IP>', ['nslookup jabber.aq', 'nslookup 127.0.0.1'])
+register_command_handler(handler_dns_dns, 'днс', ['инфо','все'], 10, 'Показывает ответ от DNS для определённого хоста или IP адреса.', 'днс <хост/IP>', ['днс jabber.aq', 'днс 127.0.0.1'])

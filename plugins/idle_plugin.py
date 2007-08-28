@@ -97,5 +97,5 @@ def handler_userinfo_idle(type, source, parameters):
 
 
 register_message_handler(handler_userinfo_message)
-register_command_handler(handler_idle, {1: 'аптайм', 2: 'uptm', 3: '!uptime'}, ['инфо','мук','все'], 10, 'Показывает аптайм определённого сервера.', 'uptm <сервер>', ['uptm jabber.aq'])
-register_command_handler(handler_userinfo_idle, {1: 'жив', 2: 'sleep', 3: '!idle'}, ['инфо','мук','все'], 10, 'Показывает сколько времени неактивен юзер.', 'sleep <ник>', ['sleep guy'])
+register_command_handler(handler_idle, 'аптайм', ['инфо','мук','все'], 10, 'Показывает аптайм определённого сервера.', 'аптайм <сервер>', ['аптайм jabber.aq'])
+register_command_handler(handler_userinfo_idle, 'жив', ['инфо','мук','все'], 10, 'Показывает сколько времени неактивен юзер.', 'жив <ник>', ['жив guy'])

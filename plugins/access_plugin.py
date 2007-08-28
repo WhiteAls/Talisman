@@ -63,9 +63,9 @@ def handler_access_unset_access_glob(type, source, parameters):
 	reply(type, source, u'снял')
 
 
-register_command_handler(handler_access_login, {1: 'логин', 2: 'login', 3: '!login'}, ['доступ','админ','все'], 0, 'Залогиниться как админ.', 'login <пароль>', ['login мой_пароль'])
-register_command_handler(handler_access_login, {1: 'логаут', 2: 'logout', 3: '!logout'}, ['доступ','админ','все'], 0, 'Разлогиниться.', 'logout', ['logout'])
-register_command_handler(handler_access_view_access, {1: 'доступ', 2: 'acc', 3: '!acc'}, ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.', 'acc [ник]', ['acc', 'acc guy'])
-register_command_handler(handler_access_set_access, {1: 'дать_доступ', 2: 'giveacc', 3: '!giveacc'}, ['доступ','админ','все'], 15, 'Устанавливает уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота из конфы.', 'giveacc <ник> <уровень> [навсегда]', ['giveacc guy 100', 'giveacc guy 100 что-нить там'])
-register_command_handler(handler_access_set_access_glob, {1: 'globacc', 2: 'globacc', 3: '!globacc'}, ['доступ','суперадмин','все'], 100, 'Устанавливает уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО.', 'globacc <ник> <уровень>', ['globacc gay 100'])
-register_command_handler(handler_access_unset_access_glob, {1: 'unglobacc', 2: 'unglobacc', 3: '!unglobacc'}, ['доступ','суперадмин','все'], 100, 'Снимает глобальный уровень доступа с ЖИДА.', 'unglobacc <жид> ', ['globacc guy'])
+register_command_handler(handler_access_login, 'логин', ['доступ','админ','все'], 0, 'Залогиниться как админ.', 'логин <пароль>', ['логин мой_пароль'])
+register_command_handler(handler_access_login, 'логаут', ['доступ','админ','все'], 0, 'Разлогиниться.', 'логаут', ['логаут'])
+register_command_handler(handler_access_view_access, 'доступ', ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.', 'доступ [ник]', ['доступ', 'доступ guy'])
+register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота из конфы.', 'дать_дотсуп <ник> <уровень> [навсегда]', ['дать_дотсуп guy 100', 'дать_дотсуп guy 100 что-нить там'])
+register_command_handler(handler_access_set_access_glob, 'globacc', ['доступ','суперадмин','все'], 100, 'Устанавливает уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО.', 'globacc <ник> <уровень>', ['globacc gay 100'])
+register_command_handler(handler_access_unset_access_glob, 'unglobacc', ['доступ','суперадмин','все'], 100, 'Снимает глобальный уровень доступа с ЖИДА.', 'unglobacc <жид> ', ['globacc guy'])
