@@ -17,12 +17,8 @@ import traceback
 import getopt
 import codecs
 import macros
-import iq
 
 ################################################################################
-iq.version = ""
-iq.vername = "Тао-Альфа-Лямбда-Ипсилон-Сигма-Мю-Альфа-Ню"
-
 CONFIGURATION_FILE = 'dynamic/config.cfg'
 
 GENERAL_CONFIG_FILE = 'config.txt'
@@ -634,7 +630,17 @@ def presenceCB(con, prs):
 				time.sleep(0.5)
 
 def iqCB(con, iq):
-	call_iq_handlers(iq)
+	global JCON
+	if iq.getTags('query', {}, xmpp.NS_VERSION):
+		result = iq.buildReply('result')
+		query = result.getTag('query')
+		query.setTagData('name', 'Тао-Альфа-Лямбда-Ипсилон-Сигма-Мю-Альфа-Ню')
+		query.setTagData('version', '')
+		query.setTagData('os', os.name)
+		JCON.send(result)
+	else:
+		call_iq_handlers(iq)
+	
 
 def dcCB():
 	print 'DISCONNECTED'
@@ -681,16 +687,6 @@ def start():
 	JCON.RegisterHandler('message', messageCB)
 	JCON.RegisterHandler('presence', presenceCB)
 	JCON.RegisterHandler('iq', iqCB)
-	## Parts of code from:
-	## OJAB iq module
-	## Copyright (C) Boris Kotov <admin@avoozl.ru>
-	JCON.RegisterHandler('iq', iq.versionCB, 'get', xmpp.NS_VERSION)
-#	JCON.RegisterHandler('iq', iq.versionresultCB, 'result', xmpp.NS_VERSION)
-#	JCON.RegisterHandler('iq', iq.versionerrorCB, 'error', xmpp.NS_VERSION)
-#	JCON.RegisterHandler('iq', iq.timeCB, 'get', xmpp.NS_TIME)
-#	JCON.RegisterHandler('iq', iq.timeresultCB, 'result', xmpp.NS_TIME)
-#	JCON.RegisterHandler('iq', iq.timeerrorCB, 'error', xmpp.NS_TIME)
-	#####################
 	JCON.RegisterDisconnectHandler(dcCB)
 	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
