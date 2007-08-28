@@ -187,12 +187,12 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 					[date, hours, minutes, seconds] = re.match('(.{10})T([0-9]+):([0-9]+):([0-9]+)').groups()
 				except:
 					return # failed to parse... nah
-					if (sign == '-'):
-						hours=int(hours)-int(tzoh)
-						minutes=minutes=int(minutes)-int(tzom)
-					else:
-						hours=int(hours)+int(tzoh)
-						minutes=int(minutes)+int(tzom)
+				if (sign == '-'):
+					hours=int(hours)-int(tzoh)
+					minutes=minutes=int(minutes)-int(tzom)
+				else:
+					hours=int(hours)+int(tzoh)
+					minutes=int(minutes)+int(tzom)
 
 				if hours>=24:
 					hours=int(hours)-24
