@@ -3,6 +3,11 @@ import random
 import string
 import re
 
+def shell_esc(s):
+	for c in [';', '&', '|', '`', '$']:
+		s = s.replace(c, '\\'+c)
+	return s
+
 def xml_esc(s):
 	s = s.replace('\'', '&apos;')
 	s = s.replace('>', '&gt;')
@@ -16,6 +21,9 @@ def macro_get_rand(args, source):
 		return str(random.randrange(f, t))
 	except:
 		return ''
+
+def macro_shell_escape(args, source):
+	return shell_esc(args[0])
 
 def macro_xml_escape(args, source):
 	return xml_esc(args[0])
@@ -44,9 +52,10 @@ def write_file(filename, data):
 		
 class MacroCommands:
 	commands={
-	          'rand':       [2, macro_get_rand  ],
-                  'xml_escape': [1, macro_xml_escape],
-		  'context':    [1, macro_context   ]
+	          'rand':         [2, macro_get_rand    ],
+                  'shell_escape': [1, macro_shell_escape],
+                  'xml_escape':   [1, macro_xml_escape  ],
+		  'context':      [1, macro_context     ]
 		 }
 	
 	def map_char(self, x, i):
