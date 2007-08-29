@@ -192,7 +192,7 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 					print 'nah'
 				if (sign == '-'):
 					hours=int(hours)-int(tzoh)
-					minutes=minutes=int(minutes)-int(tzom)
+					minutes=int(minutes)-int(tzom)
 				else:
 					hours=int(hours)+int(tzoh)
 					minutes=int(minutes)+int(tzom)
