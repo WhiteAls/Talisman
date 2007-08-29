@@ -412,14 +412,17 @@ def has_access(source, required_level, gch):
 	
 ################################################################################
 
-def join_groupchat(groupchat, nick=None):
+def join_groupchat(groupchat, nick=None, passw=None):
 	if nick:
 		set_nick(groupchat, nick)
 	else:
 		nick = get_nick(groupchat)
 	presence=xmpp.protocol.Presence(groupchat+'/'+nick)
 	presence.setStatus(u'напишите "помощь" и следуйте указаниям, чтобы понять что к чему!')
-	presence.setTag('x',namespace=xmpp.NS_MUC).addChild('history',{'maxchars':'0','maxstanzas':'0'})
+	pres=presence.setTag('x',namespace=xmpp.NS_MUC)
+	pres.addChild('history',{'maxchars':'0','maxstanzas':'0'})
+	if passw:
+		pres.setTagData('password', passw)
 	JCON.send(presence)
 	if not GROUPCHATS.has_key(groupchat):
 		GROUPCHATS[groupchat] = {}

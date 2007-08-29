@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 ####### It is translated and modified by Als #######
 
+from re import match
+
 
 def admin_groupchat_invite_handler(source, groupchat, body):
 	if has_access(get_true_jid(source),COMMANDS[u'зайти']['access'],source[1]):
@@ -23,16 +25,25 @@ def popups_check(gch):
 				
 def handler_admin_join(type, source, parameters):
 	if parameters:
+		passw=''
 		nick = DEFAULT_NICK
 		args = parameters.split(' ')
 		if len(args)>1:
 			#(groupchat, reason) = string.split(parameters.lstrip(), ' ', 1)
 			groupchat = args[0]
-			reason = ' '.join(args[1:])
+			passw = string.split(args[1], 'pass=', 1)
+			print passw
+			if passw[0]=='':
+				reason = ' '.join(args[2:])
+			else:
+				reason = ' '.join(args[1:])
 		else:
 			groupchat = parameters
 			reason = ''
-		join_groupchat(str(groupchat), nick)
+		if len(passw)==1 or len(passw)==0:
+			join_groupchat(groupchat, nick)
+		else:
+			join_groupchat(groupchat, nick, passw[1])
 		reply(type, source, u'я зашёл в -> <' + groupchat + '>')
 		if popups_check(groupchat):
 			if reason:
@@ -177,7 +188,7 @@ def handler_popups_startstop(type, source, parameters):
 
 
 
-register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу.', 'зайти <конфа> [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря'])
+register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу. Если она запаролена то пишите пароль сразу после названия конфы.', 'зайти <конфа> [pass=пароль] [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря', 'зайти ы@conference.jabber.aq pass=1234 уря'])
 register_command_handler(handler_admin_leave, 'свал', ['админ','мук','все'], 20, 'Заставляет выйти из текущей или определённой конфы.', 'свал <конфа> [причина]', ['свал ы@conference.jabber.aq спать', 'свал спать','rleave'])
 register_command_handler(handler_admin_msg, 'мессага', ['админ','мук','все'], 30, 'Отправляет мессагу от имени бота определённому JID-у.', 'мессага <jid> <мессага>', ['мессага guy@jabber.aq здорово чувак!'])
 register_command_handler(handler_admin_say, 'сказать', ['админ','мук','все'], 20, 'Говорить через бота.', 'сказать <мессага>', ['сказать салют пиплы'])
