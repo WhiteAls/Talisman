@@ -4,7 +4,7 @@ import string
 import re
 
 def shell_esc(s):
-	for c in [';', '&', '|', '`', '$']:
+	for c in [';', '&', '|', '`', '$', '\\', '#']:
 		s = s.replace(c, '\\'+c)
 	return s
 

@@ -67,20 +67,18 @@ def log_get_fp(type, source, (year, month, day, hour, minute, second, weekday, y
 			return fp
 		else:
 			LOG_FILENAME_CACHE[source] = filename
-			write_file(LOG_FILENAME_CACHE, str(LOG_FILENAME_CACHE))
+			write_file(LOG_CACHE_FILE, str(LOG_FILENAME_CACHE))
 			fp = file(filename, 'w')
 			log_write_header(fp, source, (year, month, day, hour, minute, second, weekday, yearday, daylightsavings))
 			return fp
 	else:
 		if os.path.exists(filename):
 			LOG_FILENAME_CACHE[source] = filename
-			write_file(LOG_FILENAME_CACHE, str(LOG_FILENAME_CACHE))
+			write_file(LOG_CACHE_FILE, str(LOG_FILENAME_CACHE))
 			fp = file(alt_filename, 'a')
-			# self.log_write_header(fp, source, (year, month, day, hour, minute, second, weekday, yearday, daylightsavings))
 			return fp
 		else:
 			LOG_FILENAME_CACHE[source] = filename
-			#self.write_file(LOG_FILENAME_CACHE_file, str(LOG_FILENAME_CACHE))
 			fp = file(filename, 'w')
 			log_write_header(fp, source, (year, month, day, hour, minute, second, weekday, yearday, daylightsavings))
 			return fp

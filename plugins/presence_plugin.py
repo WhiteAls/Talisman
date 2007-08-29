@@ -22,7 +22,7 @@ def handler_presence_presence(prs):
 		pass
 
 def handler_presence_ra_change(prs):
-	while 1:
+	while prs:
 		roles={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 		affiliations={'none':0, 'member':0, 'admin':5, 'owner':15}
 		groupchat = prs.getFrom().getStripped()
@@ -53,6 +53,7 @@ def handler_presence_ra_change(prs):
 						acca = 0
 					access = int(accr)+int(acca)
 					change_access_temp(groupchat, jid, access)
+					return
 
 register_presence_handler(handler_presence_presence)
 register_presence_handler(handler_presence_ra_change)
