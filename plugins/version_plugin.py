@@ -39,9 +39,9 @@ def handler_version_answ(coze, res, type, source):
 	rep =''
 	if res:
 		if res.getType() == 'result':
-			name = ''
-			version = ''
-			os = ''
+			name = '[no name]'
+			version = '[no ver]'
+			os = '[no os]'
 			props = res.getQueryChildren()
 			for p in props:
 				if p.getName() == 'name':

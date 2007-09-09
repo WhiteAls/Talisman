@@ -26,6 +26,6 @@
 # To disable logging, set to empty string: '',
 'PRIVATE_LOG_DIR': 'privlogs',
 
-'INITSCRIPT_FILE': 'neutron.rc',
+'INITSCRIPT_FILE': 'pybot.rc',
 
 } 

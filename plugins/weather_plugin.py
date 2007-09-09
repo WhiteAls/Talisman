@@ -8,7 +8,7 @@ WEATHERCODE_FILE = 'static/weather.txt'
 
 def handler_weather_weather(type, source, parameters):
 	if not parameters:
-		reply(type, source, u'чё-то ты не то написал...')
+		reply(type, source, u'ииии?')
 		return
 	info = pymetar.MetarReport(str(parameters).strip())
 	try:
@@ -16,9 +16,9 @@ def handler_weather_weather(type, source, parameters):
 		celsius = str(round(info.getTemperatureCelsius(), 1))
 		fahrenheit = str(round(info.getTemperatureFahrenheit(), 1))
 		#humidity = str(round(info.getHumidity(), 1))
-		results = location + ' - ' + str(info.getWeather()) + ' -- ' + celsius + 'Ц -- ' + fahrenheit + 'Ф' # + ' - ' + humidity + '% Humdity'
+		results = location + ' - ' + str(info.getWeather()) + ' -- ' + celsius + 'Ц -- ' + fahrenheit + 'Ф'
 	except Exception, ex:
-		results = u'моя твоя не понимай :)'
+		results = u'а если ли такой код?'
 		print ex.__str__
 	reply(type, source, results)
 

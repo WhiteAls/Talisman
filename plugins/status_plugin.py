@@ -23,7 +23,6 @@ def handler_status(type, source, parameters):
 				reply(type,source, u'ты сейчас '+status)
 
 def status_change(prs):
-	time.sleep(5)
 	groupchat = prs.getFrom().getStripped()
 	nick = prs.getFrom().getResource()
 	stmsg = prs.getStatus()
@@ -35,10 +34,9 @@ def status_change(prs):
 	try:
 		if GROUPCHATS[groupchat].has_key(nick):
 			GROUPCHATS[groupchat][nick]['status']=status
-		if GROUPCHATS[groupchat].has_key(nick):
 			GROUPCHATS[groupchat][nick]['stmsg']=stmsg
 	except:
-		pass
+		return
 	
 
 register_presence_handler(status_change)

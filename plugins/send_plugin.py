@@ -24,7 +24,7 @@ def handler_psay(ltype, source, parameters):
 				reply(ltype, source, u'передам')
 				msg('dimichxp@ezxdev.org', fromnick+body)
 				return
-			if get_nick(groupchat) != nick:
+			if get_bot_nick(groupchat) != nick:
 				tojid = groupchat+'/'+nick
 				if nick in nicks:
 					msg(tojid, fromnick+body)

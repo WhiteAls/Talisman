@@ -20,18 +20,22 @@ def handler_access_logout(type, source, parameters):
 	reply(type, source, u'бб')
 
 def handler_access_view_access(type, source, parameters):
-	if not parameters.strip():
+	if not parameters:
 		reply(type, source, str(user_level(source[1]+'/'+source[2], source[1])))
 	else:
-		reply(type, source, str(user_level(source[1]+'/'+parameters,source[1])))
+		nicks = GROUPCHATS[source[1]].keys()
+		if parameters.strip() in nicks:
+			reply(type, source, str(user_level(source[1]+'/'+parameters.strip(),source[1])))
+		else:
+			reply(type, source, u'а он тут? :-O')
 
 def handler_access_set_access(type, source, parameters):
 	splitdata = string.split(parameters)
 	nicks=GROUPCHATS[source[1]].keys()
-	if not splitdata[0] in nicks:
+	if not splitdata[0].strip() in nicks:
 		reply(type, source, u'а он тут? :-O')
 		return
-	tjidto=get_true_jid(source[1]+'/'+splitdata[0])
+	tjidto=get_true_jid(source[1]+'/'+splitdata[0].strip())
 	tjidsource=get_true_jid(source)
 	groupchat=source[1]
 	jidacc=user_level(source, groupchat)
@@ -41,20 +45,26 @@ def handler_access_set_access(type, source, parameters):
 		reply(type, source, u'ага, щаззз')
 		return
 	if len(splitdata) == 2:
-		change_access_temp(source[1], tjidto, splitdata[1])
+		change_access_temp(source[1], tjidto, splitdata[1].strip())
 		reply(type, source, u'дал временно')
 	elif len(splitdata) == 3:
-		change_access_perm(source[1], tjidto, splitdata[1])
+		change_access_perm(source[1], tjidto, splitdata[1].strip())
 		reply(type, source, u'дал навсегда')
 	else:
-		reply(type, source, u'чё-то ты не правильно пишешь...')
+		reply(type, source, u'прочитай хелп по команде')
 		
 		
 def handler_access_set_access_glob(type, source, parameters):
-	splitdata = string.split(parameters)
-	tjidto=get_true_jid(source[1]+'/'+splitdata[0])
-	change_access_perm_glob(tjidto, splitdata[1])
-	reply(type, source, u'дал')
+	if parameters:
+		splitdata = string.split(parameters)
+		if splitdata[0]=='':
+			nicks=GROUPCHATS[source[1]].keys()
+		if not splitdata[0].strip() in nicks:
+			reply(type, source, u'а он тут? :-O')
+			return
+		tjidto=get_true_jid(source[1]+'/'+splitdata[0])
+		change_access_perm_glob(tjidto, splitdata[1])
+		reply(type, source, u'дал')
 
 def handler_access_unset_access_glob(type, source, parameters):
 	splitdata = string.split(parameters)

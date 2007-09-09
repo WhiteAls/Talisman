@@ -37,7 +37,11 @@ def handler_vcardget_answ(coze, res, type, source, nick):
 	rep =''
 	if res:
 		if res.getType()=='error':
-				reply(type, source, u'хехе, его клиент не дружит с этим')
+			if not nick:
+				reply(type,source,u'хехе, твой клиент ничего не знает про вкарды')
+				return
+			else:
+				reply(type,source,u'хехе, его клиент ничего не знает про вкарды')
 				return
 		elif res.getType() == 'result':
 			nickname = ''
@@ -53,21 +57,24 @@ def handler_vcardget_answ(coze, res, type, source, nick):
 				else:
 					reply(type,source,u'передай ему, чтобы он свой вкард сначала заполнил')
 					return
-				return
 			for p in props:
 				if p.getName() == 'NICKNAME':
 					nickname = p.getData()
-				elif p.getName() == 'URL':
+				if p.getName() == 'FN':
+					name = p.getData()				
+				if p.getName() == 'URL':
 					url = p.getData()
-				elif p.getName() == 'EMAIL':
+				if p.getName() == 'EMAIL':
 					email = p.getData()
-				elif p.getName() == 'DESC':
+				if p.getName() == 'DESC':
 					desc = p.getData()
 			if nickname:
 				if not nick:
 					rep = u'про тебя я знаю следующее:\nnick: '+nickname
 				else:
-					rep = u'про <'+nick+u'> я знаю следующее:\nnick: '+nickname
+					rep = u'про '+nick+u' я знаю следующее:\nnick: '+nickname
+			if not name=='':
+				rep +='\nname: '+name				
 			if not url=='':
 				rep +='\nurl: '+url
 			if not email=='':
@@ -75,7 +82,7 @@ def handler_vcardget_answ(coze, res, type, source, nick):
 			if not desc=='':
 				rep +=u'\nabout: '+desc
 			if rep=='':
-				rep = u'пустой вкард'
+				rep = u'вглюкнуло'
 		else:
 			rep = u'он зашифровался'
 	else:

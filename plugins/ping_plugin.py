@@ -6,7 +6,6 @@ ping_pending=[]
 def handler_ping(type, source, parameters):
 	nick=parameters
 	groupchat=source[1]
-	jid=groupchat+'/'+nick
 	iq = xmpp.Iq('get')
 	id = 'vers'+str(random.randrange(1000, 9999))
 	globals()['ping_pending'].append(id)
@@ -19,6 +18,8 @@ def handler_ping(type, source, parameters):
 			if not nick in nicks:
 				iq.setTo(param)
 			else:
+				param=nick
+				jid=groupchat+'/'+nick
 				iq.setTo(jid)
 	else:
 		jid=groupchat+'/'+source[2]

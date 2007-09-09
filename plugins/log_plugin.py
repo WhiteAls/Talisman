@@ -1,5 +1,7 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
+####### parts of code by elghinn, all the rest by Als #######
+
 import re, os, math, time
 
 LOG_CACHE_FILE = 'dynamic/logcache.txt'
@@ -121,7 +123,6 @@ def log_write(body, nick, type, jid):
 		fp.write('<span class="system">' + body + '</span><br />\n')
 	elif body[:3].lower() == '/me':
 		fp.write('<span class="emote">* %s%s</span><br />\n' % (nick, body[3:]))
-#	elif ((type == 'public' and nick == GROUPCHATS[jid]['nick'].encode('utf-8')) or nick == DEFAULT_NICK):
 	elif type == 'public' or nick == DEFAULT_NICK:
 		if nick == '@$$join$$@' or '@$$leave$$@':
 			if nick=='@$$leave$$@':

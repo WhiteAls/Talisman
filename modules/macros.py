@@ -1,11 +1,10 @@
 #!/usr/bin/python
-import random
-import string
-import re
+####### by dimichxp. mod Als #######
+import random,string,re,os
 
 def shell_esc(s):
 	for c in [';', '&', '|', '`', '$', '\\', '#']:
-		s = s.replace(c, '\\'+c)
+		s = s.replace(c, '')
 	return s
 
 def xml_esc(s):
@@ -98,33 +97,87 @@ class MacroCommands:
 			if m[i] != 0:
 				args[m[i]-1]+=me[i]
 			i+=1
-
 		return args
+		
 	def execute_cmd(self, cmd, args, source):
 		if self.commands.has_key(cmd):
 			if self.commands[cmd][0] <= len(args):
 				return self.commands[cmd][1](args, source)
 		return ''
+		
 	def proccess(self, cmd, source):
 		command = cmd[0]
 		args = cmd[1:]
 		return self.execute_cmd(command, args, source)
 
 class Macros:
+	gmacrolist={}
+	gaccesslist={}
+	
 	macrolist={}
-	accesslist={}
+	accesslist={}	
+	
 	macrocmds = MacroCommands()
+	
 	def init(self):
-		self.macrolist = eval(read_file("dynamic/macros.txt"))
-		self.accesslist = eval(read_file("dynamic/macroaccess.txt"))
+		self.gmacrolist = eval(read_file("dynamic/macros.txt"))
+		self.gaccesslist = eval(read_file("dynamic/macroaccess.txt"))
+
+		poss = os.listdir('dynamic')
+		for x in poss:
+			try:
+				files = os.listdir('dynamic/'+x)
+				for y in files:
+					if y == 'macros.txt':
+						mcrfile='dynamic/'+x+'/macros.txt'
+						try:
+							mcr = eval(read_file(mcrfile))
+							if not mcr=='{}':
+								self.macrolist[x]=x
+								self.macrolist[x]=mcr
+							else:
+								self.macrolist[x]=x
+								self.macrolist[x]={}
+						except:
+							pass
+					elif y == 'macroaccess.txt':
+						mcracfile='dynamic/'+x+'/macroaccess.txt'
+						try:
+							mcrac = eval(read_file(mcracfile))
+							if not mcrac=='{}':
+								self.accesslist[x]=x
+								self.accesslist[x]=mcrac
+							else:
+								self.accesslist[x]=x
+								self.accesslist[x]={}
+						except:
+							pass
+			except:
+				pass
+		
 	def flush(self):
-		write_file('dynamic/macros.txt', str(self.macrolist))
-		write_file('dynamic/macroaccess.txt', str(self.accesslist))
-	def add(self, mapee, map):
-		self.macrolist[mapee]=map
-	def remove(self, mapee):
-		if self.macrolist.has_key(mapee):
-			del self.macrolist[mapee]
+		for x in self.macrolist.keys():
+			write_file('dynamic/'+x+'/macros.txt', str(self.macrolist[x]))
+		for x in self.accesslist.keys():
+			write_file('dynamic/'+x+'/macroaccess.txt', str(self.accesslist[x]))
+		
+	def add(self, mapee, map, gch=None):
+		if gch:
+			if not self.macrolist.has_key(gch):
+				self.macrolist[gch]=gch
+				self.macrolist[gch]={}
+			self.macrolist[gch][mapee]=map
+		else:
+			self.gmacrolist[mapee]=map
+		
+	def remove(self, mapee, gch):
+		if gch:
+			if self.macrolist[gch].has_key(mapee):
+				del self.macrolist[gch][mapee]
+		else:
+			if self.gmacrolist.has_key(mapee):
+				del self.gmacrolist[mapee]			
+			
 	def map_char(self, x, i):
 		ret=i['level']
 		if i['esc']:
@@ -164,14 +217,67 @@ class Macros:
 		command=cl[0].split(' ')[0]
 		args=cl[1:]
 		exp = ''
-		for macro in self.macrolist:
-			if len(command)<=len(macro) and command == macro[0:len(macro)]:
-				if self.macrolist[macro]:
-					exp = self.apply(self.macrolist[macro], args, source)
+		try:
+			for macro in self.macrolist[source[1]]:
+				if len(command)<=len(macro) and command == macro[0:len(macro)]:
+					if self.macrolist[source[1]][macro]:
+						exp = self.apply(self.macrolist[source[1]][macro], args, source)
+						return exp
+					else:
+						pass
+				else:
+					pass
+			for macro in self.gmacrolist:
+				if len(command)<=len(macro) and command == macro[0:len(macro)]:
+					if self.gmacrolist[macro]:
+						exp = self.apply(self.gmacrolist[macro], args, source)	
+						return exp
+					else:
+						pass
+				else:
+					pass
+		except:
+			return cmd
 		if not exp:
 			return cmd
 		rexp = self.expand(exp, source)
 		return rexp
+		
+	def comexp(self, cmd, source, key=0):
+		if type(cmd) is None:
+			return ''
+		cl=self.parse_cmd(cmd)
+		if (len(cl)<1):
+			return cmd
+		command=cl[0].split(' ')[0]
+		args=cl[1:]
+		exp = ''
+		for macro in self.macrolist[source[1]]:
+			if len(command)<=len(macro) and command == macro[0:len(macro)]:
+				if self.macrolist[source[1]][macro]:
+					exp = self.apply(self.macrolist[source[1]][macro], args, source)
+					return exp
+				else:
+					pass
+			else:
+				pass
+		if key:
+			for macro in self.gmacrolist:
+				if len(command)<=len(macro) and command == macro[0:len(macro)]:
+					if self.gmacrolist[macro]:
+						exp = self.apply(self.gmacrolist[macro], args, source)	
+						return exp
+					else:
+						pass
+				else:
+					pass
+		else:
+			return ''
+		if not exp:
+			return ''
+		rexp = self.expand(exp, source, key=None)
+		return rexp
+		
 	def apply(self, macro, args, source):
 		expanded = macro
 		m=self.macrocmds.parse_cmd(macro)
@@ -192,9 +298,21 @@ class Macros:
 				return expanded
 			expanded = expanded.replace(j, args[index])
 		return expanded
-	def get_access(self, macro):
-		if self.accesslist.has_key(macro):
-			return self.accesslist[macro]
-		return -1
-	def give_access(self, macro, access):
-		self.accesslist[macro] = access
+		
+	def get_access(self, macro, gch=None):
+		try:
+			if self.accesslist[gch].has_key(macro):
+				return self.accesslist[macro]
+			elif self.gaccesslist.has_key(macro):
+				return self.gaccesslist[macro]
+		except:
+			return -1
+		
+	def give_access(self, macro, access, gch=None):
+		if gch:
+			if not self.accesslist.has_key(gch):
+				self.accesslist[gch]=gch
+				self.accesslist[gch]={}			
+			self.accesslist[gch][macro] = access
+		else:
+			self.gaccesslist[macro] = access

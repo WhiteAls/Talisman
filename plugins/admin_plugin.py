@@ -2,13 +2,6 @@
 # -*- coding: utf-8 -*-
 ####### It is translated and modified by Als #######
 
-from re import match
-
-
-def admin_groupchat_invite_handler(source, groupchat, body):
-	if has_access(get_true_jid(source),COMMANDS[u'зайти']['access'],source[1]):
-		join_groupchat(groupchat, DEFAULT_NICK)
-
 def popups_check(gch):
 	DBPATH='dynamic/'+gch+'/config.cfg'
 	if check_file(gch,'config.cfg'):
@@ -44,6 +37,7 @@ def handler_admin_join(type, source, parameters):
 			join_groupchat(groupchat, nick)
 		else:
 			join_groupchat(groupchat, nick, passw[1])
+			get_commoff(groupchat)
 		reply(type, source, u'я зашёл в -> <' + groupchat + '>')
 		if popups_check(groupchat):
 			if reason:
@@ -197,5 +191,3 @@ register_command_handler(handler_admin_exit, 'пшёл', ['суперадмин'
 register_command_handler(handler_glob_msg, 'globmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
 register_command_handler(handler_glob_msg_help, 'hglobmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
 register_command_handler(handler_popups_startstop, 'popups', ['админ','мук','все'], 30, 'Отключает (0) или включает (1) сообщения о входах/выходах, рестартах/выключениях, а также глобальные новости для определённой конфы. Без параметра покажет текущее состояние.', 'popups [конфа] [1|0]', ['popups chat@conference.jabber.aq 1','popups chat@conference.jabber.aq 0','popups'])
-
-register_groupchat_invite_handler(admin_groupchat_invite_handler)

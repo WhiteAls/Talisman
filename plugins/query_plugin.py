@@ -33,7 +33,7 @@ def handler_query_get_private(type, source, parameters):
 		if len(args)>=2:
 			nick = args[0]
 			body = ' '.join(args[1:])
-			if get_nick(groupchat) != nick:
+			if get_bot_nick(groupchat) != nick:
 				if nick in nicks:
 					tojid = groupchat+'/'+nick	
 		else:
@@ -75,7 +75,11 @@ def handler_query_set(type, source, parameters):
 		localdb = eval(read_file(DBPATH))
 		keyval = string.split(parameters, '=', 1)
 		key = string.lower(keyval[0]).strip()
-		value = keyval[1].strip()
+		try:
+			value = keyval[1].strip()
+		except:
+			reply(type, source, u'try again')
+			return
 		if not value:
 			if localdb.has_key(key):
 				del localdb[key]
