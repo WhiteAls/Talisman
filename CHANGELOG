@@ -1,0 +1,13 @@
+####### Talisman - Jabber bot #######
+####### CHANGELOG file #######
+####### This file was started at 10.09.07@00:20 (GMT +3) #######
+
+first event of this changelog is creating this file :)
+--------------------------------
+from 03.09.07@[unkn] to 10.09.07@23:56
+$$$ Als $$$
+>>> basic work - make macroses not only for global use, but conference separated use. this work looks like done. now macroses may global and local (working only in conference, where it created). also I realized an opportunity to disable any commands in conference (ie not globally). this is "commoff" and "common" commands. bugfixes in this commit too
+--------------------------------
+
+
+Talisman uses parts of code from Neutron - too Jabber bot. In future this parts will be deleted
