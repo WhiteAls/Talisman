@@ -104,26 +104,5 @@ def handler_common(type,source,parameters):
 	reply(type,source,rep)
 	
 	
-def handler_brebred(type,source,parameters):
-	for x in string.split(parameters,'\n'):
-		pl=string.split(x, ' -> ')
-		s = pl[1]
-		for x in ['`']:
-			s = s.replace(x, '\`')
-		pl=pl[0]+' `'+s+'`'
-		pl = MACROS.parse_cmd(pl)
-		MACROS.add(pl[0], pl[1])
-		write_file('dynamic/macros.txt', str(MACROS.gmacrolist))
-	
-	
-	
-	
-	
-
-
-		
 register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 30, 'Отключает определённые команды для текущей конфы, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])
 register_command_handler(handler_common, 'common', ['админ','мук','все'], 30, 'Включает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
-register_command_handler(handler_brebred, 'bredbred', ['админ','мук','все'], 30, 'Вклюает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
-
-				

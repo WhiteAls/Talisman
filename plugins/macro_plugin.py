@@ -36,7 +36,7 @@ def macrodel_handler(type, source, parameters):
 def gmacrodel_handler(type, source, parameters):
 	if parameters:
 		answ=MACROS.remove(parameters)
-		write_file('dynamic/macros.txt', str(MACROS.macrolist))
+		write_file('dynamic/macros.txt', str(MACROS.gmacrolist))
 		rep = u'убил'
 	else:
 		rep = u'мало аргументофф'
