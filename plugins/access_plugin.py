@@ -32,9 +32,14 @@ def handler_access_view_access(type, source, parameters):
 def handler_access_set_access(type, source, parameters):
 	splitdata = string.split(parameters)
 	nicks=GROUPCHATS[source[1]].keys()
-	if not splitdata[0].strip() in nicks:
-		reply(type, source, u'а он тут? :-O')
-		return
+	if len(splitdata) > 4:
+		if not splitdata[0:1].strip() in nicks:
+			reply(type, source, u'а он тут? :-O')
+			return
+	else:
+		if not splitdata[0].strip() in nicks:
+			reply(type, source, u'а он тут? :-O')
+			return
 	tjidto=get_true_jid(source[1]+'/'+splitdata[0].strip())
 	tjidsource=get_true_jid(source)
 	groupchat=source[1]

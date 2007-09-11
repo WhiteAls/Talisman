@@ -19,7 +19,7 @@ def gmacroadd_handler(type, source, parameters):
 		rep = u'мало аргументофф'
 	else:
 		MACROS.add(pl[0], pl[1])
-		write_file('dynamic/macros.txt', str(MACROS.macrolist))
+		write_file('dynamic/macros.txt', str(MACROS.gmacrolist))
 		rep = u'добавил'
 	reply(type, source, rep)
 
@@ -59,32 +59,37 @@ def gmacroexpand_handler(type, source, parameters):
 	reply(type, source, rep)
 
 def macroinfo_handler(type, source, parameters):
+	rep=''
 	if parameters:
-		if MACROS.macrolist[source[1]][parameters]:
-			rep = parameters+' -> '+MACROS.macrolist[source[1]][parameters]
-		else:
+		try:
+			if MACROS.macrolist[source[1]].has_key(parameters):
+				rep = parameters+' -> '+MACROS.macrolist[source[1]][parameters]
+		except:
 			rep = u'нет такого макроса'
 	elif parameters == 'allmac':
-		rep = '\n'.join([x+' -> '+ MACROS.macrolist[source[1]][x] for x in MACROS.macrolist[source[1]]])
+		rep += '\n'.join([x+' -> '+ MACROS.macrolist[source[1]][x] for x in MACROS.macrolist[source[1]]])
 	reply(type, source, rep)
 	
 def gmacroinfo_handler(type, source, parameters):
+	rep=''
 	if parameters:
-		if MACROS.macrolist[source[1]][parameters]:
-			rep = parameters+' -> '+MACROS.macrolist[source[1]][parameters]
-		elif MACROS.gmacrolist[parameters]:
-			rep = parameters+' -> '+MACROS.macrolist[parameters]
-		else:
+		try:
+			if MACROS.macrolist[source[1]].has_key(parameters):
+				rep = parameters+' -> '+MACROS.macrolist[source[1]][parameters]
+			elif MACROS.gmacrolist.has_key(parameters):
+				rep = parameters+' -> '+MACROS.gmacrolist[parameters]
+		except:
 			rep = u'нет такого макроса'
 	elif parameters == 'allmac':
-		rep = '\n'.join([x+' -> '+ MACROS.macrolist[source[1]][x] for x in MACROS.macrolist[source[1]]])
+		rep += '\n'.join([x+' -> '+ MACROS.macrolist[source[1]][x] for x in MACROS.macrolist[source[1]]])
 		rep += '\n'.join([x+' -> '+ MACROS.macrolist[x] for x in MACROS.macrolist])
 	reply(type, source, rep)
 	
 def macrolist_handler(type, source, parameters):
 	rep=u'Cписок макросов:'
 	try:
-		rep += u'\nЛОКАЛЬНЫЕ\n'+', '.join(MACROS.macrolist[source[1]].keys())
+		if MACROS.macrolist[source[1]]:
+			rep += u'\nЛОКАЛЬНЫЕ\n'+', '.join(MACROS.macrolist[source[1]].keys())
 	except:
 		rep+=u'\nнет локальных макросов'
 	rep += u'\nГЛОБАЛЬНЫЕ\n'+', '.join(MACROS.gmacrolist.keys())

@@ -2,12 +2,22 @@
 ####### CHANGELOG file #######
 ####### This file was started at 10.09.07@00:20 (GMT +3) #######
 
-first event of this changelog is creating this file :)
+first event of this changelog is creating this file :) all time in GMT +3
 --------------------------------
 from 03.09.07@[unkn] to 10.09.07@23:56
 $$$ Als $$$
 >>> basic work - make macroses not only for global use, but conference separated use. this work looks like done. now macroses may global and local (working only in conference, where it created). also I realized an opportunity to disable any commands in conference (ie not globally). this is "commoff" and "common" commands. bugfixes in this commit too
 --------------------------------
+from 10.09.07@23:56 to 11.09.07@11:10
+$$$ Als $$$
+>>> pybot.py - fixed critical error, from which folders was not created dynamically (10.09.07@13:45)
+>>> macros_plugin.py - critical syntax errors was fixed (10.09.07@13:52)
+>>> commoff_plugin.py - critical syntax errors was fixed (10.09.07@18:27)
+>>> pybot.py - fixed critical error, from which getting access of global macroses was incorrect (10.09.07@20:01)
+>>> macros.py - fixed critical error, from which file macros.txt was purging (10.09.07@23:25)
+>>> macros.txt - list of most often used macroses is added (11.09.07@11:03)
+--------------------------------
 
 
+--------------------------------
 Talisman uses parts of code from Neutron - too Jabber bot. In future this parts will be deleted

@@ -116,6 +116,7 @@ def write_file(filename, data):
 	fp.close()
 	
 def check_file(gch,file):
+	path,pathf='',''
 	if gch:
 		pathf='dynamic/'+gch+'/'+file
 		path='dynamic/'+gch
@@ -128,7 +129,7 @@ def check_file(gch,file):
 		try:
 			if not os.path.exists(path):
 				os.mkdir(path)
-			if os.access(path, os.F_OK):
+			if os.access(pathf, os.F_OK):
 				fp = file(pathf, 'w')
 			else:
 				fp = open(pathf, 'w')
@@ -233,7 +234,7 @@ def call_nick_change_handlers(groupchat, nick, newnick):
 		thread.start_new(handler, (groupchat, nick, newnick))		
 	
 def call_command_handlers(command, type, source, parameters, callee):
-	real_access = MACROS.get_access(callee)
+	real_access = MACROS.get_access(callee, source[1])
 	if real_access < 0:
 		real_access = COMMANDS[command]['access']
 	if COMMAND_HANDLERS.has_key(command):
@@ -732,7 +733,7 @@ def start():
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
 
 	get_access_levels()
-	load_plugins()
+#	load_plugins()
 	get_commoff()
 
 	con=JCON.connect()
@@ -774,7 +775,7 @@ def start():
 		join_groupchat(groupchat)
 #		time.sleep(0.5)
 		
-#	load_plugins()
+	load_plugins()
 
 	print '\nOk, i\'m ready to work :)'
 

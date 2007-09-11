@@ -161,7 +161,7 @@ class Macros:
 		for x in self.accesslist.keys():
 			write_file('dynamic/'+x+'/macroaccess.txt', str(self.accesslist[x]))
 		
-	def add(self, mapee, map, gch=None):
+	def add(self, mapee, map, gch=''):
 		if gch:
 			if not self.macrolist.has_key(gch):
 				self.macrolist[gch]=gch
@@ -170,7 +170,7 @@ class Macros:
 		else:
 			self.gmacrolist[mapee]=map
 		
-	def remove(self, mapee, gch):
+	def remove(self, mapee, gch=None):
 		if gch:
 			if self.macrolist[gch].has_key(mapee):
 				del self.macrolist[gch][mapee]
@@ -227,17 +227,19 @@ class Macros:
 						pass
 				else:
 					pass
-			for macro in self.gmacrolist:
-				if len(command)<=len(macro) and command == macro[0:len(macro)]:
-					if self.gmacrolist[macro]:
-						exp = self.apply(self.gmacrolist[macro], args, source)	
-						return exp
+		except:
+			try:
+				for macro in self.gmacrolist:
+					if len(command)<=len(macro) and command == macro[0:len(macro)]:
+						if self.gmacrolist[macro]:
+							exp = self.apply(self.gmacrolist[macro], args, source)	
+							return exp
+						else:
+							pass
 					else:
 						pass
-				else:
-					pass
-		except:
-			return cmd
+			except:
+				pass
 		if not exp:
 			return cmd
 		rexp = self.expand(exp, source)
@@ -252,30 +254,33 @@ class Macros:
 		command=cl[0].split(' ')[0]
 		args=cl[1:]
 		exp = ''
-		for macro in self.macrolist[source[1]]:
-			if len(command)<=len(macro) and command == macro[0:len(macro)]:
-				if self.macrolist[source[1]][macro]:
-					exp = self.apply(self.macrolist[source[1]][macro], args, source)
-					return exp
-				else:
-					pass
-			else:
-				pass
-		if key:
-			for macro in self.gmacrolist:
+		try:
+			for macro in self.macrolist[source[1]]:
 				if len(command)<=len(macro) and command == macro[0:len(macro)]:
-					if self.gmacrolist[macro]:
-						exp = self.apply(self.gmacrolist[macro], args, source)	
+					if self.macrolist[source[1]][macro]:
+						exp = self.apply(self.macrolist[source[1]][macro], args, source)
 						return exp
 					else:
 						pass
 				else:
 					pass
-		else:
-			return ''
+		except:
+			try:
+				if key:
+					for macro in self.gmacrolist:
+						if len(command)<=len(macro) and command == macro[0:len(macro)]:
+							if self.gmacrolist[macro]:
+								exp = self.apply(self.gmacrolist[macro], args, source)	
+								return exp
+							else:
+								pass
+						else:
+							pass
+			except:
+				pass
 		if not exp:
-			return ''
-		rexp = self.expand(exp, source, key=None)
+			return cmd
+		rexp = self.expand(exp, source)
 		return rexp
 		
 	def apply(self, macro, args, source):
@@ -303,7 +308,10 @@ class Macros:
 		try:
 			if self.accesslist[gch].has_key(macro):
 				return self.accesslist[macro]
-			elif self.gaccesslist.has_key(macro):
+		except:
+			pass
+		try:
+			if self.gaccesslist.has_key(macro):
 				return self.gaccesslist[macro]
 		except:
 			return -1

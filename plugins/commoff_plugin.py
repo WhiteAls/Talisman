@@ -16,7 +16,6 @@ def handler_commoff(type,source,parameters):
 	else:
 		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 		return
-	print unicode(commoff)
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:
@@ -43,13 +42,12 @@ def handler_commoff(type,source,parameters):
 			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
 		if npcomm:
 			rep+=u'\nследующие команды отключать вообще нельзя:\n'+npcomm
-		print unicode(commoff)
 		write_file(DBPATH, str(commoff))
 		get_commoff(source[1])
 	else:
 		for x in commoff:
 			vcnt+=1
-			valcomm+=str(vcnt)+u' '+y+u'\n'
+			valcomm+=str(vcnt)+u' '+x+u'\n'
 		if valcomm:
 			rep=u'в этой конфе отключены следующие команды:\n'+valcomm
 		else:
@@ -72,7 +70,6 @@ def handler_common(type,source,parameters):
 	else:
 		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 		return
-	print unicode(commoff)
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:
@@ -99,17 +96,34 @@ def handler_common(type,source,parameters):
 			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
 		if npcomm:
 			rep+=u'\nследующие команды не отключаются вообще:\n'+npcomm
-		print unicode(commoff)
 		write_file(DBPATH, str(commoff))
 		get_commoff(source[1])
 	else:
 		rep=u'ииии?'
 		
 	reply(type,source,rep)
+	
+	
+def handler_brebred(type,source,parameters):
+	for x in string.split(parameters,'\n'):
+		pl=string.split(x, ' -> ')
+		s = pl[1]
+		for x in ['`']:
+			s = s.replace(x, '\`')
+		pl=pl[0]+' `'+s+'`'
+		pl = MACROS.parse_cmd(pl)
+		MACROS.add(pl[0], pl[1])
+		write_file('dynamic/macros.txt', str(MACROS.gmacrolist))
+	
+	
+	
+	
+	
 
 
 		
 register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 30, 'Отключает определённые команды для текущей конфы, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])
-register_command_handler(handler_common, 'common', ['админ','мук','все'], 30, 'Вклюает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
+register_command_handler(handler_common, 'common', ['админ','мук','все'], 30, 'Включает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
+register_command_handler(handler_brebred, 'bredbred', ['админ','мук','все'], 30, 'Вклюает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
 
 				
