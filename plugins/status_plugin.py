@@ -1,6 +1,20 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### all by Als #######
+
+#  Talisman plugin
+#  seen_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploit.in>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 def handler_status(type, source, parameters):
 	if parameters:

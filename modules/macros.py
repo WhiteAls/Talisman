@@ -1,5 +1,23 @@
-#!/usr/bin/python
-####### by dimichxp. mod Als #######
+﻿#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+#  Talisman module
+#  macros.py
+
+#  Initial Copyright © 2007 dimichxp <dimichxp@gmail.com>
+#  Modifications Copyright © 2007 Als <Als@exploit.in>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+
 import random,string,re,os
 
 def shell_esc(s):
@@ -207,7 +225,7 @@ class Macros:
 				args[m[i]-1]+=me[i]
 			i+=1
 		return args
-
+	
 	def expand(self, cmd, source):
 		if type(cmd) is None:
 			return ''
@@ -222,30 +240,19 @@ class Macros:
 				if len(command)<=len(macro) and command == macro[0:len(macro)]:
 					if self.macrolist[source[1]][macro]:
 						exp = self.apply(self.macrolist[source[1]][macro], args, source)
-						return exp
-					else:
-						pass
-				else:
-					pass
-		except:
-			try:
+			if not exp:
 				for macro in self.gmacrolist:
 					if len(command)<=len(macro) and command == macro[0:len(macro)]:
 						if self.gmacrolist[macro]:
-							exp = self.apply(self.gmacrolist[macro], args, source)	
-							return exp
-						else:
-							pass
-					else:
-						pass
-			except:
-				pass
+							exp = self.apply(self.gmacrolist[macro], args, source)
+		except:
+			pass
 		if not exp:
 			return cmd
 		rexp = self.expand(exp, source)
 		return rexp
 		
-	def comexp(self, cmd, source, key=0):
+	def comexp(self, cmd, source, key=''):
 		if type(cmd) is None:
 			return ''
 		cl=self.parse_cmd(cmd)
@@ -259,28 +266,16 @@ class Macros:
 				if len(command)<=len(macro) and command == macro[0:len(macro)]:
 					if self.macrolist[source[1]][macro]:
 						exp = self.apply(self.macrolist[source[1]][macro], args, source)
-						return exp
-					else:
-						pass
-				else:
-					pass
+			if not exp:
+				for macro in self.gmacrolist:
+					if len(command)<=len(macro) and command == macro[0:len(macro)]:
+						if self.gmacrolist[macro]:
+							exp = self.apply(self.gmacrolist[macro], args, source)
 		except:
-			try:
-				if key:
-					for macro in self.gmacrolist:
-						if len(command)<=len(macro) and command == macro[0:len(macro)]:
-							if self.gmacrolist[macro]:
-								exp = self.apply(self.gmacrolist[macro], args, source)	
-								return exp
-							else:
-								pass
-						else:
-							pass
-			except:
-				pass
+			pass
 		if not exp:
 			return cmd
-		rexp = self.expand(exp, source)
+		rexp = self.comexp(exp, source, key)
 		return rexp
 		
 	def apply(self, macro, args, source):
@@ -304,7 +299,7 @@ class Macros:
 			expanded = expanded.replace(j, args[index])
 		return expanded
 		
-	def get_access(self, macro, gch=None):
+	def get_access(self, macro, gch):
 		try:
 			if self.accesslist[gch].has_key(macro):
 				return self.accesslist[macro]
@@ -323,4 +318,6 @@ class Macros:
 				self.accesslist[gch]={}			
 			self.accesslist[gch][macro] = access
 		else:
-			self.gaccesslist[macro] = access
+			if not self.gaccesslist.has_key(macro):
+				self.gaccesslist[macro]=macro
+			self.gaccesslist[macro]=access

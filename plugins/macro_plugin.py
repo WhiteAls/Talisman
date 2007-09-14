@@ -1,6 +1,22 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
 
+#  Talisman plugin
+#  macro_plugin.py
+
+#  Initial Copyright © 2007 dimichxp <dimichxp@gmail.com>
+#  Modifications Copyright © 2007 Als <Als@exploit.in>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
 
 def macroadd_handler(type, source, parameters):
 	pl = MACROS.parse_cmd(parameters)
@@ -68,6 +84,8 @@ def macroinfo_handler(type, source, parameters):
 			rep = u'нет такого макроса'
 	elif parameters == 'allmac':
 		rep += '\n'.join([x+' -> '+ MACROS.macrolist[source[1]][x] for x in MACROS.macrolist[source[1]]])
+	if not rep:
+		rep=u'мало прав'
 	reply(type, source, rep)
 	
 def gmacroinfo_handler(type, source, parameters):
@@ -120,7 +138,7 @@ def gmacroaccess_handler(type, source, parameters):
 			MACROS.give_access(macro,access)
 			reply(type,source,u'дал')
 			time.sleep(1)
-			write_file('dynamic/macroaccess.txt', str(MACROS.accesslist))
+			write_file('dynamic/macroaccess.txt', str(MACROS.gaccesslist))
 		else:
 			reply(type,source,u'что за бред?')
 
@@ -140,4 +158,4 @@ register_command_handler(gmacroinfo_handler, 'gmacroinfo', ['суперадми�
 register_command_handler(macrolist_handler, 'macrolist', ['хелп','макро','инфо','все'], 10, 'Список макро.', 'macrolist', ['macrolist'])
 
 register_command_handler(macroaccess_handler, 'macroaccess', ['админ','макро','все'], 20, 'Изменить доступ к определённому макро.', 'macroaccess [макро] [доступ]', ['macroaccess глюк 10'])
-register_command_handler(macroaccess_handler, 'gmacroaccess', ['суперадмин','макро','все'], 100, 'Изменить доступ к определённому макро (любому).', 'gmacroaccess [макро] [доступ]', ['macroaccess админ 20'])
+register_command_handler(gmacroaccess_handler, 'gmacroaccess', ['суперадмин','макро','все'], 100, 'Изменить доступ к определённому макро (любому).', 'gmacroaccess [макро] [доступ]', ['macroaccess админ 20'])

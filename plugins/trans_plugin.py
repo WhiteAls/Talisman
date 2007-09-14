@@ -1,10 +1,26 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### all by Als #######
+
+#  Talisman plugin
+#  trans_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploit.in>
+#  Parts of code Copyright © Krishna Pattabiraman (PyTrans project) <http://code.google.com/p/pytrans/>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 	
 import urllib
 import httplib
 import re
+from string import replace
 
 def google_translate(from_lang, to_lang, text):
 	params = urllib.urlencode({"langpair":"%s|%s" %(from_lang, to_lang), "text":text,"ie":"UTF8", "oe":"UTF8"})
@@ -43,6 +59,7 @@ def handler_google_trans(type,source,parameters):
 		pair=langpairs[stsp[0]]
 		pair=string.split(pair, ' ', 1)
 		answ = google_translate(pair[0],pair[1],stsp[1].encode('utf-8'))
+		answ=answ.replace('&apos;', '\\').replace('&gt;', '>').replace('&lt;', '<').replace('<br>', '\n').replace('&quot;', '"')
 		reply(type,source,unicode(answ))
 	else:
 		reply(type,source,u'что это за язык?')

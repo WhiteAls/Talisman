@@ -1,6 +1,6 @@
 ####### Talisman - Jabber bot #######
 ####### CHANGELOG file #######
-####### This file was started at 10.09.07@00:20 (GMT +3) #######
+####### This file was started at 14.09.07@19:57 (GMT +3) #######
 
 first event of this changelog is creating this file :) all time in GMT +3
 --------------------------------
@@ -17,7 +17,14 @@ $$$ Als $$$
 >>> macros.py - fixed critical error, from which file macros.txt was purging (10.09.07@23:25)
 >>> macros.txt - list of most often used macroses is added (11.09.07@11:03)
 --------------------------------
-
+from 11.09.07@11:10 to 14.09.07@23:01
+$$$ Als $$$
+>>> macros_plugin.py - another critical syntax errors was fixed :) (12.09.07@9:52)
+>>> small changes (12.09.07@[unkn])
+>>> all project - in header all files was added copyright info (13.09.07@[unkn])
+>>> deleted two plugins - temperature_plugin and domain_plugin. IMHO it are not needed. respectively, rwois module deleted too. also deleted pybot shell script, because reading of README and future wizard deleted it :) (14.09.07@[unkn])
+>>> default global macros list and macros access list files was fixed (14.09.07@22:21)
+>>> TODO started ;) (14.09.07@22:30)
 
 --------------------------------
-Talisman uses parts of code from Neutron - too Jabber bot. In future this parts will be deleted
+Talisman uses parts of code from Neutron - Jabber bot too

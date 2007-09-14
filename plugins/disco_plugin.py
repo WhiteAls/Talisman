@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### all by Als. parsing help - dimichxp #######
+
+#  Talisman plugin
+#  disco_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploit.in>
+#  Help Copyright © 2007 dimichxp <dimichxp@gmail.com>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 from re import match
 
@@ -102,4 +117,4 @@ def handler_disco_answ(type,source,trig,stop,disco):
 	reply(type, source, rep[:-1])
 	disco=[]
 			
-register_command_handler(handler_disco, 'диско', ['мук','инфо','все'], 10, 'Показывает результату discovery для указанного сервера. Об ограничениях - "диско ограничния".', 'диско <сервер> <кол-во результатов>', ['диско jabber.aq','диско conference.jabber.aq 5'])
+register_command_handler(handler_disco, 'диско', ['мук','инфо','все'], 10, 'Показывает результату discovery для указанного жида. Об ограничениях - "диско ограничния".', 'диско <сервер> <кол-во результатов>', ['диско jabber.aq','диско conference.jabber.aq 5'])

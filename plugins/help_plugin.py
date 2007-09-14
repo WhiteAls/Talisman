@@ -1,6 +1,22 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### all by Als and dimichxp #######
+
+#  Talisman plugin
+#  help_plugin.py
+
+#  Initial Copyright © 2002-2005 Mike Mintz <mikemintz@gmail.com>
+#  Modifications Copyright © 2007 Als <Als@exploit.in>
+#  Help Copyright © 2007 dimichxp <dimichxp@gmail.com>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 def handler_help_help(type, source, parameters):
 	ctglist = []
@@ -12,15 +28,17 @@ def handler_help_help(type, source, parameters):
 		for example in COMMANDS[parameters]['examples']:
 			rep += u'\n  >>  ' + example.decode("utf-8")
 		rep += u'\nНеобходимый уровень доступа: ' + str(COMMANDS[parameters.strip()]['access'])
+		if parameters.strip() in COMMOFF:
+			rep += u'\nЭта команда отключена в этой конференции!!!'
 	else:
 		rep = u'напиши слово "команды" (без кавычек), чтобы получить список команд, "помощь <команда>" для получения помощи по команде, macrolist для получения списка макросов, а также macroacc <макрос> для получения уровня доступа к определёному макросу\np.s. уровень доступа смотрите в привате'
 	reply(type, source, rep)
 
-def handler_help_COMMANDS(type, source, parameters):
+def handler_help_commands(type, source, parameters):
 	date=time.strftime('%d %b %Y (%a)', time.gmtime()).decode('utf-8')
 	groupchat=source[1]
 	if parameters:
-		rep = ''
+		rep,off = '',''
 		total = 0
 		param=parameters.encode("utf-8")
 		catcom=set([((param in COMMANDS[x]['category']) and x) or None for x in COMMANDS]) - set([None])
@@ -29,14 +47,16 @@ def handler_help_COMMANDS(type, source, parameters):
 			return
 		for cat in catcom:
 			if has_access(source, COMMANDS[cat]['access'],groupchat):
+				if cat in COMMOFF:
+					off += cat+' '
 				rep += cat+' '
 				total = total + 1
 		if rep:
 			if type == 'public':
 				reply(type,source,u'ушли')
-			reply('private', source, u'Список команд в категории <'+parameters+u'> на '+date+u':\n\n' + rep+u' ('+str(total)+u' штук)')
+			reply('private', source, u'Список команд в категории <'+parameters+u'> на '+date+u':\n\n' + rep+u' ('+str(total)+u' штук)'+u'\n\nСледующие команды отключены в этой конференции:\n\n'+off)
 		else:
-			reply(type,source,u'плохая шутка ]:->')
+			reply(type,source,u'размечтался ]:->')
 	else:
 		cats = set()
 		for x in [COMMANDS[x]['category'] for x in COMMANDS]:
@@ -48,4 +68,4 @@ def handler_help_COMMANDS(type, source, parameters):
 
 
 register_command_handler(handler_help_help, 'помощь', ['хелп','инфо','все'], 0, 'Даёт основную справку или посылает информацию об определённой команде.', 'помощь [команда]', ['помощь', 'помощь пинг'])
-register_command_handler(handler_help_COMMANDS, 'команды', ['хелп','инфо','все'], 0, 'Показывает список всех категорий команд. При запросе категории показывает список команд находящихся в ней.', 'команды [категория]', ['команды','команды все'])
+register_command_handler(handler_help_commands, 'команды', ['хелп','инфо','все'], 0, 'Показывает список всех категорий команд. При запросе категории показывает список команд находящихся в ней.', 'команды [категория]', ['команды','команды все'])

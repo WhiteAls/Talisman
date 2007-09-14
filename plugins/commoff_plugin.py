@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### all by Als #######
+
+#  Talisman plugin
+#  commoff_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploit.in>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
 
 def handler_commoff(type,source,parameters):
 	na=[u'доступ',u'дать_доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'помощь',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'дать_доступ',u'commoff',u'common']
@@ -19,7 +34,7 @@ def handler_commoff(type,source,parameters):
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:
-			if COMMANDS.has_key(y) or y=='*****' or y in MACROS.macrolist[source[1]] or y in MACROS.gmacrolist:
+			if COMMANDS.has_key(y) or y in MACROS.macrolist[source[1]] or y in MACROS.gmacrolist:
 				if not y in na:
 					if not y in commoff['commoff']:
 						commoff['commoff'].append(y)
@@ -73,7 +88,7 @@ def handler_common(type,source,parameters):
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:
-			if COMMANDS.has_key(y) or y=='*****' or y in MACROS.macrolist[source[1]] or y in MACROS.gmacrolist:
+			if COMMANDS.has_key(y) or y in MACROS.macrolist[source[1]] or y in MACROS.gmacrolist:
 				if not y in na:
 					if y in commoff['commoff']:
 						commoff['commoff'].remove(y)
@@ -104,5 +119,5 @@ def handler_common(type,source,parameters):
 	reply(type,source,rep)
 	
 	
-register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 30, 'Отключает определённые команды для текущей конфы, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])
-register_command_handler(handler_common, 'common', ['админ','мук','все'], 30, 'Включает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
+register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 20, 'Отключает определённые команды для текущей конфы, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])
+register_command_handler(handler_common, 'common', ['админ','мук','все'], 20, 'Включает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])

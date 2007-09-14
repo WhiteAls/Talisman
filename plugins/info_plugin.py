@@ -1,7 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### by Als #######
 
+#  Talisman plugin
+#  info_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploru.net>
+#  Parts of code Copyright © Bohdan Turkynewych aka Gh0st <tb0hdan[at]gmail.com>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 def handler_getrealjid(type, source, parameters):
 	groupchat=source[1]
@@ -36,7 +50,7 @@ def handler_total_in_muc(type, source, parameters):
 		
 def handler_bot_uptime(type, source, parameters):
 	if BOOTUP_TIMESTAMP:
-		idletime = int(time.time() - BOOTUP_TIMESTAMP)
+		idletime = int(time.time() - BOOT)
 		rep = 'я работаю без падений уже '
 		seconds = idletime % 60
 		minutes = (idletime / 60) % 60

@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### It is translated by Als #######
+
+#  Talisman plugin
+#  weather_plugin.py
+
+#  Initial Copyright © 2002-2005 Mike Mintz <mikemintz@gmail.com>
+#  Modifications Copyright © 2007 Als <Als@exploru.net>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 import pymetar
 
@@ -41,5 +56,5 @@ def handler_weather_weathercode(type, source, parameters):
 	else:
 		reply(type, source, u'хз')
 
-register_command_handler(handler_weather_weather, 'погода', ['инфо','все'], 10, 'Смотрит погоду из NOAA', 'погодп <4буквенный_код_города>', ['погода ukhh'])
+register_command_handler(handler_weather_weather, 'погода', ['инфо','все'], 10, 'Смотрит погоду из NOAA', 'погода <4буквенный_код_города>', ['погода ukhh'])
 register_command_handler(handler_weather_weathercode, 'код', ['инфо','все'], 10, 'Показывает код города для просмотра погоды', 'код <город>', ['код orel'])

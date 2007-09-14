@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### parts of code by elghinn, all the rest by Als #######
+
+#  Talisman plugin
+#  log_plugin.py
+
+#  Initial Copyright © Anaлl Verrier <elghinn@free.fr> 
+#  Modifications Copyright © 2007 Als <Als@exploit.in>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 import re, os, math, time
 
@@ -31,7 +46,7 @@ def log_write_header(fp, source, (year, month, day, hour, minute, second, weekda
 #mark { color: #aaa; text-align: right; font-family: monospace; letter-spacing: 3px }
 h1 { color: #369; font-family: sans-serif; border-bottom: #246 solid 3pt; letter-spacing: 3px; margin-left: 20pt; }
 h2 { color: #639; font-family: sans-serif; letter-spacing: 2px; text-align: center }
-//-->
+#//-->
 </style>
 </head>
 <body>

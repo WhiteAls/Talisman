@@ -1,6 +1,24 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#  Talisman core
+#  pybot.py
+
+#  Initial Copyright © 2002-2005 Mike Mintz <mikemintz@gmail.com>
+#  Modifications Copyright © 2007 Als <Als@admin.ru.net>
+#  Modifications Copyright © 2007 dimichxp <dimichxp@ezxdev.org>
+#  Parts of code Copyright © Boris Kotov <admin@avoozl.ru> 
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
 import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
@@ -52,7 +70,7 @@ INITSCRIPT_FILE = GENERAL_CONFIG['INITSCRIPT_FILE']
 ROLES={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 	
-BOOTUP_TIMESTAMP = time.time()
+BOOT = time.time()
 ################################################################################
 
 COMMANDS = {}
@@ -201,37 +219,37 @@ def register_command_handler(instance, command, category=[], access=0, desc='', 
 
 def call_message_handlers(type, source, body):
 	for handler in MESSAGE_HANDLERS:
-		thread.start_new(handler, (type, source, body))
+		thread.start_new_thread(handler, (type, source, body))
 def call_outgoing_message_handlers(target, body):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
-		thread.start_new(handler, (target, body))
+		thread.start_new_thread(handler, (target, body))
 def call_join_handlers(groupchat, nick):
 	for handler in JOIN_HANDLERS:
-		thread.start_new(handler, (groupchat, nick))
+		thread.start_new_thread(handler, (groupchat, nick))
 def call_leave_handlers(groupchat, nick, reason):
 	for handler in LEAVE_HANDLERS:
-		thread.start_new(handler, (groupchat, nick))
+		thread.start_new_thread(handler, (groupchat, nick))
 def call_iq_handlers(iq):
 	for handler in IQ_HANDLERS:
-		thread.start_new(handler, (iq,))
+		thread.start_new_thread(handler, (iq,))
 def call_presence_handlers(prs):
 	for handler in PRESENCE_HANDLERS:
-		thread.start_new(handler, (prs,))
+		thread.start_new_thread(handler, (prs,))
 def call_kick_handlers(groupchat, nick, reason):
 	for handler in KICK_HANDLERS:
-		thread.start_new(handler, (groupchat, nick, reason))
+		thread.start_new_thread(handler, (groupchat, nick, reason))
 def call_ban_handlers(groupchat, nick, reason):
 	for handler in BAN_HANDLERS:
-		thread.start_new(handler, (groupchat, nick, reason))
+		thread.start_new_thread(handler, (groupchat, nick, reason))
 def call_status_change_handlers(groupchat, nick, status, stmsg):
 	for handler in STATUS_CHANGE_HANDLERS:
-		thread.start_new(handler, (groupchat, nick, status, stmsg))	
+		thread.start_new_thread(handler, (groupchat, nick, status, stmsg))	
 def call_ra_handlers(groupchat, nick, aff, role, reason):
 	for handler in RA_HANDLERS:
-		thread.start_new(handler, (groupchat, nick, aff, role, reason))	
+		thread.start_new_thread(handler, (groupchat, nick, aff, role, reason))	
 def call_nick_change_handlers(groupchat, nick, newnick):
 	for handler in NICK_CHANGE_HANDLERS:
-		thread.start_new(handler, (groupchat, nick, newnick))		
+		thread.start_new_thread(handler, (groupchat, nick, newnick))		
 	
 def call_command_handlers(command, type, source, parameters, callee):
 	real_access = MACROS.get_access(callee, source[1])
@@ -239,7 +257,7 @@ def call_command_handlers(command, type, source, parameters, callee):
 		real_access = COMMANDS[command]['access']
 	if COMMAND_HANDLERS.has_key(command):
 		if has_access(source, real_access, source[1]):
-			thread.start_new(COMMAND_HANDLERS[command], (type, source, parameters))
+			thread.start_new_thread(COMMAND_HANDLERS[command], (type, source, parameters))
 		else:
 			reply(type, source, 'ага, щаззз')
 
@@ -303,9 +321,9 @@ def get_commoff(gch=None):
 								COMMOFF[x]=x
 								COMMOFF[x]=[]
 						except:
-							return
+							pass
 			except:
-				return
+				pass
 	else:
 		cfgfile='dynamic/'+gch+'/config.cfg'
 		try:
@@ -318,7 +336,7 @@ def get_commoff(gch=None):
 				COMMOFF[gch]=gch
 				COMMOFF[gch]=[]
 		except:
-			return		
+			pass		
 
 ################################################################################
 
@@ -549,8 +567,6 @@ def messageCB(con, msg):
 	command = ''
 	parameters = ''
 	mynick = get_bot_nick(fromjid.getStripped())
-
-############ setting up "call_command_handlers" ############
 	if cbody and string.split(cbody):
 		if mynick and cbody[0:len(mynick)+1] == mynick+':':
 			nbody=cbody[len(mynick)+1:].strip().split();
@@ -563,23 +579,17 @@ def messageCB(con, msg):
 				parameters = cbody[(cbody.find(' ') + 1):]
 	if not msg.timestamp:
 		if msgtype == 'groupchat':
-				call_message_handlers('public', [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
-				if command in COMMANDS:
-					try:
-						if command in COMMOFF[fromjid.getStripped()] or '*****' in COMMOFF[fromjid.getStripped()]:
-							return
-					except:
-						pass
-					call_command_handlers(command, 'public', [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
+			mtype='public'
 		else:
-			call_message_handlers('private', [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
-			if command in COMMANDS:
-				try:
-					if command in COMMOFF[fromjid.getStripped()] or '*****' in COMMOFF[fromjid.getStripped()]:
-						return
-				except:
-					pass
-				call_command_handlers(command, 'private', [fromjid, fromjid.getStripped(), fromjid.getResource()], parameters, rcmd)
+			mtype='private'
+		call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
+		if command in COMMANDS:
+			try:
+				if command in COMMOFF[fromjid.getStripped()]:
+					return
+			except:
+				pass
+			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 
 def presenceCB(con, prs):
 	call_presence_handlers(prs)
@@ -587,10 +597,8 @@ def presenceCB(con, prs):
 	groupchat = prs.getFrom().getStripped()
 	nick = prs.getFrom().getResource()
 	item = findPresenceItem(prs)
-	
+
 	if groupchat in GROUPCHATS:
-		
-############ setting up "call_status_change_handlers" ############
 		try:
 			stmsg = prs.getStatus()
 		except:
@@ -600,38 +608,23 @@ def presenceCB(con, prs):
 		except:
 			status = 'online'
 		call_status_change_handlers(groupchat, nick, status, stmsg)
-
-############ setting up "call_ra_handlers" ############
 		try:
 			aff=prs.getAffiliation()
 			role=prs.getRole()
 			reason=prs.getReason()
-		except:
-			pass
-		try:
-			if GROUPCHATS[groupchat].has_key(nick):
-				GROUPCHATS[groupchat][nick]['role']=role
-			if GROUPCHATS[groupchat].has_key(nick):
-				GROUPCHATS[groupchat][nick]['affiliation']=aff
 			call_ra_handlers(groupchat, nick, aff, role, reason)
 		except:
 			pass
-
-############ setting up "call_join_handlers" ############		
 		if ptype == 'available' or ptype == None:
 			if not GROUPCHATS[groupchat].has_key(nick):
 				if item == None:
-					jid = groupchat+'/'+nick
+					msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
+					leave_groupchat(groupchat)
 				else:
 					jid = item['jid']
 					if jid != None:
 						call_join_handlers(groupchat, nick)
-
-############ record some userinfo ############
 				GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time()}
-					
-############ set access for jid ############
-				jid=get_true_jid(groupchat+'/'+nick)
 				try:
 					if GLOBACCESS.has_key(jid):
 						return
@@ -641,23 +634,21 @@ def presenceCB(con, prs):
 						pass
 				else:
 					if GROUPCHATS[groupchat].has_key(nick):
-						if jid != None:
-							role = item['role']
-	 						aff = item['affiliation']
-	 						if ROLES.has_key(role):
-	 							accr = ROLES[role]
-							else:
- 								accr = 0
- 							if AFFILIATIONS.has_key(aff):
- 								acca = AFFILIATIONS[aff]
- 							else:
- 								acca = 0
- 							access = int(accr)+int(acca)
- 							change_access_temp(groupchat, jid, access)
-
-############ handle "unavailable" status ############							
+						role = item['role']
+						aff = item['affiliation']
+						if ROLES.has_key(role):
+ 							accr = ROLES[role]
+						else:
+							accr = 0
+						if AFFILIATIONS.has_key(aff):
+							acca = AFFILIATIONS[aff]
+						else:
+							acca = 0
+						access = int(accr)+int(acca)
+						change_access_temp(groupchat, jid, access)
 		elif ptype == 'unavailable':
 			if GROUPCHATS[groupchat].has_key(nick):
+				del GROUPCHATS[groupchat][nick]
 				try:
 					code = prs.getStatusCode()
 				except:
@@ -667,19 +658,10 @@ def presenceCB(con, prs):
 				except:
 					reason = None										
 				call_leave_handlers(groupchat, nick, reason)
-				del GROUPCHATS[groupchat][nick]
 				if code:	
 					if code == '307':
-						try:
-							reason = prs.getReason
-						except:
-							reason = None									
 						call_kick_handlers(groupchat, nick, reason)	
 					if code == '301':
-						try:
-							reason = prs.getReason
-						except:
-							reason = None		
 						call_ban_handlers(groupchat, nick, reason)	
 					if code == '303':	
 						try:
@@ -687,8 +669,6 @@ def presenceCB(con, prs):
 						except:
 							newnick = None								
 						call_nick_change_handlers(groupchat, nick, newnick)
-
-############ error handlers ############			
 		elif ptype == 'error':
 			try:
 				code = prs.getErrorCode()
@@ -733,7 +713,7 @@ def start():
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
 
 	get_access_levels()
-#	load_plugins()
+	load_plugins()
 	get_commoff()
 
 	con=JCON.connect()
@@ -751,10 +731,10 @@ def start():
 	auth=JCON.auth(USERNAME, PASSWORD, RESOURCE)
 	if not auth:
 		print 'Auth Error. Incorrect login/password?\nError: ', JCON.lastErr, JCON.lastErrCode
-		sys.exit(1)
+		sys.exit(0)
 	else:
 		print 'Logged In'
-	if auth<>'sasl':
+	if auth!='sasl':
 		print 'Warning: unable to perform SASL auth. Old authentication method used!'
 
 
@@ -762,20 +742,19 @@ def start():
 	JCON.RegisterHandler('presence', presenceCB)
 	JCON.RegisterHandler('iq', iqCB)
 	JCON.RegisterDisconnectHandler(dcCB)
-	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
+#	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
-#	JCON.getRoster()
-	JCON.sendInitPresence(requestRoster=0)
+	JCON.getRoster()
+	JCON.sendInitPresence()
 	print 'Entering Rooms'
 
-	initialize_file(GROUPCHAT_CACHE_FILE, '{}')
 	groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 	MACROS.init()
 	for groupchat in groupchats:
 		join_groupchat(groupchat)
-#		time.sleep(0.5)
+		time.sleep(0.1)
 		
-	load_plugins()
+#	load_plugins()
 
 	print '\nOk, i\'m ready to work :)'
 
@@ -787,9 +766,9 @@ if __name__ == "__main__":
 		start()
 	except KeyboardInterrupt:
 		print '\nINTERUPT (Ctrl+C)'
-		for gch in GROUPCHATS.keys():
-			msg(gch,u'я получил Сtrl+C из консоли -> выключаюсь')
-		sys.exit(1)
+#		for gch in GROUPCHATS.keys():
+#			msg(gch,u'я получил Сtrl+C из консоли -> выключаюсь')
+		sys.exit(0)
 	except:
 		if AUTO_RESTART:
 			if sys.exc_info()[0] is not SystemExit:
@@ -797,16 +776,14 @@ if __name__ == "__main__":
 			try:
 				JCON.disconnected()
 			except IOError:
-				# IOError is raised by default DisconnectHandler
 				pass
 			try:
 				time.sleep(3)
 			except KeyboardInterrupt:
 				print '\nINTERUPT (Ctrl+C)'
-				for gch in GROUPCHATS.keys():
-					msg(gch,u'я получил Сtrl+C из консоли -> выключаюсь')
-				sys.exit(1)
-
+#				for gch in GROUPCHATS.keys():
+#					msg(gch,u'я получил Сtrl+C из консоли -> выключаюсь')
+				sys.exit(0)
 			print 'RESTARTING'
 			os.execl(sys.executable, sys.executable, sys.argv[0])
 		else:

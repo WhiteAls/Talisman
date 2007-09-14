@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### by Als with many help of dimichxp #######
+
+#  Talisman plugin
+#  send_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploit.in>
+#  Help Copyright © 2007 dimichxp <dimichxp@gmail.com>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 queue={}
 def handler_psay(ltype, source, parameters):
@@ -14,15 +29,15 @@ def handler_psay(ltype, source, parameters):
 			body = ' '.join(args[1:])
 			if nick == 'Als':
 				reply(ltype, source, u'передам')
-				msg('Als@admin.ru.net', fromnick+body)
+				msg('Als@exploit.in', fromnick+body)
 				return
 			if nick == 'hobbit19':
 				reply(ltype, source, u'передам')
-				msg('hobbit19@ezxdev.org', fromnick+body)
+				msg('hobbit19@gmail.com', fromnick+body)
 				return
 			if nick == 'dimichxp':
 				reply(ltype, source, u'передам')
-				msg('dimichxp@ezxdev.org', fromnick+body)
+				msg('dimichxp@gmail.com', fromnick+body)
 				return
 			if get_bot_nick(groupchat) != nick:
 				tojid = groupchat+'/'+nick

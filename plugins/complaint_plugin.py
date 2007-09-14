@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### by Als. много сенков уходит dimichxp!!! #######
+
+#  Talisman plugin
+#  complaint_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploit.in>
+#  Help Copyright © 2007 dimichxp <dimichxp@gmail.com>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 def handler_complaint(type, source, parameters):
 	if type == 'public':

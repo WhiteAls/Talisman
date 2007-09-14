@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### It is translated and modified by Als #######
+
+#  Talisman plugin
+#  admin_plugin.py
+
+#  Initial Copyright © 2002-2005 Mike Mintz <mikemintz@gmail.com>
+#  Modifications Copyright © 2007 Als <Als@exploit.in>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 def popups_check(gch):
 	DBPATH='dynamic/'+gch+'/config.cfg'
@@ -128,7 +143,7 @@ def handler_admin_restart(type, source, parameters):
 		for x in gch:
 			if popups_check(x):
 				msg(x, u'меня перезагружает '+source[2])
-	JCON.disconnect()
+	JCON.disconnected()
 	os.execv('./neutron.py', sys.argv)
 
 def handler_admin_exit(type, source, parameters):
@@ -148,7 +163,7 @@ def handler_admin_exit(type, source, parameters):
 				msg(x, u'меня выключает '+source[2])
 	global AUTO_RESTART
 	JCON.disconnected()
-	sys.exit(1)
+	sys.exit(0)
 
 
 def handler_popups_startstop(type, source, parameters):

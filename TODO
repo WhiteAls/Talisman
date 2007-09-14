@@ -1,0 +1,14 @@
+####### Talisman - Jabber bot #######
+####### TODO file #######
+####### This file was started at 14.09.07@19:57 (GMT +3) #######
+
+first event of this changelog is creating this file :) all time in GMT +3
+--------------------------------
+$$$ Als $$$
+1.	README!!! must meet with the thoughts...
+1.	transition to use database. obviously it will be SQLite, integrated to Python distribution kit from 2.5 version
+2.	code separation (obviously in core). will be slightly reduce core load
+3.	first start wizard (helper). will be intended help with configure bot
+4.	expansion log_plugin features and some new dynamic control options
+5.	of course, adding new features :)
+6.	something

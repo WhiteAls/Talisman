@@ -1,8 +1,23 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### all by Als #######
 
-import string
+#  Talisman plugin
+#  time_plugin.py
+
+#  Initial Copyright © 2007 Als <Als@exploit.in>
+#  Modifications Copyright © 2007 dimichxp <dimichxp@gmail.com>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+import string,re
 
 time_pending=[]		
 	
@@ -155,53 +170,23 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 				tzo = p.getTagData('tzo')
 				utc = p.getTagData('utc')
 			if tzo and utc:
-# why not to use regular expression to parse timezone instead of such a mess?
-#				if tzo[0]=='-' or tzo[0]=='+':
-#					tzoh=tzo[1:3]
-#					if tzoh[0]=='0':
-#						tzoh=tzoh[1]
-#					if tzo[3:]!='00':
-#						tzom=tzo[4:5]
-#				else:
-#					tzoh=tzo[0:2]
-#					if tzoh[0]=='0':
-#						tzoh=tzoh[1]
-#					if tzo[2:]!='00':
-#						tzom=tzo[4:5]
-#				tzoop=tzo[0]
-#				data=utc[:10]
-#				hours=utc[11:13]
-#				minutes=utc[14:16]
-#				seconds=utc[17:19]
-#				if tzoop=='+' or tzoop=='0':
-#					hours=int(hours)+int(tzoh)	
-#					if tzom:
-#						minutes=int(minutes)+int(tzom)
-#				else:
-#					hours=int(hours)-int(tzoh)
-#					if tzom:
-#						minutes=int(minutes)-int(tzom)
-# TODO: test this :)
 				try:
-					[sign, tzo, tzm] = re.match('(\+|-)?([0-9]+):([0-9]+)', tzo).groups()
-					[date, hours, minutes, seconds] = re.match('(.{10})T([0-9]+):([0-9]+):([0-9]+)').groups()
-					print [sign, tzo, tzm]
-					print [date, hours, minutes, seconds]
+					[sign, tzh, tzm] = re.match('(\+|-)?([0-9]+):([0-9]+)',tzo).groups()
+					[date, hours, minutes, seconds] = re.match('(.{10})T([0-9]+):([0-9]+):([0-9]+)',utc).groups()
 				except:
-					return # failed to parse... nah
-					print 'nah'
-				if (sign == '-'):
-					hours=int(hours)-int(tzoh)
-					minutes=int(minutes)-int(tzom)
+					reply(type,source, u'не парсится :(')
+					return
+				if sign == '-':
+					hours=int(hours)-int(tzh)
+					minutes=int(minutes)-int(tzm)
 				else:
-					hours=int(hours)+int(tzoh)
-					minutes=int(minutes)+int(tzom)
-
-				if hours>=24:
+					hours=int(hours)+int(tzh)
+					minutes=int(minutes)+int(tzm)
+				while hours>=24:
 					hours=int(hours)-24
-				if minutes>=60:
+				while minutes>=60:
 					minutes=int(minutes)-60
-				time=str(hours)+':'+str(minutes)+':'+seconds
+				time=str(hours)+':'+str(minutes)+':'+str(seconds)
 				if nick:
 					reply(type,source, u'у '+nick+u' сейчас '+time+' ('+date+')')
 				else:

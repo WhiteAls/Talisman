@@ -1,6 +1,21 @@
 #===istalismanplugin===
 # -*- coding: utf-8 -*-
-####### It is translated and modified by Als #######
+
+#  Talisman plugin
+#  quotes_plugin.py
+
+#  Initial Copyright © ???
+#  Modifications Copyright © 2007 Als <Als@exploit.in>
+
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 
 import urllib2,re,urllib
 
@@ -45,7 +60,7 @@ def handler_bashorgru_get(type, source, parameters):
 		message = b1+b2
 		message = decode(message)
 		message = '\n' + message.strip()
-		reply(type,source,unicode(message,'windows-1251'))#.decode('utf-8')
+		reply(type,source,unicode(message,'windows-1251'))
 	except:
 		reply(type,source,u'очевидно, они опять сменили разметку')
         
