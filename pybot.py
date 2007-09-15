@@ -133,7 +133,7 @@ def write_file(filename, data):
 	fp.write(data)
 	fp.close()
 	
-def check_file(gch='',file):
+def check_file(gch,file):
 	path,pathf='',''
 	if gch:
 		pathf='dynamic/'+gch+'/'+file
