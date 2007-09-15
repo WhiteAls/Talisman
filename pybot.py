@@ -133,7 +133,7 @@ def write_file(filename, data):
 	fp.write(data)
 	fp.close()
 	
-def check_file(gch,file):
+def check_file(gch='',file):
 	path,pathf='',''
 	if gch:
 		pathf='dynamic/'+gch+'/'+file
@@ -146,7 +146,7 @@ def check_file(gch,file):
 	else:
 		try:
 			if not os.path.exists(path):
-				os.mkdir(path)
+				os.mkdir(path,0755)
 			if os.access(pathf, os.F_OK):
 				fp = file(pathf, 'w')
 			else:
@@ -209,7 +209,7 @@ def register_status_change_handler(instance):
 	STATUS_CHANGE_HANDLERS.append(instance)	
 def register_ra_handler(instance):
 	RA_HANDLERS.append(instance)
-def nick_change_handler(instance):
+def register_nick_change_handler(instance):
 	NICK_CHANGE_HANDLERS.append(instance)
 
 def register_command_handler(instance, command, category=[], access=0, desc='', syntax='', examples=[]):
@@ -228,7 +228,7 @@ def call_join_handlers(groupchat, nick):
 		thread.start_new_thread(handler, (groupchat, nick))
 def call_leave_handlers(groupchat, nick, reason):
 	for handler in LEAVE_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick))
+		thread.start_new_thread(handler, (groupchat, nick, reason))
 def call_iq_handlers(iq):
 	for handler in IQ_HANDLERS:
 		thread.start_new_thread(handler, (iq,))
@@ -599,22 +599,6 @@ def presenceCB(con, prs):
 	item = findPresenceItem(prs)
 
 	if groupchat in GROUPCHATS:
-		try:
-			stmsg = prs.getStatus()
-		except:
-			stmsg=''
-		try:
-			status = prs.getShow()
-		except:
-			status = 'online'
-		call_status_change_handlers(groupchat, nick, status, stmsg)
-		try:
-			aff=prs.getAffiliation()
-			role=prs.getRole()
-			reason=prs.getReason()
-			call_ra_handlers(groupchat, nick, aff, role, reason)
-		except:
-			pass
 		if ptype == 'available' or ptype == None:
 			if not GROUPCHATS[groupchat].has_key(nick):
 				if item == None:
@@ -622,9 +606,12 @@ def presenceCB(con, prs):
 					leave_groupchat(groupchat)
 				else:
 					jid = item['jid']
-					if jid != None:
+					try:
+						if jid != None and jid in GROUPCHATS[groupchat][nick]['jid']:
+							pass
+					except:
 						call_join_handlers(groupchat, nick)
-				GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time()}
+						GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time()}
 				try:
 					if GLOBACCESS.has_key(jid):
 						return
@@ -647,28 +634,35 @@ def presenceCB(con, prs):
 						access = int(accr)+int(acca)
 						change_access_temp(groupchat, jid, access)
 		elif ptype == 'unavailable':
-			if GROUPCHATS[groupchat].has_key(nick):
-				del GROUPCHATS[groupchat][nick]
-				try:
-					code = prs.getStatusCode()
-				except:
-					code = None		
-				try:
-					reason = prs.getReason
-				except:
-					reason = None										
+			jid = item['jid']
+			try:
+				code = prs.getStatusCode()
+			except:
+				code = None
+			try:
+				reason = prs.getReason()
+			except:
+				reason = None
+			if jid != None and jid in GROUPCHATS[groupchat][nick]['jid']:
+				pass
+			else:
+				if GROUPCHATS[groupchat].has_key(nick):
+					del GROUPCHATS[groupchat][nick]							
 				call_leave_handlers(groupchat, nick, reason)
-				if code:	
-					if code == '307':
-						call_kick_handlers(groupchat, nick, reason)	
-					if code == '301':
-						call_ban_handlers(groupchat, nick, reason)	
-					if code == '303':	
-						try:
-							newnick = prs.getNick
-						except:
-							newnick = None								
-						call_nick_change_handlers(groupchat, nick, newnick)
+			if code:	
+				if code == '307':
+					call_kick_handlers(groupchat, nick, reason)	
+				if code == '301':
+					call_ban_handlers(groupchat, nick, reason)	
+				if code == '303':	
+					try:
+						newnick = prs.getNick()
+					except:
+						newnick = None		
+					if GROUPCHATS[groupchat].has_key(nick):
+						del GROUPCHATS[groupchat][nick]
+						GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time()}
+					call_nick_change_handlers(groupchat, nick, newnick)
 		elif ptype == 'error':
 			try:
 				code = prs.getErrorCode()
@@ -676,6 +670,24 @@ def presenceCB(con, prs):
 				code = None
 			if code == '409':
 				join_groupchat(groupchat, nick + '-')
+		try:
+			stmsg = prs.getStatus()
+		except:
+			stmsg=''
+		try:
+			status = prs.getShow()
+		except:
+			status = 'online'
+		if not status:
+			status = 'online'
+		call_status_change_handlers(groupchat, nick, status, stmsg)
+		try:
+			aff=prs.getAffiliation()
+			role=prs.getRole()
+			reason=prs.getReason()
+			call_ra_handlers(groupchat, nick, aff, role, reason)
+		except:
+			pass
 
 def iqCB(con, iq):
 	global JCON

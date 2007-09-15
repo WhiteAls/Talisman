@@ -104,13 +104,23 @@ def gmacroinfo_handler(type, source, parameters):
 	reply(type, source, rep)
 	
 def macrolist_handler(type, source, parameters):
-	rep=u'Cписок макросов:'
+	rep,dsbll,dsblg=u'Cписок макросов:',u'',u''
 	try:
 		if MACROS.macrolist[source[1]]:
 			rep += u'\nЛОКАЛЬНЫЕ\n'+', '.join(MACROS.macrolist[source[1]].keys())
+			for macro in MACROS.macrolist[source[1]].keys():
+				if macro in COMMOFF[source[1]]:
+					dsbll += macro+' '
+			if dsbll:
+				rep+=u'\n\nСледующие локальные макросы отключены в этой конференции:\n'+dsbll
 	except:
 		rep+=u'\nнет локальных макросов'
 	rep += u'\nГЛОБАЛЬНЫЕ\n'+', '.join(MACROS.gmacrolist.keys())
+	for macro in MACROS.gmacrolist.keys():
+		if macro in COMMOFF[source[1]]:
+			dsblg += macro+' '
+	if dsblg:
+		rep+=u'\n\nСледующие глобальные макросы отключены в этой конференции:\n'+dsblg
 	if type=='public':
 		reply(type, source, u'ушёл')
 	reply('private', source, rep)

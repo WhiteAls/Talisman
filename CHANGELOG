@@ -25,6 +25,14 @@ $$$ Als $$$
 >>> deleted two plugins - temperature_plugin and domain_plugin. IMHO it are not needed. respectively, rwois module deleted too. also deleted pybot shell script, because reading of README and future wizard deleted it :) (14.09.07@[unkn])
 >>> default global macros list and macros access list files was fixed (14.09.07@22:21)
 >>> TODO started ;) (14.09.07@22:30)
+--------------------------------
+from 11.09.07@11:10 to 
+$$$ Als $$$
+>>> info_plugin.py -  typo error has been fixed (15.09.07@daytime)
+>>> macro_plugin.py -  now "macrolist" command check COMMOFF list (15.09.07@daytime)
+>>> help_plugin.py -  typo error has been fixed (15.09.07@daytime)
+>>> log_plugin.py - new logging events has been added, such as status and nick changes, kicking and banning from chatroom  (15.09.07@daytime)
+>>> query_plugin.py - new command has been added "???search"  (15.09.07@21:16)
 
 --------------------------------
 Talisman uses parts of code from Neutron - Jabber bot too

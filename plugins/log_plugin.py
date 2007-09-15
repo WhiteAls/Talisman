@@ -37,6 +37,11 @@ def log_write_header(fp, source, (year, month, day, hour, minute, second, weekda
 <!--
 .userjoin {color: #009900; font-style: italic; font-weight: bold}
 .userleave {color: #dc143c; font-style: italic; font-weight: bold}
+.statuschange {color: #a52a2a; font-weight: bold}
+.rachange {color: #0000FF; font-weight: bold}
+.userkick {color: #FF7F50; font-weight: bold}
+.userban {color: #DAA520; font-weight: bold}
+.nickchange {color: #FF69B4; font-style: italic; font-weight: bold}
 .timestamp {color: #aaa;}
 .timestamp a {color: #aaa; text-decoration: none;}
 .system {color: #090; font-weight: bold;}
@@ -44,18 +49,19 @@ def log_write_header(fp, source, (year, month, day, hour, minute, second, weekda
 .self {color: #0000AA;}
 .normal {color: #483d8b;}
 #mark { color: #aaa; text-align: right; font-family: monospace; letter-spacing: 3px }
-h1 { color: #369; font-family: sans-serif; border-bottom: #246 solid 3pt; letter-spacing: 3px; margin-left: 20pt; }
+h1 { color: #369; font-family: sans-serif; border-bottom: #246 solid 3pt; letter-spacing: 3px; margin-left: 20pt;}
 h2 { color: #639; font-family: sans-serif; letter-spacing: 2px; text-align: center }
+a.h1 {text-decoration: none;color: #369;}
 #//-->
 </style>
 </head>
 <body>
 <div id="mark">Talisman log</div>
-<h1>%s</h1>
+<h1><a class="h1" href="xmpp:%s?join" title="Join room">%s</a></h1>
 <h2>%s</h2>
 <div>
 <tt>
-""" % (' - '.join([source, date]), source, date))
+""" % (' - '.join([source, date]), source, source, date))
 
 def log_write_footer(fp):
 	fp.write('\n</tt>\n</div>\n</body>\n</html>')
@@ -128,7 +134,7 @@ def log_write(body, nick, type, jid):
 	# 06.03.05(Sun) slipstream@yandex.ru urls parser & line ends
 	body = body.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
 	body = re.sub('(http|ftp)(\:\/\/[^\s<]+)', log_regex_url, body)
-	body = body.replace('\n', '<br />')
+	body = body.replace('\n', '<br/>')
 	body = body.encode('utf-8');
 	nick = nick.encode('utf-8');
 	timestamp = '[%.2i:%.2i:%.2i]' % (hour, minute, second)
@@ -139,14 +145,22 @@ def log_write(body, nick, type, jid):
 	elif body[:3].lower() == '/me':
 		fp.write('<span class="emote">* %s%s</span><br />\n' % (nick, body[3:]))
 	elif type == 'public' or nick == DEFAULT_NICK:
-		if nick == '@$$join$$@' or '@$$leave$$@':
-			if nick=='@$$leave$$@':
-				fp.write('<span class="userleave">' + body + '</span><br />\n')
-				return
-			elif nick=='@$$join$$@':
-				fp.write('<span class="userjoin">' + body + '</span><br />\n')
-				return
-		fp.write('<span class="self">&lt;%s&gt;</span> %s<br />\n' % (nick, body))
+		if nick=='@$$leave$$@':
+			fp.write('<span class="userleave">' + body + '</span><br />\n')
+		elif nick=='@$$join$$@':
+			fp.write('<span class="userjoin">' + body + '</span><br />\n')
+		elif nick=='@$$status$$@':
+			fp.write('<span class="statuschange">' + body + '</span><br />\n')
+		elif nick=='@$$ra$$@':
+			fp.write('<span class="rachange">' + body + '</span><br />\n')
+		elif nick=='@$$userkick$$@':
+			fp.write('<span class="userkick">' + body + '</span><br />\n')
+		elif nick=='@$$userban$$@':
+			fp.write('<span class="userban">' + body + '</span><br />\n')
+		elif nick=='@$$nickchange$$@':
+			fp.write('<span class="nickchange">' + body + '</span><br />\n')
+		else:
+			fp.write('<span class="self">&lt;%s&gt;</span> %s<br />\n' % (nick, body))
 	else:
 		fp.write('<span class="normal">&lt;%s&gt;</span> %s<br />\n' % (nick, body))
 	fp.close()
@@ -154,13 +168,47 @@ def log_write(body, nick, type, jid):
 def log_handler_join(groupchat, nick):
 	log_write('%s joins the room' % (nick), '@$$join$$@', 'public', groupchat)
 
-def log_handler_leave(groupchat, nick):
-	log_write('%s leaves the room' % (nick), '@$$leave$$@', 'public', groupchat)
-        
-        
+def log_handler_leave(groupchat, nick, reason):
+	if reason:
+		log_write('%s leaves the room (%s)' % (nick,reason), '@$$leave$$@', 'public', groupchat)
+	else:
+		log_write('%s leaves the room' % (nick), '@$$leave$$@', 'public', groupchat)
+	
+def log_status_change(groupchat, nick, status, stmsg):
+	if stmsg:
+		log_write('%s is now %s (%s)' % (nick,status,stmsg), '@$$status$$@', 'public', groupchat)
+	else:
+		log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)
+
+def log_ra_change(groupchat, nick, aff, role, reason):
+	if reason:
+		log_write('%s is now %s and %s (%s)' % (nick,role,aff,reason), '@$$ra$$@', 'public', groupchat)
+	else:
+		log_write('%s is now %s and %s' % (nick,role,aff), '@$$ra$$@', 'public', groupchat)
+			
+def log_userkick(groupchat, nick, reason):			
+	if reason:
+		log_write('%s has been kicked (%s)' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
+	else:
+		log_write('%s has been kicked' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
+		
+def log_userban(groupchat, nick, reason):			
+	if reason:
+		log_write('%s has been banned (%s)' % (nick,reason), '@$$userban$$@', 'public', groupchat)
+	else:
+		log_write('%s has been banned' % (nick,reason), '@$$userban$$@', 'public', groupchat)
+		
+def log_nickchange(groupchat, nick, newnick):			
+		log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)
+
 if PUBLIC_LOG_DIR:
     register_message_handler(log_handler_message)
 if PRIVATE_LOG_DIR:
     register_outgoing_message_handler(log_handler_outgoing_message)
 register_join_handler(log_handler_join)
 register_leave_handler(log_handler_leave)
+register_status_change_handler(log_status_change)
+register_ra_handler(log_ra_change)
+register_kick_handler(log_userkick)
+register_ban_handler(log_userban)
+register_nick_change_handler(log_nickchange)

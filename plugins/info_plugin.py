@@ -49,7 +49,7 @@ def handler_total_in_muc(type, source, parameters):
 		
 		
 def handler_bot_uptime(type, source, parameters):
-	if BOOTUP_TIMESTAMP:
+	if BOOT:
 		idletime = int(time.time() - BOOT)
 		rep = 'я работаю без падений уже '
 		seconds = idletime % 60

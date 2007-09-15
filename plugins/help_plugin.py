@@ -28,7 +28,7 @@ def handler_help_help(type, source, parameters):
 		for example in COMMANDS[parameters]['examples']:
 			rep += u'\n  >>  ' + example.decode("utf-8")
 		rep += u'\nНеобходимый уровень доступа: ' + str(COMMANDS[parameters.strip()]['access'])
-		if parameters.strip() in COMMOFF:
+		if parameters.strip() in COMMOFF[source[1]]:
 			rep += u'\nЭта команда отключена в этой конференции!!!'
 	else:
 		rep = u'напиши слово "команды" (без кавычек), чтобы получить список команд, "помощь <команда>" для получения помощи по команде, macrolist для получения списка макросов, а также macroacc <макрос> для получения уровня доступа к определёному макросу\np.s. уровень доступа смотрите в привате'
@@ -38,7 +38,7 @@ def handler_help_commands(type, source, parameters):
 	date=time.strftime('%d %b %Y (%a)', time.gmtime()).decode('utf-8')
 	groupchat=source[1]
 	if parameters:
-		rep,off = '',''
+		rep,dsbl = '',''
 		total = 0
 		param=parameters.encode("utf-8")
 		catcom=set([((param in COMMANDS[x]['category']) and x) or None for x in COMMANDS]) - set([None])
@@ -47,14 +47,18 @@ def handler_help_commands(type, source, parameters):
 			return
 		for cat in catcom:
 			if has_access(source, COMMANDS[cat]['access'],groupchat):
-				if cat in COMMOFF:
-					off += cat+' '
-				rep += cat+' '
-				total = total + 1
+				if cat in COMMOFF[source[1]]:
+					dsbl += cat+' '
+				else:
+					rep += cat+' '
+					total = total + 1
 		if rep:
 			if type == 'public':
 				reply(type,source,u'ушли')
-			reply('private', source, u'Список команд в категории <'+parameters+u'> на '+date+u':\n\n' + rep+u' ('+str(total)+u' штук)'+u'\n\nСледующие команды отключены в этой конференции:\n\n'+off)
+			answ=u'Список команд в категории <'+parameters+u'> на '+date+u':\n\n' + rep+u' ('+str(total)+u' штук)'
+			if dsbl:
+				answ+=u'\n\nСледующие команды отключены в этой конференции:\n\n'+dsbl
+			reply('private', source,answ)
 		else:
 			reply(type,source,u'размечтался ]:->')
 	else:

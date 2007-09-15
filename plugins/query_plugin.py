@@ -25,12 +25,18 @@ def handler_query_get_public(type, source, parameters):
 	else:
 		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 		return
-	if localdb.has_key(string.lower(parameters)):
-		reply(type, source, u'про <' + parameters + u'> я знаю следующее:\n' + localdb[string.lower(parameters)])
+	if parameters:
+		if localdb.has_key(string.lower(parameters)):
+			reply(type, source, u'про <' + parameters + u'> я знаю следующее:\n' + localdb[string.lower(parameters)])
+		else:
+			reply(type, source, u'я хз что такое <' + parameters + '> :(')
 	else:
-		reply(type, source, u'я хз что такое <' + parameters + '> :(')		
+			reply(type, source, u'ииии?')
 
 def handler_query_get_private(type, source, parameters):
+	if not parameters:
+		reply(type, source, u'ииии?')
+		return
 	groupchat=source[1]
 	DBPATH='dynamic/'+groupchat+'/localdb.txt'
 	if check_file(groupchat,'localdb.txt'):
@@ -72,55 +78,76 @@ def handler_query_get_random(type, source, parameters):
 	else:
 		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 		return
-	keys=[]
 	if not localdb.keys():
 		reply(type, source, u'база пуста!')
 		return
-	for key in localdb.keys():
-		keys.append(key)
-	rep = random.choice(keys)
+	rep = random.choice(localdb.keys())
 	reply(type, source, u'про <' + rep + u'> я знаю следуюущее:\n' + localdb[rep])
 
 
 def handler_query_set(type, source, parameters):
+	if not parameters:
+		reply(type, source, u'ииии?')
+		return
 	groupchat=source[1]
 	DBPATH='dynamic/'+groupchat+'/localdb.txt'
 	if check_file(groupchat,'localdb.txt'):
 		localdb = eval(read_file(DBPATH))
 		keyval = string.split(parameters, '=', 1)
-		key = string.lower(keyval[0]).strip()
-		try:
+		if not len(keyval)<2:
+			key = string.lower(keyval[0]).strip()
 			value = keyval[1].strip()
-		except:
-			reply(type, source, u'try again')
-			return
-		if not value:
-			if localdb.has_key(key):
-				del localdb[key]
-			reply(type, source, key + u' -> прибил нафиг')
+			if not value:
+				if localdb.has_key(key):
+					del localdb[key]
+				reply(type, source, key + u' -> прибил нафиг')
+			else:
+				localdb[key] = keyval[1].strip()+u' (from '+source[2]+')'
+				reply(type, source, u'теперь я буду знать, что такое ' + key)
+			write_file(DBPATH, str(localdb))
 		else:
-			localdb[key] = keyval[1].strip()+u' (from '+source[2]+')'
-			reply(type, source, u'теперь я буду знать, что такое ' + key)
-		write_file(DBPATH, str(localdb))
+			reply(type, source, u'ииии?')
+	else:
+		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 
 def handler_query_count(type, source, parameters):
 	groupchat=source[1]
 	DBPATH='dynamic/'+groupchat+'/localdb.txt'
 	if check_file(groupchat,'localdb.txt'):
 		localdb = eval(read_file(DBPATH))
+		num=str(len(localdb.keys()))
+		reply(type, source, 'в базе ответов/вопросов данной конфы '+num+' записей')
 	else:
 		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 		return
-	count=0
-	for x in localdb.keys():
-		count = count + 1
-	reply(type, source, 'в базе ответов/вопросов данной конфы '+str(count)+' записей')
 
+def handler_query_search(type, source, parameters):
+	if not parameters:
+		reply(type, source, u'ииии?')
+		return
+	rep=[]
+	groupchat=source[1]	
+	DBPATH='dynamic/'+groupchat+'/localdb.txt'
+	if check_file(groupchat,'localdb.txt'):
+		localdb = eval(read_file(DBPATH))
+		if not localdb.keys():
+			reply(type, source, u'база пуста!')
+			return
+		for x in localdb.keys():
+			if x.count(parameters.strip())>0:
+				rep.append(x)
+		if rep:
+			reply(type,source,u'совпало с:\n'+', '.join(rep))
+		else:
+			reply(type,source,u'ни с чем не совпало :(')
+	else:
+		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
+		return
 
-	
 
 register_command_handler(handler_query_get_public, '???', ['инфо','wtf','все'], 10, 'Ищет ответ на вопрос в локальной базе (аналог wtf в сульцах).', '??? <запрос>', ['??? что-то', '??? что-то ещё'])
 register_command_handler(handler_query_get_private, '!??', ['инфо','wtf','все'], 10, 'Ищет ответ на вопрос в локальной базе и посылает его в приват (аналог !word showpriv в глюксах).', '!?? <ник> <запрос>', ['!?? что-то', '!?? guy что-то'])
 register_command_handler(handler_query_set, '!!!', ['инфо','wtf','админ','все'], 11, 'Устанавливает ответ на вопрос в локальной базе (аналог dfn в сульцах).', '!!! <запрос> = <ответ>', ['!!! что-то = the best!', '!!! что-то ещё ='])
 register_command_handler(handler_query_count, '???count', ['инфо','wtf','все'], 10, 'Показывает количество вопросов в базе конфы (аналог wtfcount в сульцах).', '!!! ???count', ['???count'])
 register_command_handler(handler_query_get_random, '???rand', ['инфо','wtf','все'], 10, 'Показывает случайно выбранный ответ на вопрос (аналог wtfrand в сульцах).', '???rand', ['???rand'])
+register_command_handler(handler_query_search, '???search', ['инфо','wtf','все'], 10, 'Поиск по базе.', '???search <запрос>', ['???search что-то'])

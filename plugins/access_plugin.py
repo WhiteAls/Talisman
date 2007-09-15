@@ -77,8 +77,10 @@ def handler_access_set_access(type, source, parameters):
 def handler_access_set_access_glob(type, source, parameters):
 	if parameters:
 		splitdata = string.split(parameters)
-		if splitdata[0]=='':
-			nicks=GROUPCHATS[source[1]].keys()
+		if len(splitdata)<2:
+			reply(type, source, u'эээ?')
+			return
+		nicks=GROUPCHATS[source[1]].keys()
 		if not splitdata[0].strip() in nicks:
 			reply(type, source, u'а он тут? :-O')
 			return
