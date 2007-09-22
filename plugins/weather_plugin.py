@@ -25,17 +25,23 @@ def handler_weather_weather(type, source, parameters):
 	if not parameters:
 		reply(type, source, u'ииии?')
 		return
-	info = pymetar.MetarReport(str(parameters).strip())
 	try:
-		location = info.getStationName()
-		celsius = str(round(info.getTemperatureCelsius(), 1))
-		fahrenheit = str(round(info.getTemperatureFahrenheit(), 1))
-		#humidity = str(round(info.getHumidity(), 1))
-		results = location + ' - ' + str(info.getWeather()) + ' -- ' + celsius + 'Ц -- ' + fahrenheit + 'Ф'
+		rf=pymetar.ReportFetcher(parameters.strip())
+		fr=rf.FetchReport()
 	except Exception, ex:
 		results = u'а если ли такой код?'
-		print ex.__str__
-	reply(type, source, results)
+		return
+	rp=pymetar.ReportParser()
+	pr=rp.ParseReport(fr)
+	tm=time.strptime(pr.getISOTime(), '%Y-%m-%d %H:%M:%SZ')
+	tm=time.strftime('%H:%M:%S',tm)
+	rep = u'погода в %s (%s) на %s\n%s, temperature: %s° C, humidity: %s%%, ' %(pr.getStationName(), parameters.strip(), tm, pr.getWeather(), pr.getTemperatureCelsius(), pr.getHumidity())
+	if pr.getWindSpeed():
+		rep+='wind: %s, ' %(pr.getWindSpeed())
+	if pr.getPressure():
+		rep+='pressure: %s, ' %(pr.getPressure())
+	rep+='sky conditions: %s' %(pr.getSkyConditions())
+	reply(type, source, rep)
 
 def handler_weather_weathercode(type, source, parameters):
 	if not parameters:

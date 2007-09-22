@@ -26,13 +26,27 @@ $$$ Als $$$
 >>> default global macros list and macros access list files was fixed (14.09.07@22:21)
 >>> TODO started ;) (14.09.07@22:30)
 --------------------------------
-from 11.09.07@11:10 to 
+from 14.09.07@23:11 to 15.09.07@22:03
 $$$ Als $$$
 >>> info_plugin.py -  typo error has been fixed (15.09.07@daytime)
 >>> macro_plugin.py -  now "macrolist" command check COMMOFF list (15.09.07@daytime)
 >>> help_plugin.py -  typo error has been fixed (15.09.07@daytime)
 >>> log_plugin.py - new logging events has been added, such as status and nick changes, kicking and banning from chatroom  (15.09.07@daytime)
 >>> query_plugin.py - new command has been added "???search"  (15.09.07@21:16)
+--------------------------------
+from 15.09.07@22:03 to 22.09.07@22:24
+$$$ Als $$$
+>>> pybot.py - new version of groupchats list file. NOT COMPATIBLE WITH OLD VERSION!!! please, delete the old file(s) (conferences.list or/and chatnicks.cfg or/and chatrooms.cfg) and rejoin bot to all rooms MANUALLY again!!! (16.09.07@eveningtime)
+>>> admin_plugin.py -  fixes according changes in core  (16.09.07@eveningtime)
+>>> TODO - new item has been added (16.09.07@23:15)
+>>> delirium_plugin.py - more delirium in "тык" command :D ([unkn])
+>>> pybot.py - command catcher has been rewritted (it seems :D) ([unkn])
+>>> access_plugin.py - now bot is giving not only access level, but and description of access level. if you type "доступ !desc" then bot will be sending into your private info about known access levels (22.09.07@16:35)
+>>> google_plugin.py - fix for using google search, for example, in macroses, for example "macroadd something `eval google_search('$* site:www.hydrogenaudio.org') or google_search('$* site:www.foobar2000.ru') or 'found nothing :('`" (22.09.07@16:50)
+>>> pymetar.py - updated to latest version (22.09.07@21:30)
+>>> weather_plugin.py - was some rewriting due to changes in new pymetar.py module (22.09.07@22:16)
 
+for info. TODO is containing hypothetic tasks :) it's not for mandatory tasks
+also in this commit isn't resolved bug with doubling in log_plugin.py :( sorry for this, i will be fix it in next commit
 --------------------------------
 Talisman uses parts of code from Neutron - Jabber bot too

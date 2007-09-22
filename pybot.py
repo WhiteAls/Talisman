@@ -5,8 +5,8 @@
 #  pybot.py
 
 #  Initial Copyright © 2002-2005 Mike Mintz <mikemintz@gmail.com>
-#  Modifications Copyright © 2007 Als <Als@admin.ru.net>
-#  Modifications Copyright © 2007 dimichxp <dimichxp@ezxdev.org>
+#  Modifications Copyright © 2007 Als <Als@exploit.in>
+#  Modifications Copyright © 2007 dimichxp <dimichxp@gmail.com>
 #  Parts of code Copyright © Boris Kotov <admin@avoozl.ru> 
 
 #  This program is free software; you can redistribute it and/or modify
@@ -32,13 +32,10 @@ import thread
 import random
 import types
 import traceback
-import getopt
 import codecs
 import macros
 
 ################################################################################
-CONFIGURATION_FILE = 'dynamic/config.cfg'
-
 GENERAL_CONFIG_FILE = 'config.txt'
 
 fp = open(GENERAL_CONFIG_FILE, 'r')
@@ -51,7 +48,7 @@ USERNAME = GENERAL_CONFIG['USERNAME']
 PASSWORD = GENERAL_CONFIG['PASSWORD']
 RESOURCE = GENERAL_CONFIG['RESOURCE']
 
-GROUPCHAT_CACHE_FILE = 'dynamic/conferences.list'
+GROUPCHAT_CACHE_FILE = 'dynamic/chatrooms.list'
 GLOBACCESS_FILE = 'dynamic/globaccess.cfg'
 ACCBYCONF_FILE = 'dynamic/accbyconf.cfg'
 PLUGIN_DIR = 'plugins'
@@ -101,18 +98,6 @@ COMMOFF = {}
 
 JCON = None
 
-CONFIGURATION = {}
-
-################################################################################
-"""
-optlist, args = getopt.getopt(sys.argv[1:], '', ['pid='])
-for opt_tuple in optlist:
-	if opt_tuple[0] == '--pid':
-		pid_filename = opt_tuple[1]
-		fp = open(pid_filename, 'w')
-		fp.write(str(os.getpid()))
-		fp.close()
-"""
 ################################################################################
 
 def initialize_file(filename, data=''):
@@ -133,60 +118,30 @@ def write_file(filename, data):
 	fp.write(data)
 	fp.close()
 	
-def check_file(gch,file):
-	path,pathf='',''
+def check_file(gch='',file=''):
+	pth,pthf='',''
 	if gch:
-		pathf='dynamic/'+gch+'/'+file
-		path='dynamic/'+gch
+		pthf='dynamic/'+gch+'/'+file
+		pth='dynamic/'+gch
 	else:
-		path='dynamic/'+file
-		pathf='dynamic'
-	if os.path.exists(pathf):
+		pthf='dynamic/'+file
+		pth='dynamic'
+	if os.path.exists(pthf):
 		return 1
 	else:
 		try:
-			if not os.path.exists(path):
-				os.mkdir(path,0755)
-			if os.access(pathf, os.F_OK):
-				fp = file(pathf, 'w')
+			if not os.path.exists(pth):
+				os.mkdir(pth,0755)
+			if os.access(pthf, os.F_OK):
+				fp = file(pthf, 'w')
 			else:
-				fp = open(pathf, 'w')
+				fp = open(pthf, 'w')
 			fp.write('{}')
 			fp.close()
 			return 1
 		except:
 			return 0	
 	
-################################################################################
-
-initialize_file(CONFIGURATION_FILE, '{}')
-try:
-	CONFIGURATION = eval(read_file(CONFIGURATION_FILE))
-except:
-	print 'Error Parsing Configuration File'
-
-def config_get(category, key):
-	if CONFIGURATION.has_key(category):
-		if CONFIGURATION[category].has_key(key):
-			return CONFIGURATION[category][key]
-		else:
-			return None
-	else:
-		return None
-
-def config_set(category, key, value):
-	if not CONFIGURATION.has_key(category):
-		CONFIGURATION[category] = {}
-	CONFIGURATION[category][key] = value
-	config_string = '{\n'
-	for category in CONFIGURATION.keys():
-		config_string += repr(category) + ':\n'
-		for key in CONFIGURATION[category].keys():
-			config_string += '\t' + repr(key) + ': ' + repr(CONFIGURATION[category][key]) + '\n'
-		config_string += '\n'
-	config_string += '}'
-	write_file(CONFIGURATION_FILE, config_string)
-
 ################################################################################
 
 def register_message_handler(instance):
@@ -339,7 +294,7 @@ def get_commoff(gch=None):
 			pass		
 
 ################################################################################
-
+"""
 def get_conf_jid(gc, nick):
 	if gc.has_key(nick):
 		info = gc[nick]
@@ -357,7 +312,16 @@ def get_jid(source, parameter):
 		jid = get_conf_jid(GROUPCHATS[groupchat], parameter)
 #	jid = get_true_jid(source)
 	return jid
-
+	
+def get_groupchat(jid):
+	if type(jid) is types.ListType:
+		jid = jid[1]
+	jid = string.split(unicode(jid), '/')[0] # str(jid)
+	if GROUPCHATS.has_key(jid):
+		return jid
+	else:
+		return None
+"""
 def get_true_jid(jid):
 	true_jid = ''
 	if type(jid) is types.ListType:
@@ -376,38 +340,39 @@ def get_true_jid(jid):
 	else:
 		true_jid = stripped_jid
 	return true_jid
-	
-def get_groupchat(jid):
-	if type(jid) is types.ListType:
-		jid = jid[1]
-	jid = string.split(unicode(jid), '/')[0] # str(jid)
-	if GROUPCHATS.has_key(jid):
-		return jid
-	else:
-		return None
 
 def get_bot_nick(groupchat):
-	if check_file('','conferences.list'):
+	if check_file(file='chatrooms.list'):
 		gchdb = eval(read_file(GROUPCHAT_CACHE_FILE))
 		if gchdb.has_key(groupchat):
-			return gchdb[groupchat]
+			return gchdb[groupchat]['nick']
 		else:
 			return DEFAULT_NICK
 	else:
 		print 'Error adding groupchat to groupchats list file!'
 
-def add_gch(groupchat, nick=None):
-	if check_file('','conferences.list'):
+def add_gch(groupchat=None, nick=None, passw=None):
+	if check_file(file='chatrooms.list'):
 		gchdb = eval(read_file(GROUPCHAT_CACHE_FILE))
-		if nick:
-			if not gchdb.has_key(groupchat):
-				gchdb[groupchat] = groupchat
-			gchdb[groupchat] = nick
-		elif groupchat:
-			del gchdb[groupchat]
+		if not groupchat in gchdb:
+			gchdb[groupchat] = groupchat
+			gchdb[groupchat] = {}
+			gchdb[groupchat]['nick'] = nick
+			gchdb[groupchat]['passw'] = passw
 		else:
-			return
+			if nick and groupchat and passw:
+				gchdb[groupchat]['nick'] = nick
+				gchdb[groupchat]['passw'] = passw
+			elif nick and groupchat:
+				gchdb[groupchat]['nick'] = nick
+			elif groupchat:
+				del gchdb[groupchat]
+			elif passw:
+				gchdb[groupchat]['passw'] = passw
+			else:
+				return 0
 		write_file(GROUPCHAT_CACHE_FILE, str(gchdb))
+		return 1
 	else:
 		print 'Error adding groupchat to groupchats list file!'
 
@@ -491,9 +456,8 @@ def has_access(source, level, gch):
 	
 ################################################################################
 
-def join_groupchat(groupchat, passw=None):
-	add_gch(groupchat, DEFAULT_NICK)
-	presence=xmpp.protocol.Presence(groupchat+'/'+DEFAULT_NICK)
+def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
+	presence=xmpp.protocol.Presence(groupchat+'/'+nick)
 	presence.setStatus(u'напишите "помощь" и следуйте указаниям, чтобы понять что к чему!')
 	pres=presence.setTag('x',namespace=xmpp.NS_MUC)
 	pres.addChild('history',{'maxchars':'0','maxstanzas':'0'})
@@ -527,7 +491,7 @@ def reply(ltype, source, body):
 		body = body.decode('utf-8', 'backslashreplace')
 	if ltype == 'public':
 		if len(body)>1000:
-			body=body[:1000]+u'[...]'
+			body=body[:1000]+u' [...]'
 		msg(source[1], source[2] + ': ' + body)
 	elif ltype == 'private':
 		msg(source[0], body)
@@ -559,24 +523,17 @@ def messageCB(con, msg):
 	msgtype = msg.getType()
 	body = msg.getBody()
 	fromjid = msg.getFrom()
-	cbody = ''
-	rcmd = ''
-	if body:
-		rcmd = body.split(' ')[0]
-		cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
-	command = ''
-	parameters = ''
-	mynick = get_bot_nick(fromjid.getStripped())
-	if cbody and string.split(cbody):
-		if mynick and cbody[0:len(mynick)+1] == mynick+':':
-			nbody=cbody[len(mynick)+1:].strip().split();
-			if nbody:
-				command = nbody[0]
-				parameters = ' '.join(nbody[1:])
-		else:
-			command = string.lower(string.split(cbody)[0])
-			if cbody.count(' '):
-				parameters = cbody[(cbody.find(' ') + 1):]
+	command,parameters,cbody,rcmd = '','','',''
+	if not body:
+		return
+	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
+	if bot_nick and string.split(body)[0] == bot_nick+':':
+		body=' '.join(string.split(body)[1:])
+	rcmd = body.split(' ')[0]
+	cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
+	command = string.lower(string.split(cbody)[0])
+	if cbody.count(' '):
+		parameters = cbody[(cbody.find(' ') + 1):]
 	if not msg.timestamp:
 		if msgtype == 'groupchat':
 			mtype='public'
@@ -704,6 +661,14 @@ def iqCB(con, iq):
 		query.setTagData('version', 'alpha')
 		query.setTagData('os', osver)
 		JCON.send(result)
+	elif iq.getTags('time', {}, 'urn:xmpp:time'):
+		tzo=(lambda tup: tup[0]+"%02d:"%tup[1]+"%02d"%tup[2])((lambda t: tuple(['+' if t<0 else '-', abs(t)/3600, abs(t)/60%60]))(time.altzone if time.daylight else time.timezone))
+		utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+		result = iq.buildReply('result')
+		reply=result.addChild('time', {}, [], 'urn:xmpp:time')
+		reply.setTagData('tzo', tzo)
+		reply.setTagData('utc', utc)
+		JCON.send(result)
 	else:
 		call_iq_handlers(iq)
 	
@@ -716,18 +681,21 @@ def dcCB():
 		print 'RESTARTING'
 		os.execl(sys.executable, sys.executable, sys.argv[0])
 	else:
-		sys.exit(0)
+		sys.exit(1)
 
 ################################################################################
 
 def start():
+	print '\n...---===STARTING BOT===---...\n'
 	global JCON
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
 
 	get_access_levels()
-	load_plugins()
+#	load_plugins()
 	get_commoff()
-
+	
+	print 'Waiting For Connection...\n'
+	
 	con=JCON.connect()
 	if not con:
 		print 'COULDN\'T CONNECT\nSleep for 30 seconds'
@@ -739,6 +707,8 @@ def start():
 		print "Warning: unable to estabilish secure connection - TLS failed!"
 		
 	print 'Using',JCON.isConnected()
+	
+	print '\nWaiting For Authentication...'
 		
 	auth=JCON.auth(USERNAME, PASSWORD, RESOURCE)
 	if not auth:
@@ -759,14 +729,19 @@ def start():
 	JCON.getRoster()
 	JCON.sendInitPresence()
 	print 'Entering Rooms'
-
-	groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
+	
 	MACROS.init()
-	for groupchat in groupchats:
-		join_groupchat(groupchat)
-		time.sleep(0.1)
-		
-#	load_plugins()
+
+	if check_file(file='chatrooms.list'):
+		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
+		for groupchat in groupchats:
+			thread.start_new_thread(join_groupchat, (groupchat.decode('utf-8'),groupchats[groupchat]['nick'].decode('utf-8'),groupchats[groupchat]['passw']))
+	else:
+		print 'Error: unable to create chatrooms list file!'
+	
+	print '\nLOADING PLUGINS'
+
+	load_plugins()
 
 	print '\nOk, i\'m ready to work :)'
 
@@ -778,9 +753,9 @@ if __name__ == "__main__":
 		start()
 	except KeyboardInterrupt:
 		print '\nINTERUPT (Ctrl+C)'
-#		for gch in GROUPCHATS.keys():
-#			msg(gch,u'я получил Сtrl+C из консоли -> выключаюсь')
-		sys.exit(0)
+		for gch in GROUPCHATS.keys():
+			thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
+		sys.exit(1)
 	except:
 		if AUTO_RESTART:
 			if sys.exc_info()[0] is not SystemExit:
@@ -793,9 +768,9 @@ if __name__ == "__main__":
 				time.sleep(3)
 			except KeyboardInterrupt:
 				print '\nINTERUPT (Ctrl+C)'
-#				for gch in GROUPCHATS.keys():
-#					msg(gch,u'я получил Сtrl+C из консоли -> выключаюсь')
-				sys.exit(0)
+				for gch in GROUPCHATS.keys():
+					thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
+				sys.exit(1)
 			print 'RESTARTING'
 			os.execl(sys.executable, sys.executable, sys.argv[0])
 		else:

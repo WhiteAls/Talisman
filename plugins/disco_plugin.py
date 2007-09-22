@@ -48,7 +48,7 @@ def handler_disco(type, source, parameters):
 				stop='50'
 			iq.setTo(parameters)
 	else:
-		reply(type,source,u'и чё?')
+		reply(type,source,u'ииии?')
 		return
 	JCON.SendAndCallForResponse(iq, handler_disco_ext, {'type': type, 'source': source, 'stop': stop, 'parameters': parameters})
 

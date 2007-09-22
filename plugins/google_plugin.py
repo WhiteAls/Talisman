@@ -53,15 +53,17 @@ def google_search(query, cont=False):
 		if cont:
 			return url + '\n' + title + '\n' + summary
 		else:
-			searchtime = str(round(data.meta.searchTime, 3))
 			total = str(data.meta.estimatedTotalResultsCount)
 			return url + '\n' + title + '\n' + summary
 	except:
-		return 'ничё не нашёл :('
+		return 0
 
 def handler_google_google(type, source, parameters):
 	results = google_search(parameters, parameters == u'еще')
-	reply(type, source, results)
+	if results:
+		reply(type, source, results)
+	else:
+		reply(type, source, u'ничё не нашёл :(')
 
 def handler_google_xepsearch(type, source, parameters):
 	results = google_search('allinurl: XEP-'+ parameters + ' site:http://www.xmpp.org/extensions')

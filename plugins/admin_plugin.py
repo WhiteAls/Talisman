@@ -34,10 +34,8 @@ def popups_check(gch):
 def handler_admin_join(type, source, parameters):
 	if parameters:
 		passw=''
-		nick = DEFAULT_NICK
 		args = parameters.split(' ')
 		if len(args)>1:
-			#(groupchat, reason) = string.split(parameters.lstrip(), ' ', 1)
 			groupchat = args[0]
 			passw = string.split(args[1], 'pass=', 1)
 			print passw
@@ -49,9 +47,12 @@ def handler_admin_join(type, source, parameters):
 			groupchat = parameters
 			reason = ''
 		if len(passw)==1 or len(passw)==0:
-			join_groupchat(groupchat, nick)
+			join_groupchat(groupchat)
+			add_gch(groupchat, DEFAULT_NICK)
+			get_commoff(groupchat)
 		else:
-			join_groupchat(groupchat, nick, passw[1])
+			join_groupchat(groupchat, passw[1])
+			add_gch(groupchat, DEFAULT_NICK, passw[1])
 			get_commoff(groupchat)
 		reply(type, source, u'я зашёл в -> <' + groupchat + '>')
 		if popups_check(groupchat):
@@ -120,7 +121,7 @@ def handler_glob_msg(type, source, parameters):
 def handler_admin_say(type, source, parameters):
 	if parameters:
 		args=string.split(parameters)
-		if not args[0] in COMMANDS.keys():
+		if not args[0] in COMMANDS.keys() or not args[0] in MACROS.macrolist[source[1]].keys() or not args[0] in MACROS.gmacrolist.keys():
 			msg(source[1], parameters)
 		else:
 			reply(type, source, u'нееее')
@@ -161,9 +162,8 @@ def handler_admin_exit(type, source, parameters):
 		for x in gch:
 			if popups_check(x):
 				msg(x, u'меня выключает '+source[2])
-	global AUTO_RESTART
 	JCON.disconnected()
-	sys.exit(0)
+	sys.exit(1)
 
 
 def handler_popups_startstop(type, source, parameters):

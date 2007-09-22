@@ -40,10 +40,10 @@ def handler_stick(type, source, parameters):
 		else:
 			stick_nicks[source[1]].append(source[2])
 		args = parameters.split(' ')
-		if not parameters == u'себя' or not parameters == DEFAULT_NICK:
+		if not args[0] == u'себя' or not args[0] == get_bot_nick(source[1]):
 			if len(args)<=1:
 				nick = args[0]
-				replies = [u'/me облил ' +nick+ u' ледяной водой',u'/me закидал ' +nick+ u' тухлыми помидорами',u'/me шарахнул ' +nick+ u' веслом по голове',u'/me ткнул ' +nick+ u' в глаз',u'/me поставил ' +nick+ u' подножку',u'/me постукал ' +nick+ u' головой апстенку',u'/me дал ' +nick+ u' йаду',u'/me slaps ' +nick+ u' around a bit with a large trout',u'приковал наручниками к кровати '+nick+u' и заставлил слушать Децла. МНОГО ДЕЦЛА!']
+				replies = [u'/me облил ' +nick+ u' ледяной водой',u'/me закидал ' +nick+ u' тухлыми помидорами',u'/me шарахнул ' +nick+ u' веслом по голове',u'/me ткнул ' +nick+ u' в глаз',u'/me поставил ' +nick+ u' подножку',u'/me постукал ' +nick+ u' головой апстенку',u'/me дал ' +nick+ u' йаду',u'/me slaps ' +nick+ u' around a bit with a large trout',u'приковал наручниками к кровати '+nick+u' и заставлил слушать Децла. МНОГО ДЕЦЛА!',u'/me шарахнул '+nick+u' веслом по голове',u'/me щас засунет '+nick+u' кляп в рот ]:->',u'/me целится плюсомётом в '+nick,u'/me тыкает '+nick+u' со словами "нуу, пратииивный"',u'/me кинул нож в сторону '+nick]
 				rep = random.choice(replies)
 				msg(source[1],rep)
 			elif len(args)>=2:
