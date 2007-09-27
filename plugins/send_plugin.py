@@ -23,21 +23,14 @@ def handler_psay(ltype, source, parameters):
 	if GROUPCHATS.has_key(groupchat):
 		nicks = GROUPCHATS[groupchat].keys()
 		args = parameters.split(' ')
-		fromnick=source[2]+u' из '+source[1]+u' попросил меня передать тебе следующее:\n\n'
+		date=time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+		fromnick=source[2]+u' из '+source[1]+u' в '+date+u' (UTC) попросил меня передать тебе следующее:\n\n'
 		if len(args)>=2:
 			nick = args[0]
 			body = ' '.join(args[1:])
-			if nick == 'Als':
+			if nick == 'botadmin':
 				reply(ltype, source, u'передам')
-				msg('Als@exploit.in', fromnick+body)
-				return
-			if nick == 'hobbit19':
-				reply(ltype, source, u'передам')
-				msg('hobbit19@gmail.com', fromnick+body)
-				return
-			if nick == 'dimichxp':
-				reply(ltype, source, u'передам')
-				msg('dimichxp@gmail.com', fromnick+body)
+				msg(ADMINS[0], fromnick+body)
 				return
 			if get_bot_nick(groupchat) != nick:
 				tojid = groupchat+'/'+nick
@@ -49,7 +42,7 @@ def handler_psay(ltype, source, parameters):
 					queue[tojid].append(fromnick+body)
 					reply(ltype, source, u'передам')
 
-def handler_new_join(groupchat, nick):
+def handler_new_join(groupchat, nick, aff, role):
 	tojid = groupchat+'/'+nick
 	if queue.has_key(tojid) and queue[tojid]:
 		for x in queue[tojid]:
