@@ -30,6 +30,8 @@ def handler_help_help(type, source, parameters):
 		rep += u'\nНеобходимый уровень доступа: ' + str(COMMANDS[parameters.strip()]['access'])
 		if parameters.strip() in COMMOFF[source[1]]:
 			rep += u'\nЭта команда отключена в этой конференции!!!'
+		else:
+			pass
 	else:
 		rep = u'напиши слово "команды" (без кавычек), чтобы получить список команд, "помощь <команда>" для получения помощи по команде, macrolist для получения списка макросов, а также macroacc <макрос> для получения уровня доступа к определёному макросу\np.s. уровень доступа смотрите в привате'
 	reply(type, source, rep)

@@ -125,10 +125,35 @@ def handler_presence_ra_change(prs):
 					acca = 0
 				access = int(accr)+int(acca)
 				change_access_temp(groupchat, jid, access)
+				
+def handler_presence_ra_change(prs):
+	groupchat = prs.getFrom().getStripped()
+	nick = prs.getFrom().getResource()
+	jid = get_true_jid(groupchat+'/'+nick)
+	item = findPresenceItem(prs)
+	if jid in GLOBACCESS:
+		return
+	else:
+		if groupchat in ACCBYCONFFILE and jid in ACCBYCONFFILE[groupchat]:
+			pass
+		else:
+			if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat]:
+				if jid != None:
+					role = item['role']
+					aff = item['affiliation']
+					if role in ROLES.keys():
+						accr = ROLES[role]
+					else:
+						accr = 0
+					if aff in AFFILIATIONS.keys():
+						acca = AFFILIATIONS[aff]
+					else:
+						acca = 0
+					access = int(accr)+int(acca)
+					change_access_temp(groupchat, jid, access)
 
 
 register_presence_handler(handler_presence_presence)
-register_presence_handler(handler_presence_ra_change)
 
 #  listed below command handler are not recommended. it's not working at now.
 #  register_presence_handler(handler_presence_moder_check)

@@ -26,8 +26,8 @@ LOG_FILENAME_CACHE = eval(read_file(LOG_CACHE_FILE))
 
 
 def log_write_header(fp, source, (year, month, day, hour, minute, second, weekday, yearday, daylightsavings)):
-		date = time.strftime('%A, %B %d, %Y', (year, month, day, hour, minute, second, weekday, yearday, daylightsavings))
-		fp.write("""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	date = time.strftime('%A, %B %d, %Y', (year, month, day, hour, minute, second, weekday, yearday, daylightsavings))
+	fp.write("""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
@@ -47,6 +47,7 @@ def log_write_header(fp, source, (year, month, day, hour, minute, second, weekda
 .system {color: #090; font-weight: bold;}
 .emote {color: #800080;}
 .self {color: #0000AA;}
+.selfmoder {color: #DC143C;}
 .normal {color: #483d8b;}
 #mark { color: #aaa; text-align: right; font-family: monospace; letter-spacing: 3px }
 h1 { color: #369; font-family: sans-serif; border-bottom: #246 solid 3pt; letter-spacing: 3px; margin-left: 20pt;}
@@ -116,7 +117,11 @@ def log_handler_message(type, source, body):
 	if type == 'public' and PUBLIC_LOG_DIR:
 		groupchat = source[1]
 		nick = source[2]
-		log_write(body, nick, type, groupchat)
+		if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 1:
+			ismoder=1
+		else:
+			ismoder=0
+		log_write(body, nick, type, groupchat, ismoder)
 	elif type == 'private' and PRIVATE_LOG_DIR:
 		jid = get_true_jid(source)
 		log_write(body, jid.split('@')[0], type, jid)
@@ -126,7 +131,7 @@ def log_handler_outgoing_message(target, body):
 		return
 	log_write(body, DEFAULT_NICK, 'private', get_true_jid(target))
 
-def log_write(body, nick, type, jid):
+def log_write(body, nick, type, jid, ismoder=0):
 	if not jid in GROUPCHATS.keys():
 		jid = get_true_jid(jid)
 	decimal = str(int(math.modf(time.time())[0]*100000))
@@ -160,55 +165,74 @@ def log_write(body, nick, type, jid):
 		elif nick=='@$$nickchange$$@':
 			fp.write('<span class="nickchange">' + body + '</span><br />\n')
 		else:
-			fp.write('<span class="self">&lt;%s&gt;</span> %s<br />\n' % (nick, body))
+			if ismoder:
+				fp.write('<span class="selfmoder">&lt;%s&gt;</span> %s<br />\n' % (nick, body))
+			else:
+				fp.write('<span class="self">&lt;%s&gt;</span> %s<br />\n' % (nick, body))
 	else:
 		fp.write('<span class="normal">&lt;%s&gt;</span> %s<br />\n' % (nick, body))
 	fp.close()
 
-def log_handler_join(groupchat, nick):
-	log_write('%s joins the room' % (nick), '@$$join$$@', 'public', groupchat)
+def log_handler_join(groupchat, nick, aff, role):
+	log_write('%s joins the room as %s and %s' % (nick, role, aff), '@$$join$$@', 'public', groupchat)
 
 def log_handler_leave(groupchat, nick, reason):
 	if reason:
 		log_write('%s leaves the room (%s)' % (nick,reason), '@$$leave$$@', 'public', groupchat)
 	else:
 		log_write('%s leaves the room' % (nick), '@$$leave$$@', 'public', groupchat)
+		
+def log_handler_presence(prs):	
+	thread.start_new_thread(log_presence, (prs,))
 	
-def log_status_change(groupchat, nick, status, stmsg):
-	if stmsg:
-		log_write('%s is now %s (%s)' % (nick,status,stmsg), '@$$status$$@', 'public', groupchat)
+def log_presence(prs):
+	stmsg,status,code,reason,newnick='','','','',''
+	groupchat = prs.getFrom().getStripped()
+	nick = prs.getFrom().getResource()
+	try:	
+		code = prs.getStatusCode()
+	except:
+		code = None
+	try:
+		reason = prs.getReason()
+	except:
+		reason = None	
+	if code:
+		if code == '307':
+			if reason:
+				log_write('%s has been kicked (%s)' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
+			else:
+				log_write('%s has been kicked' % (nick,reason), '@$$userkick$$@', 'public', groupchat)			
+		elif code == '301':
+			if reason:
+				log_write('%s has been banned (%s)' % (nick,reason), '@$$userban$$@', 'public', groupchat)
+			else:
+				log_write('%s has been banned' % (nick,reason), '@$$userban$$@', 'public', groupchat)			
+		elif code == '303':
+			newnick = prs.getNick()
+			log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)
 	else:
-		log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)
-
-def log_ra_change(groupchat, nick, aff, role, reason):
-	if reason:
-		log_write('%s is now %s and %s (%s)' % (nick,role,aff,reason), '@$$ra$$@', 'public', groupchat)
-	else:
-		log_write('%s is now %s and %s' % (nick,role,aff), '@$$ra$$@', 'public', groupchat)
+		try:
+			stmsg = prs.getStatus()
+		except:
+			stmsg=''
+		try:
+			status = prs.getShow()
+		except:
+			status = 'online'
+		if not status:
+			status = 'online'
+		if stmsg:
+			log_write('%s is now %s (%s)' % (nick,status,stmsg), '@$$status$$@', 'public', groupchat)
+		else:
+			log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)	
 			
-def log_userkick(groupchat, nick, reason):			
-	if reason:
-		log_write('%s has been kicked (%s)' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
-	else:
-		log_write('%s has been kicked' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
-		
-def log_userban(groupchat, nick, reason):			
-	if reason:
-		log_write('%s has been banned (%s)' % (nick,reason), '@$$userban$$@', 'public', groupchat)
-	else:
-		log_write('%s has been banned' % (nick,reason), '@$$userban$$@', 'public', groupchat)
-		
-def log_nickchange(groupchat, nick, newnick):			
-		log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)
-
+			
 if PUBLIC_LOG_DIR:
-    register_message_handler(log_handler_message)
+	register_message_handler(log_handler_message)
 if PRIVATE_LOG_DIR:
-    register_outgoing_message_handler(log_handler_outgoing_message)
+	register_outgoing_message_handler(log_handler_outgoing_message)
 register_join_handler(log_handler_join)
 register_leave_handler(log_handler_leave)
-register_status_change_handler(log_status_change)
-register_ra_handler(log_ra_change)
-register_kick_handler(log_userkick)
-register_ban_handler(log_userban)
-register_nick_change_handler(log_nickchange)
+register_presence_handler(log_handler_presence)
+

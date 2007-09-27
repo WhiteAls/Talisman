@@ -144,8 +144,7 @@ def handler_admin_restart(type, source, parameters):
 		for x in gch:
 			if popups_check(x):
 				msg(x, u'меня перезагружает '+source[2])
-	JCON.disconnected()
-	os.execv('./neutron.py', sys.argv)
+	JCON.disconnect()
 
 def handler_admin_exit(type, source, parameters):
 	if parameters:
@@ -162,8 +161,7 @@ def handler_admin_exit(type, source, parameters):
 		for x in gch:
 			if popups_check(x):
 				msg(x, u'меня выключает '+source[2])
-	JCON.disconnected()
-	sys.exit(1)
+	os.abort()
 
 
 def handler_popups_startstop(type, source, parameters):

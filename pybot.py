@@ -82,17 +82,13 @@ JOIN_HANDLERS = []
 LEAVE_HANDLERS = []
 IQ_HANDLERS = []
 PRESENCE_HANDLERS = []
-BAN_HANDLERS = []
-KICK_HANDLERS = []
-STATUS_CHANGE_HANDLERS = []
-RA_HANDLERS = []
-NICK_CHANGE_HANDLERS = []
 ########################
 
 COMMAND_HANDLERS = {}
 
 GLOBACCESS = {}
 ACCBYCONF = {}
+ACCBYCONFFILE = {}
 
 COMMOFF = {}
 
@@ -156,16 +152,6 @@ def register_iq_handler(instance):
 	IQ_HANDLERS.append(instance)
 def register_presence_handler(instance):
 	PRESENCE_HANDLERS.append(instance)
-def register_kick_handler(instance):
-	KICK_HANDLERS.append(instance)
-def register_ban_handler(instance):
-	BAN_HANDLERS.append(instance)
-def register_status_change_handler(instance):
-	STATUS_CHANGE_HANDLERS.append(instance)	
-def register_ra_handler(instance):
-	RA_HANDLERS.append(instance)
-def register_nick_change_handler(instance):
-	NICK_CHANGE_HANDLERS.append(instance)
 
 def register_command_handler(instance, command, category=[], access=0, desc='', syntax='', examples=[]):
 	command = command.decode('utf-8')
@@ -178,9 +164,9 @@ def call_message_handlers(type, source, body):
 def call_outgoing_message_handlers(target, body):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
 		thread.start_new_thread(handler, (target, body))
-def call_join_handlers(groupchat, nick):
+def call_join_handlers(groupchat, nick, aff, role):
 	for handler in JOIN_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick))
+		thread.start_new_thread(handler, (groupchat, nick, aff, role))
 def call_leave_handlers(groupchat, nick, reason):
 	for handler in LEAVE_HANDLERS:
 		thread.start_new_thread(handler, (groupchat, nick, reason))
@@ -190,21 +176,6 @@ def call_iq_handlers(iq):
 def call_presence_handlers(prs):
 	for handler in PRESENCE_HANDLERS:
 		thread.start_new_thread(handler, (prs,))
-def call_kick_handlers(groupchat, nick, reason):
-	for handler in KICK_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, reason))
-def call_ban_handlers(groupchat, nick, reason):
-	for handler in BAN_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, reason))
-def call_status_change_handlers(groupchat, nick, status, stmsg):
-	for handler in STATUS_CHANGE_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, status, stmsg))	
-def call_ra_handlers(groupchat, nick, aff, role, reason):
-	for handler in RA_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, aff, role, reason))	
-def call_nick_change_handlers(groupchat, nick, newnick):
-	for handler in NICK_CHANGE_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, newnick))		
 	
 def call_command_handlers(command, type, source, parameters, callee):
 	real_access = MACROS.get_access(callee, source[1])
@@ -294,34 +265,7 @@ def get_commoff(gch=None):
 			pass		
 
 ################################################################################
-"""
-def get_conf_jid(gc, nick):
-	if gc.has_key(nick):
-		info = gc[nick]
-		if info.has_key('jid') and info['jid']:
-			return info['jid']
-	return ''
-	
-def get_jid(source, parameter):
-	groupchat = source[1]
-	parameter = parameter.strip()
-	jid = ''
-	if parameter == '':
-		parameter = source[2]
-	if GROUPCHATS.has_key(groupchat):
-		jid = get_conf_jid(GROUPCHATS[groupchat], parameter)
-#	jid = get_true_jid(source)
-	return jid
-	
-def get_groupchat(jid):
-	if type(jid) is types.ListType:
-		jid = jid[1]
-	jid = string.split(unicode(jid), '/')[0] # str(jid)
-	if GROUPCHATS.has_key(jid):
-		return jid
-	else:
-		return None
-"""
+
 def get_true_jid(jid):
 	true_jid = ''
 	if type(jid) is types.ListType:
@@ -380,11 +324,12 @@ def add_gch(groupchat=None, nick=None, passw=None):
 
 def get_access_levels():
 	global GLOBACCESS
-	initialize_file(GLOBACCESS_FILE, '{}')
+	global ACCBYCONFFILE
 	GLOBACCESS = eval(read_file(GLOBACCESS_FILE))
 	for jid in ADMINS:
 		GLOBACCESS[jid] = 100
 		write_file(GLOBACCESS_FILE, str(GLOBACCESS))
+	ACCBYCONFFILE = eval(read_file(ACCBYCONF_FILE))
 	
 
 def change_access_temp(gch, source, level=0):
@@ -400,7 +345,7 @@ def change_access_temp(gch, source, level=0):
 	if not ACCBYCONF[gch].has_key(jid):
 		ACCBYCONF[gch][jid]=jid
 	ACCBYCONF[gch][jid]=level
-	
+		
 def change_access_perm(gch, source, level=0):
 	global ACCBYCONF
 	jid = get_true_jid(source)
@@ -422,6 +367,7 @@ def change_access_perm(gch, source, level=0):
 	if not ACCBYCONF[gch].has_key(jid):
 		ACCBYCONF[gch][jid]=jid
 	ACCBYCONF[gch][jid]=level
+	get_access_levels()
 	
 def change_access_perm_glob(source, level=0):
 	global GLOBACCESS
@@ -464,7 +410,7 @@ def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
 	if passw:
 		pres.setTagData('password', passw)
 	JCON.send(presence)
-	if not GROUPCHATS.has_key(groupchat):
+	if not groupchat in GROUPCHATS:
 		GROUPCHATS[groupchat] = {}
 	if check_file(groupchat,'macros.txt'):
 		pass
@@ -488,7 +434,7 @@ def msg(target, body):
 
 def reply(ltype, source, body):
 	if type(body) is types.StringType:
-		body = body.decode('utf-8', 'backslashreplace')
+		body = body.decode('utf-8', 'backslashrepla<input type="image" src="">ce')
 	if ltype == 'public':
 		if len(body)>1000:
 			body=body[:1000]+u' [...]'
@@ -513,13 +459,22 @@ def isadmin(jid):
 	return 0
 
 ################################################################################
+def messageCB(con,msg):
+	thread.start_new_thread(messageHnd, (con,msg))
+	
+def presenceCB(con,prs):
+	thread.start_new_thread(presenceHnd, (con,prs))
+	
+def iqCB(con,iq):
+	thread.start_new_thread(iqHnd, (con,iq))
+
 def findPresenceItem(node):
 	for p in [x.getTag('item') for x in node.getTags('x')]:
 		if p != None:
 			return p
 	return None
 
-def messageCB(con, msg):
+def messageHnd(con, msg):
 	msgtype = msg.getType()
 	body = msg.getBody()
 	fromjid = msg.getFrom()
@@ -541,56 +496,19 @@ def messageCB(con, msg):
 			mtype='private'
 		call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
 		if command in COMMANDS:
-			try:
-				if command in COMMOFF[fromjid.getStripped()]:
-					return
-			except:
-				pass
-			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
+			if fromjid.getStripped() in COMMOFF.keys() and command in COMMOFF[fromjid.getStripped()]:
+				return
+			else:
+				call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 
-def presenceCB(con, prs):
-	call_presence_handlers(prs)
+def presenceHnd(con, prs):
 	ptype = prs.getType()
 	groupchat = prs.getFrom().getStripped()
 	nick = prs.getFrom().getResource()
 	item = findPresenceItem(prs)
 
 	if groupchat in GROUPCHATS:
-		if ptype == 'available' or ptype == None:
-			if not GROUPCHATS[groupchat].has_key(nick):
-				if item == None:
-					msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
-					leave_groupchat(groupchat)
-				else:
-					jid = item['jid']
-					try:
-						if jid != None and jid in GROUPCHATS[groupchat][nick]['jid']:
-							pass
-					except:
-						call_join_handlers(groupchat, nick)
-						GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time()}
-				try:
-					if GLOBACCESS.has_key(jid):
-						return
-				except:
-					ACCFILE = eval(read_file(ACCBYCONF_FILE))
-					if ACCFILE[groupchat].has_key(jid):
-						pass
-				else:
-					if GROUPCHATS[groupchat].has_key(nick):
-						role = item['role']
-						aff = item['affiliation']
-						if ROLES.has_key(role):
- 							accr = ROLES[role]
-						else:
-							accr = 0
-						if AFFILIATIONS.has_key(aff):
-							acca = AFFILIATIONS[aff]
-						else:
-							acca = 0
-						access = int(accr)+int(acca)
-						change_access_temp(groupchat, jid, access)
-		elif ptype == 'unavailable':
+		if ptype == 'unavailable':
 			jid = item['jid']
 			try:
 				code = prs.getStatusCode()
@@ -600,26 +518,51 @@ def presenceCB(con, prs):
 				reason = prs.getReason()
 			except:
 				reason = None
-			if jid != None and jid in GROUPCHATS[groupchat][nick]['jid']:
-				pass
+			if code == '303':	
+				newnick = prs.getNick()
+				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time()}
+				del GROUPCHATS[groupchat][nick]
 			else:
-				if GROUPCHATS[groupchat].has_key(nick):
-					del GROUPCHATS[groupchat][nick]							
-				call_leave_handlers(groupchat, nick, reason)
-			if code:	
-				if code == '307':
-					call_kick_handlers(groupchat, nick, reason)	
-				if code == '301':
-					call_ban_handlers(groupchat, nick, reason)	
-				if code == '303':	
-					try:
-						newnick = prs.getNick()
-					except:
-						newnick = None		
-					if GROUPCHATS[groupchat].has_key(nick):
-						del GROUPCHATS[groupchat][nick]
-						GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time()}
-					call_nick_change_handlers(groupchat, nick, newnick)
+				del GROUPCHATS[groupchat][nick]							
+				call_leave_handlers(groupchat, nick, reason)		
+		elif ptype == 'available' or ptype == None:
+			if item['jid'] == None:
+				msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
+				leave_groupchat(groupchat)
+			else:
+				jid = item['jid']
+				if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid:
+					return
+				else:
+					aff=prs.getAffiliation()
+					role=prs.getRole()
+					call_join_handlers(groupchat, nick, aff, role)
+					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time()}
+					if jid in GLOBACCESS:
+						return
+					else:
+						if groupchat in ACCBYCONFFILE and jid in ACCBYCONFFILE[groupchat]:
+							pass
+						else:
+							if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat]:
+								if jid != None:
+									role = item['role']
+									aff = item['affiliation']
+									if role in ROLES:
+										accr = ROLES[role]
+										if role=='moderator':
+											ismoder = 1
+										else:
+											ismoder = 0	
+										GROUPCHATS[groupchat][nick]['ismoder'] = ismoder
+									else:
+										accr = 0
+									if aff in AFFILIATIONS:
+										acca = AFFILIATIONS[aff]
+									else:
+										acca = 0
+									access = int(accr)+int(acca)
+									change_access_temp(groupchat, jid, access)
 		elif ptype == 'error':
 			try:
 				code = prs.getErrorCode()
@@ -627,26 +570,9 @@ def presenceCB(con, prs):
 				code = None
 			if code == '409':
 				join_groupchat(groupchat, nick + '-')
-		try:
-			stmsg = prs.getStatus()
-		except:
-			stmsg=''
-		try:
-			status = prs.getShow()
-		except:
-			status = 'online'
-		if not status:
-			status = 'online'
-		call_status_change_handlers(groupchat, nick, status, stmsg)
-		try:
-			aff=prs.getAffiliation()
-			role=prs.getRole()
-			reason=prs.getReason()
-			call_ra_handlers(groupchat, nick, aff, role, reason)
-		except:
-			pass
-
-def iqCB(con, iq):
+	call_presence_handlers(prs)
+	
+def iqHnd(con, iq):
 	global JCON
 	if iq.getTags('query', {}, xmpp.NS_VERSION):
 		osname=os.popen("uname -sr", 'r')
@@ -736,6 +662,7 @@ def start():
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
 			thread.start_new_thread(join_groupchat, (groupchat.decode('utf-8'),groupchats[groupchat]['nick'].decode('utf-8'),groupchats[groupchat]['passw']))
+			time.sleep(0.1)
 	else:
 		print 'Error: unable to create chatrooms list file!'
 	
@@ -755,6 +682,7 @@ if __name__ == "__main__":
 		print '\nINTERUPT (Ctrl+C)'
 		for gch in GROUPCHATS.keys():
 			thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
+		time.sleep(0.1)
 		sys.exit(1)
 	except:
 		if AUTO_RESTART:
@@ -770,6 +698,7 @@ if __name__ == "__main__":
 				print '\nINTERUPT (Ctrl+C)'
 				for gch in GROUPCHATS.keys():
 					thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
+				time.sleep(0.1)
 				sys.exit(1)
 			print 'RESTARTING'
 			os.execl(sys.executable, sys.executable, sys.argv[0])
