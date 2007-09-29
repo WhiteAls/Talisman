@@ -212,20 +212,21 @@ def log_presence(prs):
 			newnick = prs.getNick()
 			log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)
 	else:
-		try:
-			stmsg = prs.getStatus()
-		except:
-			stmsg=''
-		try:
-			status = prs.getShow()
-		except:
-			status = 'online'
-		if not status:
-			status = 'online'
-		if stmsg:
-			log_write('%s is now %s (%s)' % (nick,status,stmsg), '@$$status$$@', 'public', groupchat)
-		else:
-			log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)	
+		if not prs.getType()=='unavailable':
+			try:
+				stmsg = prs.getStatus()
+			except:
+				stmsg=''
+			try:
+				status = prs.getShow()
+			except:
+				status = 'online'
+			if not status:
+				status = 'online'
+			if stmsg:
+				log_write('%s is now %s (%s)' % (nick,status,stmsg), '@$$status$$@', 'public', groupchat)
+			else:
+				log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)	
 			
 			
 if PUBLIC_LOG_DIR:

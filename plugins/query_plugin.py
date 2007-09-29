@@ -133,8 +133,8 @@ def handler_query_search(type, source, parameters):
 		if not localdb.keys():
 			reply(type, source, u'база пуста!')
 			return
-		for x in localdb.keys():
-			if x.count(parameters.strip())>0:
+		for x in localdb:
+			if x.count(parameters)>0:
 				rep.append(x)
 		if rep:
 			reply(type,source,u'совпало с:\n'+', '.join(rep))

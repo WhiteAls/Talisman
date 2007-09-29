@@ -12,7 +12,7 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: auth.py,v 1.37 2006/08/21 08:11:51 normanr Exp $
+# $Id: auth.py,v 1.38 2007/08/28 10:03:33 normanr Exp $
 
 """
 Provides library with all Non-SASL and SASL authentication mechanisms.
@@ -120,10 +120,10 @@ class SASL(PlugIn):
 
     def plugout(self):
         """ Remove SASL handlers from owner's dispatcher. Used internally. """
-        self._owner.UnregisterHandler('features',self.FeaturesHandler,xmlns=NS_STREAMS)
-        self._owner.UnregisterHandler('challenge',self.SASLHandler,xmlns=NS_SASL)
-        self._owner.UnregisterHandler('failure',self.SASLHandler,xmlns=NS_SASL)
-        self._owner.UnregisterHandler('success',self.SASLHandler,xmlns=NS_SASL)
+        if self._owner.__dict__.has_key('features'): self._owner.UnregisterHandler('features',self.FeaturesHandler,xmlns=NS_STREAMS)
+        if self._owner.__dict__.has_key('challenge'): self._owner.UnregisterHandler('challenge',self.SASLHandler,xmlns=NS_SASL)
+        if self._owner.__dict__.has_key('failure'): self._owner.UnregisterHandler('failure',self.SASLHandler,xmlns=NS_SASL)
+        if self._owner.__dict__.has_key('success'): self._owner.UnregisterHandler('success',self.SASLHandler,xmlns=NS_SASL)
 
     def FeaturesHandler(self,conn,feats):
         """ Used to determine if server supports SASL auth. Used internally. """

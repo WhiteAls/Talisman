@@ -12,7 +12,7 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: client.py,v 1.55 2006/06/03 13:53:27 normanr Exp $
+# $Id: client.py,v 1.60 2007/08/28 10:03:33 normanr Exp $
 
 """
 Provides PlugIn class functionality to develop extentions for xmpppy.
@@ -75,11 +75,13 @@ class PlugIn:
     def PlugOut(self):
         """ Unregister all our staff from main instance and detach from it. """
         self.DEBUG('Plugging %s out of %s.'%(self,self._owner),'stop')
+        ret = None
+        if self.__class__.__dict__.has_key('plugout'): ret = self.plugout()
         self._owner.debug_flags.remove(self.DBG_LINE)
         for method in self._exported_methods: del self._owner.__dict__[method.__name__]
         for method in self._old_owners_methods: self._owner.__dict__[method.__name__]=method
         del self._owner.__dict__[self.__class__.__name__]
-        if self.__class__.__dict__.has_key('plugout'): return self.plugout()
+        return ret
 
     def DEBUG(self,text,severity='info'):
         """ Feed a provided debug line to main instance's debug facility along with our ID string. """
@@ -145,10 +147,13 @@ class CommonClient:
     def reconnectAndReauth(self):
         """ Example of reconnection method. In fact, it can be used to batch connection and auth as well. """
         handlerssave=self.Dispatcher.dumpHandlers()
-        self.Dispatcher.PlugOut()
+        if self.__dict__.has_key('ComponentBind'): self.ComponentBind.PlugOut()
+        if self.__dict__.has_key('Bind'): self.Bind.PlugOut()
+        self._route=0
         if self.__dict__.has_key('NonSASL'): self.NonSASL.PlugOut()
         if self.__dict__.has_key('SASL'): self.SASL.PlugOut()
         if self.__dict__.has_key('TLS'): self.TLS.PlugOut()
+        self.Dispatcher.PlugOut()
         if self.__dict__.has_key('HTTPPROXYsocket'): self.HTTPPROXYsocket.PlugOut()
         if self.__dict__.has_key('TCPsocket'): self.TCPsocket.PlugOut()
         if not self.connect(server=self._Server,proxy=self._Proxy): return
@@ -160,11 +165,11 @@ class CommonClient:
         """ Make a tcp/ip connection, protect it with tls/ssl if possible and start XMPP stream.
             Returns None or 'tcp' or 'tls', depending on the result."""
         if not server: server=(self.Server,self.Port)
-        if proxy: socket=transports.HTTPPROXYsocket(proxy,server,use_srv)
-        else: socket=transports.TCPsocket(server,use_srv)
-        connected=socket.PlugIn(self)
+        if proxy: sock=transports.HTTPPROXYsocket(proxy,server,use_srv)
+        else: sock=transports.TCPsocket(server,use_srv)
+        connected=sock.PlugIn(self)
         if not connected: 
-            socket.PlugOut()
+            sock.PlugOut()
             return
         self._Server,self._Proxy=server,proxy
         self.connected='tcp'
@@ -224,6 +229,8 @@ class Client(CommonClient):
             if self.Bind.Bind(resource):
                 self.connected+='+sasl'
                 return 'sasl'
+        else:
+            if self.__dict__.has_key('SASL'): self.SASL.PlugOut()
 
     def getRoster(self):
         """ Return the Roster instance, previously plugging it in and
@@ -244,7 +251,7 @@ class Client(CommonClient):
 
 class Component(CommonClient):
     """ Component class. The only difference from CommonClient is ability to perform component authentication. """
-    def __init__(self,server,port=5347,typ=None,debug=['always', 'nodebuilder'],domains=None,sasl=0,bind=0,route=0):
+    def __init__(self,server,port=5347,typ=None,debug=['always', 'nodebuilder'],domains=None,sasl=0,bind=0,route=0,xcp=0):
         """ Init function for Components.
             As components use a different auth mechanism which includes the namespace of the component.
             Jabberd1.4 and Ejabberd use the default namespace then for all client messages.
@@ -257,6 +264,7 @@ class Component(CommonClient):
         self.sasl=sasl
         self.bind=bind
         self.route=route
+        self.xcp=xcp
         if domains:
             self.domains=domains
         else:
@@ -270,12 +278,12 @@ class Component(CommonClient):
             self.Namespace=auth.NS_COMPONENT_1
             self.Server=server[0]
         CommonClient.connect(self,server=server,proxy=proxy)
-        if self.connected and (self.typ=='jabberd2' or not self.typ and self.Dispatcher.Stream.features != None):
-                self.defaultNamespace=auth.NS_CLIENT
-                self.Dispatcher.RegisterNamespace(self.defaultNamespace)
-                self.Dispatcher.RegisterProtocol('iq',dispatcher.Iq)
-                self.Dispatcher.RegisterProtocol('message',dispatcher.Message)
-                self.Dispatcher.RegisterProtocol('presence',dispatcher.Presence)
+        if self.connected and (self.typ=='jabberd2' or not self.typ and self.Dispatcher.Stream.features != None) and (not self.xcp):
+            self.defaultNamespace=auth.NS_CLIENT
+            self.Dispatcher.RegisterNamespace(self.defaultNamespace)
+            self.Dispatcher.RegisterProtocol('iq',dispatcher.Iq)
+            self.Dispatcher.RegisterProtocol('message',dispatcher.Message)
+            self.Dispatcher.RegisterProtocol('presence',dispatcher.Presence)
         return self.connected
 
     def dobind(self, sasl):

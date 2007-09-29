@@ -68,6 +68,7 @@ ROLES={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 	
 BOOT = time.time()
+LAST = time.time()
 ################################################################################
 
 COMMANDS = {}
@@ -465,9 +466,9 @@ def messageCB(con,msg):
 def presenceCB(con,prs):
 	thread.start_new_thread(presenceHnd, (con,prs))
 	
-def iqCB(con,iq):
-	thread.start_new_thread(iqHnd, (con,iq))
-
+#def iqCB(con,iq):
+#	thread.start_new_thread(iqHnd, (con,iq))
+	
 def findPresenceItem(node):
 	for p in [x.getTag('item') for x in node.getTags('x')]:
 		if p != None:
@@ -475,13 +476,16 @@ def findPresenceItem(node):
 	return None
 
 def messageHnd(con, msg):
+	LAST = time.time()
 	msgtype = msg.getType()
 	body = msg.getBody()
 	fromjid = msg.getFrom()
+	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
+	if fromjid.getResource() == bot_nick:
+		return
 	command,parameters,cbody,rcmd = '','','',''
 	if not body:
 		return
-	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
 	if bot_nick and string.split(body)[0] == bot_nick+':':
 		body=' '.join(string.split(body)[1:])
 	rcmd = body.split(' ')[0]
@@ -515,7 +519,7 @@ def presenceHnd(con, prs):
 			except:
 				code = None
 			try:
-				reason = prs.getReason()
+				reason = prs.getStatus()
 			except:
 				reason = None
 			if code == '303':	
@@ -572,7 +576,7 @@ def presenceHnd(con, prs):
 				join_groupchat(groupchat, nick + '-')
 	call_presence_handlers(prs)
 	
-def iqHnd(con, iq):
+def iqCB(con, iq):
 	global JCON
 	if iq.getTags('query', {}, xmpp.NS_VERSION):
 		osname=os.popen("uname -sr", 'r')
@@ -587,6 +591,7 @@ def iqHnd(con, iq):
 		query.setTagData('version', 'alpha')
 		query.setTagData('os', osver)
 		JCON.send(result)
+		raise xmpp.NodeProcessed
 	elif iq.getTags('time', {}, 'urn:xmpp:time'):
 		tzo=(lambda tup: tup[0]+"%02d:"%tup[1]+"%02d"%tup[2])((lambda t: tuple(['+' if t<0 else '-', abs(t)/3600, abs(t)/60%60]))(time.altzone if time.daylight else time.timezone))
 		utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
@@ -595,10 +600,40 @@ def iqHnd(con, iq):
 		reply.setTagData('tzo', tzo)
 		reply.setTagData('utc', utc)
 		JCON.send(result)
+		raise xmpp.NodeProcessed
+	elif iq.getTags('query', {}, xmpp.NS_DISCO_INFO):
+		items=[]
+		ids=[]
+		ids.append({'category':'client','type':'bot','name':'Talisman'})
+		features=[xmpp.NS_DISCO_INFO,xmpp.NS_DISCO_ITEMS,xmpp.NS_MUC,'urn:xmpp:time','urn:xmpp:ping',xmpp.NS_VERSION,xmpp.NS_PRIVACY,xmpp.NS_REGISTER,xmpp.NS_ROSTER,xmpp.NS_VCARD,xmpp.NS_DATA,xmpp.NS_LAST,xmpp.NS_COMMANDS,'msglog','fullunicode']
+		info={'ids':ids,'features':features}
+		b=xmpp.browser.Browser()
+		b.PlugIn(JCON)
+		b.setDiscoHandler({'items':items,'info':info})
+	elif iq.getTags('query', {}, xmpp.NS_LAST):
+		last=time.time()-LAST
+		result = iq.buildReply('result')
+		query = result.getTag('query')
+		query.setAttr('seconds',int(last))
+		JCON.send(result)
+		raise xmpp.NodeProcessed
+	elif iq.getTags('query', {}, xmpp.NS_TIME):
+		timedisp=time.strftime("%a, %d %b %Y %H:%M:%S UTC", time.localtime())
+		timetz=strftime("%Z", time.localtime())
+		timeutc=time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
+		result = iq.buildReply('result')
+		reply=result.addChild('query', {}, [], NS_TIME)
+		reply.setTagData('utc', tzo)
+		reply.setTagData('tz', timetz)
+		reply.setTagData('display', timedisp)
+		JCON.send(result)
+		raise xmpp.NodeProcessed
+	elif iq.getTags('query', {}, 'urn:xmpp:ping'):
+		JCON.send(iq.buildReply('result'))
+		raise xmpp.NodeProcessed
 	else:
 		call_iq_handlers(iq)
 	
-
 def dcCB():
 	print 'DISCONNECTED'
 	if AUTO_RESTART:
@@ -645,12 +680,11 @@ def start():
 	if auth!='sasl':
 		print 'Warning: unable to perform SASL auth. Old authentication method used!'
 
-
 	JCON.RegisterHandler('message', messageCB)
 	JCON.RegisterHandler('presence', presenceCB)
 	JCON.RegisterHandler('iq', iqCB)
 	JCON.RegisterDisconnectHandler(dcCB)
-#	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
+	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
 	JCON.getRoster()
 	JCON.sendInitPresence()
@@ -682,7 +716,7 @@ if __name__ == "__main__":
 		print '\nINTERUPT (Ctrl+C)'
 		for gch in GROUPCHATS.keys():
 			thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
-		time.sleep(0.1)
+		time.sleep(1)
 		sys.exit(1)
 	except:
 		if AUTO_RESTART:
@@ -698,11 +732,9 @@ if __name__ == "__main__":
 				print '\nINTERUPT (Ctrl+C)'
 				for gch in GROUPCHATS.keys():
 					thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
-				time.sleep(0.1)
+				time.sleep(1)
 				sys.exit(1)
 			print 'RESTARTING'
 			os.execl(sys.executable, sys.executable, sys.argv[0])
 		else:
 			raise
-
-#EOF

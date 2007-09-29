@@ -12,7 +12,7 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: transports.py,v 1.29 2006/05/22 08:58:39 normanr Exp $
+# $Id: transports.py,v 1.31 2007/09/15 11:34:28 normanr Exp $
 
 """
 This module contains the low-level implementations of xmpppy connect methods or
@@ -146,8 +146,10 @@ class TCPsocket(PlugIn):
         try: received = self._recv(BUFLEN)
         except socket.sslerror,e:
             self._seen_data=0
-            if e[0]==2: return ''
+            if e[0]==socket.SSL_ERROR_WANT_READ: return ''
+            if e[0]==socket.SSL_ERROR_WANT_WRITE: return ''
             self.DEBUG('Socket error while receiving data','error')
+            sys.exc_clear()
             self._owner.disconnected()
             raise IOError("Disconnected from server")
         except: received = ''
@@ -279,8 +281,8 @@ class TLS(PlugIn):
         """ Unregisters TLS handler's from owner's dispatcher. Take note that encription
             can not be stopped once started. You can only break the connection and start over."""
         self._owner.UnregisterHandler('features',self.FeaturesHandler,xmlns=NS_STREAMS)
-        self._owner.UnregisterHandlerOnce('proceed',self.StartTLSHandler,xmlns=NS_TLS)
-        self._owner.UnregisterHandlerOnce('failure',self.StartTLSHandler,xmlns=NS_TLS)
+        self._owner.UnregisterHandler('proceed',self.StartTLSHandler,xmlns=NS_TLS)
+        self._owner.UnregisterHandler('failure',self.StartTLSHandler,xmlns=NS_TLS)
 
     def FeaturesHandler(self, conn, feats):
         """ Used to analyse server <features/> tag for TLS support.

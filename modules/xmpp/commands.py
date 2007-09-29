@@ -1,4 +1,4 @@
-## $Id: commands.py,v 1.16 2006/06/03 12:54:39 normanr Exp $
+## $Id: commands.py,v 1.17 2007/08/28 09:54:15 normanr Exp $
 
 ## Ad-Hoc Command manager
 ## Mike Albon (c) 5th January 2005
@@ -87,7 +87,7 @@ class Commands(PlugIn):
         elif self._handlers[''].has_key(node):
                 self._handlers[''][node]['execute'](conn,request)
         else:
-            conn.send(Error(requet,ERR_ITEM_NOT_FOUND))
+            conn.send(Error(request,ERR_ITEM_NOT_FOUND))
             raise NodeProcessed
 
     def _DiscoHandler(self,conn,request,typ):

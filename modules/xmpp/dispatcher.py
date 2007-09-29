@@ -1,4 +1,4 @@
-##   transports.py
+##   dispatcher.py
 ##
 ##   Copyright (C) 2003-2005 Alexey "Snake" Nezhdanov
 ##
@@ -12,7 +12,7 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: dispatcher.py,v 1.41 2006/06/03 13:53:27 normanr Exp $
+# $Id: dispatcher.py,v 1.42 2007/05/18 23:18:36 normanr Exp $
 
 """
 Main xmpppy mechanism. Provides library with methods to assign different handlers
@@ -120,7 +120,7 @@ class Dispatcher(PlugIn):
             try: data=self._owner.Connection.receive()
             except IOError: return
             try: self.Stream.Parse(data)
-            except: pass
+            except XML_ERROR_UNBOUND_PREFIX: pass
             if len(self._pendingExceptions) > 0:
                 _pendingException = self._pendingExceptions.pop()
                 raise _pendingException[0], _pendingException[1], _pendingException[2]
@@ -183,6 +183,7 @@ class Dispatcher(PlugIn):
     def UnregisterHandler(self,name,handler,typ='',ns='',xmlns=None):
         """ Unregister handler. "typ" and "ns" must be specified exactly the same as with registering."""
         if not xmlns: xmlns=self._owner.defaultNamespace
+        if not self.handlers.has_key(xmlns): return
         if not typ and not ns: typ='default'
         for pack in self.handlers[xmlns][name][typ+ns]:
             if handler==pack['func']: break
