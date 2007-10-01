@@ -518,8 +518,11 @@ def presenceHnd(con, prs):
 				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'status': '', 'stmsg': ''}
 				del GROUPCHATS[groupchat][nick]
 			else:
-				del GROUPCHATS[groupchat][nick]
-				call_leave_handlers(groupchat, nick, reason)
+				try:
+					del GROUPCHATS[groupchat][nick]
+					call_leave_handlers(groupchat, nick, reason)
+				except:
+					pass
 		elif ptype == 'available' or ptype == None:
 			if item['jid'] == None:
 				msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
@@ -610,7 +613,7 @@ def iqHnd(con, iq):
 		raise xmpp.NodeProcessed
 	elif iq.getTags('query', {}, xmpp.NS_TIME):
 		timedisp=time.strftime("%a, %d %b %Y %H:%M:%S UTC", time.localtime())
-		timetz=strftime("%Z", time.localtime())
+		timetz=time.strftime("%Z", time.localtime())
 		timeutc=time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
 		result = iq.buildReply('result')
 		reply=result.addChild('query', {}, [], NS_TIME)
