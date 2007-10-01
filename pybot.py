@@ -7,7 +7,7 @@
 #  Initial Copyright © 2002-2005 Mike Mintz <mikemintz@gmail.com>
 #  Modifications Copyright © 2007 Als <Als@exploit.in>
 #  Modifications Copyright © 2007 dimichxp <dimichxp@gmail.com>
-#  Parts of code Copyright © Boris Kotov <admin@avoozl.ru> 
+#  Parts of code Copyright © Boris Kotov <admin@avoozl.ru>
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ INITSCRIPT_FILE = GENERAL_CONFIG['INITSCRIPT_FILE']
 
 ROLES={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
-	
+
 BOOT = time.time()
 LAST = time.time()
 ################################################################################
@@ -114,7 +114,7 @@ def write_file(filename, data):
 	fp = file(filename, 'w')
 	fp.write(data)
 	fp.close()
-	
+
 def check_file(gch='',file=''):
 	pth,pthf='',''
 	if gch:
@@ -137,8 +137,8 @@ def check_file(gch='',file=''):
 			fp.close()
 			return 1
 		except:
-			return 0	
-	
+			return 0
+
 ################################################################################
 
 def register_message_handler(instance):
@@ -161,23 +161,23 @@ def register_command_handler(instance, command, category=[], access=0, desc='', 
 
 def call_message_handlers(type, source, body):
 	for handler in MESSAGE_HANDLERS:
-		thread.start_new_thread(handler, (type, source, body))
+		thread.start_new_thread(handler, (type, source, body,))
 def call_outgoing_message_handlers(target, body):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
-		thread.start_new_thread(handler, (target, body))
+		thread.start_new_thread(handler, (target, body,))
 def call_join_handlers(groupchat, nick, aff, role):
 	for handler in JOIN_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, aff, role))
+		thread.start_new_thread(handler, (groupchat, nick, aff, role,))
 def call_leave_handlers(groupchat, nick, reason):
 	for handler in LEAVE_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, reason))
+		thread.start_new_thread(handler, (groupchat, nick, reason,))
 def call_iq_handlers(iq):
 	for handler in IQ_HANDLERS:
 		thread.start_new_thread(handler, (iq,))
 def call_presence_handlers(prs):
 	for handler in PRESENCE_HANDLERS:
 		thread.start_new_thread(handler, (prs,))
-	
+
 def call_command_handlers(command, type, source, parameters, callee):
 	real_access = MACROS.get_access(callee, source[1])
 	if real_access < 0:
@@ -263,7 +263,7 @@ def get_commoff(gch=None):
 				COMMOFF[gch]=gch
 				COMMOFF[gch]=[]
 		except:
-			pass		
+			pass
 
 ################################################################################
 
@@ -331,7 +331,7 @@ def get_access_levels():
 		GLOBACCESS[jid] = 100
 		write_file(GLOBACCESS_FILE, str(GLOBACCESS))
 	ACCBYCONFFILE = eval(read_file(ACCBYCONF_FILE))
-	
+
 
 def change_access_temp(gch, source, level=0):
 	global ACCBYCONF
@@ -346,7 +346,7 @@ def change_access_temp(gch, source, level=0):
 	if not ACCBYCONF[gch].has_key(jid):
 		ACCBYCONF[gch][jid]=jid
 	ACCBYCONF[gch][jid]=level
-		
+
 def change_access_perm(gch, source, level=0):
 	global ACCBYCONF
 	jid = get_true_jid(source)
@@ -369,7 +369,7 @@ def change_access_perm(gch, source, level=0):
 		ACCBYCONF[gch][jid]=jid
 	ACCBYCONF[gch][jid]=level
 	get_access_levels()
-	
+
 def change_access_perm_glob(source, level=0):
 	global GLOBACCESS
 	jid = get_true_jid(source)
@@ -400,7 +400,7 @@ def has_access(source, level, gch):
 	if user_level(jid,gch) >= int(level):
 		return 1
 	return 0
-	
+
 ################################################################################
 
 def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
@@ -417,7 +417,7 @@ def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
 		pass
 	else:
 		msg(groupchat, u'ВНИМАНИЕ!!! Локальная база макросов не была создана! Возникла ошибка, срочно сообщите о ней администраору бота!')
-		
+
 def leave_groupchat(groupchat):
 	JCON.send(xmpp.Presence(groupchat, 'unavailable'))
 	if GROUPCHATS.has_key(groupchat):
@@ -460,15 +460,6 @@ def isadmin(jid):
 	return 0
 
 ################################################################################
-def messageCB(con,msg):
-	thread.start_new_thread(messageHnd, (con,msg))
-	
-def presenceCB(con,prs):
-	thread.start_new_thread(presenceHnd, (con,prs))
-	
-#def iqCB(con,iq):
-#	thread.start_new_thread(iqHnd, (con,iq))
-	
 def findPresenceItem(node):
 	for p in [x.getTag('item') for x in node.getTags('x')]:
 		if p != None:
@@ -522,13 +513,13 @@ def presenceHnd(con, prs):
 				reason = prs.getStatus()
 			except:
 				reason = None
-			if code == '303':	
+			if code == '303':
 				newnick = prs.getNick()
-				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time()}
+				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'status': '', 'stmsg': ''}
 				del GROUPCHATS[groupchat][nick]
 			else:
-				del GROUPCHATS[groupchat][nick]							
-				call_leave_handlers(groupchat, nick, reason)		
+				del GROUPCHATS[groupchat][nick]
+				call_leave_handlers(groupchat, nick, reason)
 		elif ptype == 'available' or ptype == None:
 			if item['jid'] == None:
 				msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
@@ -541,7 +532,7 @@ def presenceHnd(con, prs):
 					aff=prs.getAffiliation()
 					role=prs.getRole()
 					call_join_handlers(groupchat, nick, aff, role)
-					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time()}
+					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'status': '', 'stmsg': ''}
 					if jid in GLOBACCESS:
 						return
 					else:
@@ -557,7 +548,7 @@ def presenceHnd(con, prs):
 										if role=='moderator':
 											ismoder = 1
 										else:
-											ismoder = 0	
+											ismoder = 0
 										GROUPCHATS[groupchat][nick]['ismoder'] = ismoder
 									else:
 										accr = 0
@@ -575,8 +566,8 @@ def presenceHnd(con, prs):
 			if code == '409':
 				join_groupchat(groupchat, nick + '-')
 	call_presence_handlers(prs)
-	
-def iqCB(con, iq):
+
+def iqHnd(con, iq):
 	global JCON
 	if iq.getTags('query', {}, xmpp.NS_VERSION):
 		osname=os.popen("uname -sr", 'r')
@@ -605,7 +596,7 @@ def iqCB(con, iq):
 		items=[]
 		ids=[]
 		ids.append({'category':'client','type':'bot','name':'Talisman'})
-		features=[xmpp.NS_DISCO_INFO,xmpp.NS_DISCO_ITEMS,xmpp.NS_MUC,'urn:xmpp:time','urn:xmpp:ping',xmpp.NS_VERSION,xmpp.NS_PRIVACY,xmpp.NS_REGISTER,xmpp.NS_ROSTER,xmpp.NS_VCARD,xmpp.NS_DATA,xmpp.NS_LAST,xmpp.NS_COMMANDS,'msglog','fullunicode']
+		features=[xmpp.NS_DISCO_INFO,xmpp.NS_DISCO_ITEMS,xmpp.NS_MUC,'urn:xmpp:time','urn:xmpp:ping',xmpp.NS_VERSION,xmpp.NS_PRIVACY,xmpp.NS_ROSTER,xmpp.NS_VCARD,xmpp.NS_DATA,xmpp.NS_LAST,xmpp.NS_COMMANDS,'msglog','fullunicode']
 		info={'ids':ids,'features':features}
 		b=xmpp.browser.Browser()
 		b.PlugIn(JCON)
@@ -633,8 +624,8 @@ def iqCB(con, iq):
 		raise xmpp.NodeProcessed
 	else:
 		call_iq_handlers(iq)
-	
-def dcCB():
+
+def dcHnd():
 	print 'DISCONNECTED'
 	if AUTO_RESTART:
 		print 'WAITING FOR RESTART...'
@@ -642,7 +633,7 @@ def dcCB():
 		print 'RESTARTING'
 		os.execl(sys.executable, sys.executable, sys.argv[0])
 	else:
-		sys.exit(1)
+		sys.exit(0)
 
 ################################################################################
 
@@ -654,9 +645,9 @@ def start():
 	get_access_levels()
 #	load_plugins()
 	get_commoff()
-	
+
 	print 'Waiting For Connection...\n'
-	
+
 	con=JCON.connect()
 	if not con:
 		print 'COULDN\'T CONNECT\nSleep for 30 seconds'
@@ -666,30 +657,30 @@ def start():
 		print 'Connection Established'
 	if con!='tls':
 		print "Warning: unable to estabilish secure connection - TLS failed!"
-		
+
 	print 'Using',JCON.isConnected()
-	
+
 	print '\nWaiting For Authentication...'
-		
+
 	auth=JCON.auth(USERNAME, PASSWORD, RESOURCE)
 	if not auth:
 		print 'Auth Error. Incorrect login/password?\nError: ', JCON.lastErr, JCON.lastErrCode
-		sys.exit(0)
+		sys.exit(1)
 	else:
 		print 'Logged In'
 	if auth!='sasl':
 		print 'Warning: unable to perform SASL auth. Old authentication method used!'
 
-	JCON.RegisterHandler('message', messageCB)
-	JCON.RegisterHandler('presence', presenceCB)
-	JCON.RegisterHandler('iq', iqCB)
-	JCON.RegisterDisconnectHandler(dcCB)
+	JCON.RegisterHandler('message', messageHnd)
+	JCON.RegisterHandler('presence', presenceHnd)
+	JCON.RegisterHandler('iq', iqHnd)
+	JCON.RegisterDisconnectHandler(dcHnd)
 	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
 	JCON.getRoster()
 	JCON.sendInitPresence()
 	print 'Entering Rooms'
-	
+
 	MACROS.init()
 
 	if check_file(file='chatrooms.list'):
@@ -699,7 +690,7 @@ def start():
 			time.sleep(0.1)
 	else:
 		print 'Error: unable to create chatrooms list file!'
-	
+
 	print '\nLOADING PLUGINS'
 
 	load_plugins()
@@ -716,8 +707,10 @@ if __name__ == "__main__":
 		print '\nINTERUPT (Ctrl+C)'
 		for gch in GROUPCHATS.keys():
 			thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
-		time.sleep(1)
-		sys.exit(1)
+		time.sleep(2)
+		print 'DISCONNECTED'
+		print '\n...---===BOT STOPPED===---...\n'
+		sys.exit(0)
 	except:
 		if AUTO_RESTART:
 			if sys.exc_info()[0] is not SystemExit:
@@ -732,8 +725,11 @@ if __name__ == "__main__":
 				print '\nINTERUPT (Ctrl+C)'
 				for gch in GROUPCHATS.keys():
 					thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
-				time.sleep(1)
-				sys.exit(1)
+				time.sleep(2)
+				print 'DISCONNECTED'
+				print '\n...---===BOT STOPPED===---...\n'
+				sys.exit(0)
+				print 'WAITING FOR RESTART...'
 			print 'RESTARTING'
 			os.execl(sys.executable, sys.executable, sys.argv[0])
 		else:

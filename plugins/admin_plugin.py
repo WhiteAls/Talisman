@@ -162,8 +162,8 @@ def handler_admin_exit(type, source, parameters):
 			if popups_check(x):
 				msg(x, u'меня выключает '+source[2])
 	os.abort()
-
-
+	
+	
 def handler_popups_startstop(type, source, parameters):
 	if parameters:
 		args = parameters.split(' ')

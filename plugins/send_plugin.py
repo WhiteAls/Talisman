@@ -17,7 +17,7 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 
-queue={}
+sendqueue={}
 def handler_psay(ltype, source, parameters):
 	groupchat=source[1]
 	if GROUPCHATS.has_key(groupchat):
@@ -35,19 +35,20 @@ def handler_psay(ltype, source, parameters):
 			if get_bot_nick(groupchat) != nick:
 				tojid = groupchat+'/'+nick
 				if nick in nicks:
-					msg(tojid, fromnick+body)
+					reply(ltype, source, u'он тут сидит')
 				else:
-					if not queue.has_key(tojid):
-						queue[tojid] = []
-					queue[tojid].append(fromnick+body)
+					if not sendqueue.has_key(tojid):
+						sendqueue[tojid] = []
+					sendqueue[tojid].append(fromnick+body)
 					reply(ltype, source, u'передам')
 
 def handler_new_join(groupchat, nick, aff, role):
 	tojid = groupchat+'/'+nick
-	if queue.has_key(tojid) and queue[tojid]:
-		for x in queue[tojid]:
+	if sendqueue.has_key(tojid) and sendqueue[tojid]:
+		for x in sendqueue[tojid]:
+			time.sleep(1)
 			msg(tojid, x)
-			queue[tojid].remove(x)
+			sendqueue[tojid].remove(x)
 
 register_join_handler(handler_new_join)
 register_command_handler(handler_psay, 'передать', ['мук','все'], 10, 'Запоминает сообщение в базе и передаёт его указанному нику как только он зайдёт в конференцию.', 'передать <кому> <что>', ['передать Nick привет! забань Nick666'])

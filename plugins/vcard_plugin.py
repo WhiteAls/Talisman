@@ -59,10 +59,7 @@ def handler_vcardget_answ(coze, res, type, source, nick):
 				reply(type,source,u'хехе, его клиент ничего не знает про вкарды')
 				return
 		elif res.getType() == 'result':
-			nickname = ''
-			url = ''
-			email = ''
-			desc = ''
+			name,nickname,url,email,desc = '','','','',''
 			if res.getChildren():
 				props = res.getChildren()[0].getChildren()
 			else:
@@ -97,7 +94,7 @@ def handler_vcardget_answ(coze, res, type, source, nick):
 			if not desc=='':
 				rep +=u'\nabout: '+desc
 			if rep=='':
-				rep = u'вглюкнуло'
+				rep = u'пустой вкард'
 		else:
 			rep = u'он зашифровался'
 	else:

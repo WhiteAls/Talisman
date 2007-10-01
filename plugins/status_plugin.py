@@ -45,13 +45,10 @@ def status_change(prs):
 	status = prs.getShow()
 	if not status:
 		status=u'online'
-	try:
-		if GROUPCHATS[groupchat].has_key(nick):
-			GROUPCHATS[groupchat][nick]['status']=status
-			GROUPCHATS[groupchat][nick]['stmsg']=stmsg
-	except:
-		return
-	
+	if nick in GROUPCHATS[groupchat]:
+		GROUPCHATS[groupchat][nick]['status']=status
+		GROUPCHATS[groupchat][nick]['stmsg']=stmsg
+
 
 register_presence_handler(status_change)
 register_command_handler(handler_status, 'статус', ['инфо','мук','все'], 0, 'Показывает статус и статусное сообщение (если есть) определённого юзера или себя.', 'статус <юзер>', ['статус', 'статус guy'])
