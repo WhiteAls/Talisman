@@ -202,12 +202,12 @@ def log_presence(prs):
 			if reason:
 				log_write('%s has been kicked (%s)' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
 			else:
-				log_write('%s has been kicked' % (nick,reason), '@$$userkick$$@', 'public', groupchat)			
+				log_write('%s has been kicked' % (nick), '@$$userkick$$@', 'public', groupchat)			
 		elif code == '301':
 			if reason:
 				log_write('%s has been banned (%s)' % (nick,reason), '@$$userban$$@', 'public', groupchat)
 			else:
-				log_write('%s has been banned' % (nick,reason), '@$$userban$$@', 'public', groupchat)			
+				log_write('%s has been banned' % (nick), '@$$userban$$@', 'public', groupchat)			
 		elif code == '303':
 			newnick = prs.getNick()
 			log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)

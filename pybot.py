@@ -94,7 +94,6 @@ ACCBYCONFFILE = {}
 COMMOFF = {}
 
 JCON = None
-
 ################################################################################
 
 def initialize_file(filename, data=''):
@@ -467,7 +466,6 @@ def findPresenceItem(node):
 	return None
 
 def messageHnd(con, msg):
-	LAST = time.time()
 	msgtype = msg.getType()
 	body = msg.getBody()
 	fromjid = msg.getFrom()

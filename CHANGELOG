@@ -75,6 +75,11 @@ $$$ Als $$$
 >>> status_plugin.py - little change (30.09.07@22:10)
 >>> pybot.py - now message, presence and iq handlers is not threaded, because it had been reproducing a lot of bugs (30.09.07@22:31)
 >>> send_plugin.py - little change (01.10.07@20:32)
-
+--------------------------------
+from 01.10.07@20:45 to 02.10.07@23:00
+$$$ Als $$$
+>>> log_plugin.py - bug (02.10.07@19:05)
+>>> i seem is ready to the beginning global changes in a bot :) following mini (for me) commits will be aimed at changing the things that can prevent further move in a big update. so, when i decide, that the current version is a stable bot, I will make a separate version (moving it to a tags). all this indicates that the new version and this will be incompatible
+>>> in a BIG UPDATE expected to implement some items from the TODO and, of course, new plugin(s)
 --------------------------------
 Talisman uses parts of code from Neutron - Jabber bot too
