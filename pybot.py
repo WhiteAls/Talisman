@@ -434,7 +434,7 @@ def msg(target, body):
 
 def reply(ltype, source, body):
 	if type(body) is types.StringType:
-		body = body.decode('utf-8', 'backslashrepla<input type="image" src="">ce')
+		body = body.decode('utf-8', 'backslashreplace')
 	if ltype == 'public':
 		if len(body)>1000:
 			body=body[:1000]+u' [...]'
@@ -470,8 +470,6 @@ def messageHnd(con, msg):
 	body = msg.getBody()
 	fromjid = msg.getFrom()
 	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
-	if fromjid.getResource() == bot_nick:
-		return
 	command,parameters,cbody,rcmd = '','','',''
 	if not body:
 		return
@@ -492,6 +490,8 @@ def messageHnd(con, msg):
 			if fromjid.getStripped() in COMMOFF.keys() and command in COMMOFF[fromjid.getStripped()]:
 				return
 			else:
+				if fromjid.getResource() == bot_nick:
+					return
 				call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 
 def presenceHnd(con, prs):
@@ -630,7 +630,7 @@ def dcHnd():
 	print 'DISCONNECTED'
 	if AUTO_RESTART:
 		print 'WAITING FOR RESTART...'
-		time.sleep(5) # sleep for (240) 5 seconds - by als
+		time.sleep(10)
 		print 'RESTARTING'
 		os.execl(sys.executable, sys.executable, sys.argv[0])
 	else:
@@ -676,7 +676,7 @@ def start():
 	JCON.RegisterHandler('presence', presenceHnd)
 	JCON.RegisterHandler('iq', iqHnd)
 	JCON.RegisterDisconnectHandler(dcHnd)
-	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
+#	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
 	JCON.getRoster()
 	JCON.sendInitPresence()
