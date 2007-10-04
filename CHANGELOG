@@ -82,4 +82,14 @@ $$$ Als $$$
 >>> i seem is ready to the beginning global changes in a bot :) following mini (for me) commits will be aimed at changing the things that can prevent further move in a big update. so, when i decide, that the current version is a stable bot, I will make a separate version (moving it to a tags). all this indicates that the new version and this will be incompatible
 >>> in a BIG UPDATE expected to implement some items from the TODO and, of course, new plugin(s)
 --------------------------------
+from 02.10.07@23:00 to 03.10.07@18:14
+$$$ Als $$$
+>>> pybot.py - bug with catching messages from bot for logging (03.10.07@18:14)
+--------------------------------
+from 03.10.07@18:14 to 04.10.07@22:28
+$$$ Als $$$
+>>> features_plugin.py - new plugin that shows info about standarts that are supported by entity client (04.10.07@19:49)
+>>> pybot.py - more caches which should reduce race condition. CAREFUL!!! can be buggy! (04.10.07@20:50)
+>>> dns_plugin.py - now it shows *all* IP adresses of host instead one (first?) (04.10.07@21:12)
+--------------------------------
 Talisman uses parts of code from Neutron - Jabber bot too

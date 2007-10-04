@@ -161,6 +161,7 @@ def handler_admin_exit(type, source, parameters):
 		for x in gch:
 			if popups_check(x):
 				msg(x, u'меня выключает '+source[2])
+	atexit_handler()
 	os.abort()
 	
 	

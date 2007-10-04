@@ -24,14 +24,15 @@ def dns_query(query):
 		int(query[-1])
 	except ValueError:
 		try:
-			return socket.gethostbyname(query)
+			(hostname, aliaslist, ipaddrlist) = socket.gethostbyname_ex(query)
+			return u', '.join(ipaddrlist)
 		except socket.gaierror:
-			return 'не нахожу что-то :('
+			return u'не нахожу что-то :('
 	else:
 		try:
 			(hostname, aliaslist, ipaddrlist) = socket.gethostbyaddr(query)
 		except socket.herror:
-			return 'не нахожу что-то :('
+			return u'не нахожу что-то :('
 		return hostname + ' ' + string.join(aliaslist) + ' ' + string.join(aliaslist)
 
 def handler_dns_dns(type, source, parameters):
@@ -39,6 +40,6 @@ def handler_dns_dns(type, source, parameters):
 		result = dns_query(parameters)
 		reply(type, source, result)
 	else:
-		reply(type, source, 'чё-то ты не то написал...')
+		reply(type, source, u'что это было?')
 
 register_command_handler(handler_dns_dns, 'днс', ['инфо','все'], 10, 'Показывает ответ от DNS для определённого хоста или IP адреса.', 'днс <хост/IP>', ['днс jabber.aq', 'днс 127.0.0.1'])
