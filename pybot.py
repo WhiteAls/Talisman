@@ -339,20 +339,20 @@ def add_gch(groupchat=None, nick=None, passw=None):
 """		
 def add_gch(groupchat=None, nick=None, passw=None):
 	if not groupchat in GROUPCHAT_CACHE:
-		GROUPCHAT_CACHE[groupchat] = groupchat.decode('utf-8')
+		GROUPCHAT_CACHE[groupchat] = groupchat.encode('utf-8')
 		GROUPCHAT_CACHE[groupchat] = {}
-		GROUPCHAT_CACHE[groupchat]['nick'] = nick.decode('utf-8')
-		GROUPCHAT_CACHE[groupchat]['passw'] = passw.decode('utf-8')
+		GROUPCHAT_CACHE[groupchat]['nick'] = nick.encode('utf-8')
+		GROUPCHAT_CACHE[groupchat]['passw'] = passw.encode('utf-8')
 	else:
 		if nick and groupchat and passw:
-			GROUPCHAT_CACHE[groupchat]['nick'] = nick.decode('utf-8')
-			GROUPCHAT_CACHE[groupchat]['passw'] = passw.decode('utf-8')
+			GROUPCHAT_CACHE[groupchat]['nick'] = nick.encode('utf-8')
+			GROUPCHAT_CACHE[groupchat]['passw'] = passw.encode('utf-8')
 		elif nick and groupchat:
-			GROUPCHAT_CACHE[groupchat]['nick'] = nick.decode('utf-8')
+			GROUPCHAT_CACHE[groupchat]['nick'] = nick.encode('utf-8')
 		elif groupchat:
 			del GROUPCHAT_CACHE[groupchat]
 		elif passw:
-			GROUPCHAT_CACHE[groupchat]['passw'] = passw.decode('utf-8')
+			GROUPCHAT_CACHE[groupchat]['passw'] = passw.encode('utf-8')
 		else:
 			return 0
 	return 1
@@ -648,7 +648,7 @@ def iqHnd(con, iq):
 		timetz=time.strftime("%Z", time.localtime())
 		timeutc=time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
 		result = iq.buildReply('result')
-		reply=result.addChild('query', {}, [], NS_TIME)
+		reply=result.addChild('query', {}, [], xmpp.NS_TIME)
 		reply.setTagData('utc', tzo)
 		reply.setTagData('tz', timetz)
 		reply.setTagData('display', timedisp)
