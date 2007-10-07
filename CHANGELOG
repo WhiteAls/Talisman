@@ -92,4 +92,9 @@ $$$ Als $$$
 >>> pybot.py - more caches which should reduce race condition. CAREFUL!!! can be buggy! (04.10.07@20:50)
 >>> dns_plugin.py - now it shows *all* IP adresses of host instead one (first?) (04.10.07@21:12)
 --------------------------------
+from 04.10.07@22:28 to 07.10.07@14:15
+$$$ Als $$$
+>>> pybot.py - rollback (07.10.07@14:08)
+>>> moving to a tags :) FIRST version is out!
+--------------------------------
 Talisman uses parts of code from Neutron - Jabber bot too

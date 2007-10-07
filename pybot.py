@@ -34,7 +34,6 @@ import types
 import traceback
 import codecs
 import macros
-import atexit
 
 ################################################################################
 GENERAL_CONFIG_FILE = 'config.txt'
@@ -88,34 +87,15 @@ PRESENCE_HANDLERS = []
 
 COMMAND_HANDLERS = {}
 
-GLOBACCESS_CACHE = {}
-TEMPACCBYCONF_CACHE = {}
-ACCBYCONF_CACHE = {}
-GROUPCHAT_CACHE ={}
+GLOBACCESS = {}
+ACCBYCONF = {}
+ACCBYCONFFILE = {}
 
 COMMOFF = {}
 
 JCON = None
 ################################################################################
 
-def atexit_handler():
-	global GLOBACCESS_CACHE
-	global ACCBYCONF_CACHE
-	global GROUPCHAT_CACHE
-	try:
-		write_file(GLOBACCESS_FILE, str(GLOBACCESS_CACHE))
-	except:
-		print 'ERROR in saving GLOBACCESS_CACHE to file!'
-	try:
-		write_file(ACCBYCONF_FILE, str(ACCBYCONF_CACHE))
-	except:
-		print 'ERROR in saving ACCBYCONF_CACHE to file!'
-	try:
-		write_file(GROUPCHAT_CACHE_FILE, str(GROUPCHAT_CACHE))
-	except:
-		print 'ERROR in saving GROUPCHAT_CACHE to file!'
-
-################################################################################
 def initialize_file(filename, data=''):
 	if not os.access(filename, os.F_OK):
 		fp = file(filename, 'w')
@@ -306,12 +286,15 @@ def get_true_jid(jid):
 	return true_jid
 
 def get_bot_nick(groupchat):
-	if GROUPCHAT_CACHE.has_key(groupchat):
-		return GROUPCHAT_CACHE[groupchat]['nick']
+	if check_file(file='chatrooms.list'):
+		gchdb = eval(read_file(GROUPCHAT_CACHE_FILE))
+		if gchdb.has_key(groupchat):
+			return gchdb[groupchat]['nick']
+		else:
+			return DEFAULT_NICK
 	else:
-		return DEFAULT_NICK
+		print 'Error adding groupchat to groupchats list file!'
 
-"""
 def add_gch(groupchat=None, nick=None, passw=None):
 	if check_file(file='chatrooms.list'):
 		gchdb = eval(read_file(GROUPCHAT_CACHE_FILE))
@@ -336,54 +319,35 @@ def add_gch(groupchat=None, nick=None, passw=None):
 		return 1
 	else:
 		print 'Error adding groupchat to groupchats list file!'
-"""		
-def add_gch(groupchat=None, nick=None, passw=None):
-	if not groupchat in GROUPCHAT_CACHE:
-		GROUPCHAT_CACHE[groupchat] = groupchat.encode('utf-8')
-		GROUPCHAT_CACHE[groupchat] = {}
-		GROUPCHAT_CACHE[groupchat]['nick'] = nick.encode('utf-8')
-		GROUPCHAT_CACHE[groupchat]['passw'] = passw.encode('utf-8')
-	else:
-		if nick and groupchat and passw:
-			GROUPCHAT_CACHE[groupchat]['nick'] = nick.encode('utf-8')
-			GROUPCHAT_CACHE[groupchat]['passw'] = passw.encode('utf-8')
-		elif nick and groupchat:
-			GROUPCHAT_CACHE[groupchat]['nick'] = nick.encode('utf-8')
-		elif groupchat:
-			del GROUPCHAT_CACHE[groupchat]
-		elif passw:
-			GROUPCHAT_CACHE[groupchat]['passw'] = passw.encode('utf-8')
-		else:
-			return 0
-	return 1
 
 ################################################################################
 
 def get_access_levels():
-	global GLOBACCESS_CACHE
-	global ACCBYCONF_CACHE
-	GLOBACCESS_CACHE = eval(read_file(GLOBACCESS_FILE))
+	global GLOBACCESS
+	global ACCBYCONFFILE
+	GLOBACCESS = eval(read_file(GLOBACCESS_FILE))
 	for jid in ADMINS:
-		GLOBACCESS_CACHE[jid] = 100
-		write_file(GLOBACCESS_FILE, str(GLOBACCESS_CACHE))
-	ACCBYCONF_CACHE = eval(read_file(ACCBYCONF_FILE))
+		GLOBACCESS[jid] = 100
+		write_file(GLOBACCESS_FILE, str(GLOBACCESS))
+	ACCBYCONFFILE = eval(read_file(ACCBYCONF_FILE))
+
 
 def change_access_temp(gch, source, level=0):
-	global TEMPACCBYCONF_CACHE
+	global ACCBYCONF
 	jid = get_true_jid(source)
 	try:
 		level = int(level)
 	except:
 		level = 0
-	if not TEMPACCBYCONF_CACHE.has_key(gch):
-		TEMPACCBYCONF_CACHE[gch] = gch
-		TEMPACCBYCONF_CACHE[gch] = {}
-	if not TEMPACCBYCONF_CACHE[gch].has_key(jid):
-		TEMPACCBYCONF_CACHE[gch][jid]=jid
-	TEMPACCBYCONF_CACHE[gch][jid]=level
+	if not ACCBYCONF.has_key(gch):
+		ACCBYCONF[gch] = gch
+		ACCBYCONF[gch] = {}
+	if not ACCBYCONF[gch].has_key(jid):
+		ACCBYCONF[gch][jid]=jid
+	ACCBYCONF[gch][jid]=level
 
 def change_access_perm(gch, source, level=0):
-	global TEMPACCBYCONF_CACHE
+	global ACCBYCONF
 	jid = get_true_jid(source)
 	try:
 		level = int(level)
@@ -397,35 +361,37 @@ def change_access_perm(gch, source, level=0):
 		temp_access[gch][jid]=jid
 	temp_access[gch][jid]=level
 	write_file(ACCBYCONF_FILE, str(temp_access))
-	if not TEMPACCBYCONF_CACHE.has_key(gch):
-		TEMPACCBYCONF_CACHE[gch] = gch
-		TEMPACCBYCONF_CACHE[gch] = {}
-	if not TEMPACCBYCONF_CACHE[gch].has_key(jid):
-		TEMPACCBYCONF_CACHE[gch][jid]=jid
-	TEMPACCBYCONF_CACHE[gch][jid]=level
+	if not ACCBYCONF.has_key(gch):
+		ACCBYCONF[gch] = gch
+		ACCBYCONF[gch] = {}
+	if not ACCBYCONF[gch].has_key(jid):
+		ACCBYCONF[gch][jid]=jid
+	ACCBYCONF[gch][jid]=level
 	get_access_levels()
 
 def change_access_perm_glob(source, level=0):
-	global GLOBACCESS_CACHE
+	global GLOBACCESS
 	jid = get_true_jid(source)
+	temp_access = eval(read_file(GLOBACCESS_FILE))
 	if level:
-		GLOBACCESS_CACHE[jid] = level
+		temp_access[jid] = level
 	else:
-		del GLOBACCESS_CACHE[jid]
+		del temp_access[jid]
+	write_file(GLOBACCESS_FILE, str(temp_access))
 
 def user_level(source, gch):
-	global TEMPACCBYCONF_CACHE
-	global ACCBYCONF_CACHE
-	global GLOBACCESS	
+	global ACCBYCONF
+	global GLOBACCESS
+	ACCFILE = eval(read_file(ACCBYCONF_FILE))
 	jid = get_true_jid(source)
-	if GLOBACCESS_CACHE.has_key(jid):
-		return GLOBACCESS_CACHE[jid]
-	if ACCBYCONF_CACHE.has_key(gch):
-		if ACCBYCONF_CACHE[gch].has_key(jid):
-			return ACCBYCONF_CACHE[gch][jid]
-	if TEMPACCBYCONF_CACHE.has_key(gch):
-		if TEMPACCBYCONF_CACHE[gch].has_key(jid):
-			return TEMPACCBYCONF_CACHE[gch][jid]
+	if GLOBACCESS.has_key(jid):
+		return GLOBACCESS[jid]
+	if ACCFILE.has_key(gch):
+		if ACCFILE[gch].has_key(jid):
+			return ACCFILE[gch][jid]
+	if ACCBYCONF.has_key(gch):
+		if ACCBYCONF[gch].has_key(jid):
+			return ACCBYCONF[gch][jid]
 	return 0
 
 def has_access(source, level, gch):
@@ -568,10 +534,10 @@ def presenceHnd(con, prs):
 					role=prs.getRole()
 					call_join_handlers(groupchat, nick, aff, role)
 					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'status': '', 'stmsg': ''}
-					if jid in GLOBACCESS_CACHE:
+					if jid in GLOBACCESS:
 						return
 					else:
-						if groupchat in ACCBYCONF_CACHE and jid in ACCBYCONF_CACHE[groupchat]:
+						if groupchat in ACCBYCONFFILE and jid in ACCBYCONFFILE[groupchat]:
 							pass
 						else:
 							if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat]:
@@ -674,9 +640,6 @@ def dcHnd():
 
 def start():
 	print '\n...---===STARTING BOT===---...\n'
-	
-	atexit.register(atexit_handler)
-	
 	global JCON
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
 
@@ -722,9 +685,9 @@ def start():
 	MACROS.init()
 
 	if check_file(file='chatrooms.list'):
-		GROUPCHAT_CACHE = eval(read_file(GROUPCHAT_CACHE_FILE))
-		for groupchat in GROUPCHAT_CACHE:
-			thread.start_new_thread(join_groupchat, (groupchat,GROUPCHAT_CACHE[groupchat]['nick'],GROUPCHAT_CACHE[groupchat]['passw']))
+		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
+		for groupchat in groupchats:
+			thread.start_new_thread(join_groupchat, (groupchat.decode('utf-8'),groupchats[groupchat]['nick'].decode('utf-8'),groupchats[groupchat]['passw']))
 			time.sleep(0.1)
 	else:
 		print 'Error: unable to create chatrooms list file!'
@@ -742,7 +705,6 @@ if __name__ == "__main__":
 	try:
 		start()
 	except KeyboardInterrupt:
-		atexit_handler()
 		print '\nINTERUPT (Ctrl+C)'
 		for gch in GROUPCHATS.keys():
 			thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
@@ -751,7 +713,6 @@ if __name__ == "__main__":
 		print '\n...---===BOT STOPPED===---...\n'
 		sys.exit(0)
 	except:
-		atexit_handler()
 		if AUTO_RESTART:
 			if sys.exc_info()[0] is not SystemExit:
 				traceback.print_exc()
@@ -773,5 +734,4 @@ if __name__ == "__main__":
 			print 'RESTARTING'
 			os.execl(sys.executable, sys.executable, sys.argv[0])
 		else:
-			atexit_handler()
 			raise
