@@ -615,7 +615,7 @@ def iqHnd(con, iq):
 		timeutc=time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
 		result = iq.buildReply('result')
 		reply=result.addChild('query', {}, [], xmpp.NS_TIME)
-		reply.setTagData('utc', tzo)
+		reply.setTagData('utc', timeutc)
 		reply.setTagData('tz', timetz)
 		reply.setTagData('display', timedisp)
 		JCON.send(result)
