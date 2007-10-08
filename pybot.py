@@ -92,6 +92,7 @@ ACCBYCONF = {}
 ACCBYCONFFILE = {}
 
 COMMOFF = {}
+GREETZ={}
 
 JCON = None
 ################################################################################
@@ -230,13 +231,12 @@ def load_plugins():
 
 def get_commoff(gch=None):
 	if not gch:
-		poss = os.listdir('dynamic')
-		for x in poss:
+		for x in GROUPCHATS.keys():
 			try:
 				files = os.listdir('dynamic/'+x)
 				for y in files:
 					if y == 'config.cfg':
-						cfgfile='dynamic/'+x+'/config.cfg'
+						cfgfile='dynamic/'+x+'/'+y
 						try:
 							cfg = eval(read_file(cfgfile))
 							if cfg.has_key('commoff'):
@@ -263,6 +263,34 @@ def get_commoff(gch=None):
 				COMMOFF[gch]=[]
 		except:
 			pass
+			
+def get_greetz(gch=None):
+	if not gch:
+		for x in GROUPCHATS.keys():
+			try:
+				files = os.listdir('dynamic/'+x)
+				for y in files:
+					if y == 'greetz.txt':
+						grtfile='dynamic/'+x+'/'+y
+						try:
+							grt = eval(read_file(grtfile))
+							GREETZ[gch]=x
+							GREETZ[gch]=grt
+						except:
+							pass
+			except:
+				pass
+	else:
+		grtfile='dynamic/'+gch+'/greetz.txt'
+		try:
+			grt = eval(read_file(grtfile))
+			if gch in GREETZ.keys():
+				GREETZ[gch]=grt
+			else:
+				GREETZ[gch]=gch
+				GREETZ[gch]=grt				
+		except:
+			pass	
 
 ################################################################################
 
@@ -602,6 +630,7 @@ def iqHnd(con, iq):
 		b=xmpp.browser.Browser()
 		b.PlugIn(JCON)
 		b.setDiscoHandler({'items':items,'info':info})
+		raise xmpp.NodeProcessed
 	elif iq.getTags('query', {}, xmpp.NS_LAST):
 		last=time.time()-LAST
 		result = iq.buildReply('result')
@@ -645,7 +674,6 @@ def start():
 
 	get_access_levels()
 #	load_plugins()
-	get_commoff()
 
 	print 'Waiting For Connection...\n'
 
@@ -694,6 +722,9 @@ def start():
 
 	print '\nLOADING PLUGINS'
 
+	get_commoff()
+	get_greetz()
+	
 	load_plugins()
 
 	print '\nOk, i\'m ready to work :)'

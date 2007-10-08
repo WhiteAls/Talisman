@@ -97,4 +97,9 @@ $$$ Als $$$
 >>> pybot.py - rollback (07.10.07@14:08)
 >>> moving to a tags :) FIRST version is out!
 --------------------------------
+from 07.10.07@14:15 to 08.10.07@13:35
+$$$ Als $$$
+>>> greetz_plugin.py - it's new plugin which greet user which joined groupchat (08.10.07@13:08)
+>>> pybot.py - added support for greetz_plugin.py and some chages (08.10.07@13:18)
+--------------------------------
 Talisman uses parts of code from Neutron - Jabber bot too
