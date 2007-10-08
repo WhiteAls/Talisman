@@ -51,17 +51,22 @@ def handler_greet(type,source,parameters):
 		return
 	greet=rawgreet[1].strip()
 	nicks=GROUPCHATS[source[1]].keys()
-	if rawgreet[0] in nicks or not rawgreet[0].count('@')>0 and not rawgreet[0].count('.')>0:
+	if rawgreet[0].count('@')>0 and rawgreet[0].count('.')>0:
+		jid=rawgreet[0]
+	elif rawgreet[0] in nicks:
 		jid=get_true_jid(source[1]+'/'+rawgreet[0])
 	else:
-		jid=rawgreet[0]
+		reply(type, source, u'а он тут? :-O')
+		return
 	if not greet:
 		answ=greetz_work(jid,gch=source[1])
 		if answ:
 			reply(type, source, u'убил')
 			get_greetz(gch=source[1])
+			return
 		else:
 			reply(type, source, u'хто ето?')
+			return
 	answ=greetz_work(jid,greet,source[1])
 	if answ:
 		reply(type, source, u'ога')
