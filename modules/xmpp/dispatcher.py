@@ -120,7 +120,7 @@ class Dispatcher(PlugIn):
             try: data=self._owner.Connection.receive()
             except IOError: return
             try: self.Stream.Parse(data)
-            except XML_ERROR_UNBOUND_PREFIX: pass
+            except: pass
             if len(self._pendingExceptions) > 0:
                 _pendingException = self._pendingExceptions.pop()
                 raise _pendingException[0], _pendingException[1], _pendingException[2]

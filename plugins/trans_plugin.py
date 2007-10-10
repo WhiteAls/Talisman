@@ -59,7 +59,7 @@ def handler_google_trans(type,source,parameters):
 		pair=langpairs[stsp[0]]
 		pair=string.split(pair, ' ', 1)
 		answ = google_translate(pair[0],pair[1],stsp[1].encode('utf-8'))
-		answ=answ.replace('&apos;', '\\').replace('&gt;', '>').replace('&lt;', '<').replace('<br>', '\n').replace('&quot;', '"')
+		answ=answ.replace('&apos;', '\\').replace('&gt;', '>').replace('&lt;', '<').replace('<br>', '\n').replace('&quot;', '"').replace('&#39;', '\'')
 		reply(type,source,unicode(answ))
 	else:
 		reply(type,source,u'что это за язык?')
