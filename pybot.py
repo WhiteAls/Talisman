@@ -274,8 +274,8 @@ def get_greetz(gch=None):
 						grtfile='dynamic/'+x+'/'+y
 						try:
 							grt = eval(read_file(grtfile))
-							GREETZ[gch]=x
-							GREETZ[gch]=grt
+							GREETZ[x]=x
+							GREETZ[x]=grt
 						except:
 							pass
 			except:
@@ -630,7 +630,6 @@ def iqHnd(con, iq):
 		b=xmpp.browser.Browser()
 		b.PlugIn(JCON)
 		b.setDiscoHandler({'items':items,'info':info})
-		raise xmpp.NodeProcessed
 	elif iq.getTags('query', {}, xmpp.NS_LAST):
 		last=time.time()-LAST
 		result = iq.buildReply('result')
@@ -673,7 +672,7 @@ def start():
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
 
 	get_access_levels()
-#	load_plugins()
+	load_plugins()
 
 	print 'Waiting For Connection...\n'
 
@@ -716,16 +715,15 @@ def start():
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
 			thread.start_new_thread(join_groupchat, (groupchat.decode('utf-8'),groupchats[groupchat]['nick'].decode('utf-8'),groupchats[groupchat]['passw']))
-			time.sleep(0.1)
 	else:
 		print 'Error: unable to create chatrooms list file!'
-
+	time.sleep(1)
 	print '\nLOADING PLUGINS'
 
+#	load_plugins()
+	
 	get_commoff()
 	get_greetz()
-	
-	load_plugins()
 
 	print '\nOk, i\'m ready to work :)'
 

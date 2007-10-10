@@ -81,5 +81,5 @@ def atjoin_greetz(groupchat, nick, aff, role):
  	if jid in GREETZ[groupchat]:
  		msg(groupchat, nick+'> '+GREETZ[groupchat][jid])
 			
-register_command_handler(handler_greet, 'greet', ['мук','все'], 20, 'Добавляет приветствие для определённого ника или жида.', 'greet <ник/жид>', ['фичи guy','фичи guy@jabber.aq'])
+register_command_handler(handler_greet, 'greet', ['мук','все'], 20, 'Добавляет приветствие для определённого ника или жида.', 'greet <ник/жид>', ['greet guy=something','greet guy@jabber.aq=anything'])
 register_join_handler(atjoin_greetz)
