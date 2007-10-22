@@ -232,7 +232,7 @@ class Macros:
 		cl=self.parse_cmd(cmd)
 		if (len(cl)<1):
 			return cmd
-		command=cl[0].split(' ')[0]
+		command=cl[0].split(' ')[0].lower()
 		args=cl[1:]
 		exp = ''
 		try:
@@ -302,14 +302,13 @@ class Macros:
 	def get_access(self, macro, gch):
 		try:
 			if self.accesslist[gch].has_key(macro):
-				return self.accesslist[macro]
+				return self.accesslist[gch][macro]
 		except:
-			pass
-		try:
-			if self.gaccesslist.has_key(macro):
-				return self.gaccesslist[macro]
-		except:
-			return -1
+			try:
+				if self.gaccesslist.has_key(macro):
+					return self.gaccesslist[macro]
+			except:
+				return -1
 		
 	def give_access(self, macro, access, gch=None):
 		if gch:

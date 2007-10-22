@@ -496,13 +496,16 @@ def findPresenceItem(node):
 def messageHnd(con, msg):
 	msgtype = msg.getType()
 	body = msg.getBody()
+	if not body:
+		return
 	fromjid = msg.getFrom()
 	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
 	command,parameters,cbody,rcmd = '','','',''
+	if bot_nick and (string.split(body)[0] == bot_nick+':' or string.split(body)[0] == bot_nick+',' or string.split(body)[0] == bot_nick):
+		body=' '.join(string.split(body)[1:])
+	body=body.strip()
 	if not body:
 		return
-	if bot_nick and string.split(body)[0] == bot_nick+':':
-		body=' '.join(string.split(body)[1:])
 	rcmd = body.split(' ')[0]
 	cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
 	command = string.lower(string.split(cbody)[0])
@@ -551,8 +554,9 @@ def presenceHnd(con, prs):
 					pass
 		elif ptype == 'available' or ptype == None:
 			if item['jid'] == None:
-				msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
-				leave_groupchat(groupchat)
+#				msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
+#				leave_groupchat(groupchat)        
+				pass
 			else:
 				jid = item['jid']
 				if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid:
@@ -672,7 +676,7 @@ def start():
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
 
 	get_access_levels()
-	load_plugins()
+#	load_plugins()
 
 	print 'Waiting For Connection...\n'
 
@@ -715,15 +719,15 @@ def start():
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
 			thread.start_new_thread(join_groupchat, (groupchat.decode('utf-8'),groupchats[groupchat]['nick'].decode('utf-8'),groupchats[groupchat]['passw']))
+			get_commoff(groupchat.decode('utf-8'))
+			get_greetz(groupchat.decode('utf-8'))			
 	else:
 		print 'Error: unable to create chatrooms list file!'
 	time.sleep(1)
 	print '\nLOADING PLUGINS'
 
-#	load_plugins()
+	load_plugins()
 	
-	get_commoff()
-	get_greetz()
 
 	print '\nOk, i\'m ready to work :)'
 
