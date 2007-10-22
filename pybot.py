@@ -496,11 +496,19 @@ def findPresenceItem(node):
 def messageHnd(con, msg):
 	msgtype = msg.getType()
 	body = msg.getBody()
+	if not body:
+		return
 	fromjid = msg.getFrom()
 	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
 	command,parameters,cbody,rcmd = '','','',''
+<<<<<<< .mine
+	if bot_nick and (string.split(body)[0] == bot_nick+':' or string.split(body)[0] == bot_nick+',' or string.split(body)[0] == bot_nick):
+		body=' '.join(string.split(body)[1:])
+	body=body.strip()
+=======
 	if bot_nick and string.split(body)[0] == bot_nick+':':
 		body=' '.join(string.split(body)[1:]).strip()
+>>>>>>> .r41
 	if not body:
 		return
 	rcmd = body.split(' ')[0]
