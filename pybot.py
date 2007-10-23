@@ -501,14 +501,9 @@ def messageHnd(con, msg):
 	fromjid = msg.getFrom()
 	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
 	command,parameters,cbody,rcmd = '','','',''
-<<<<<<< .mine
 	if bot_nick and (string.split(body)[0] == bot_nick+':' or string.split(body)[0] == bot_nick+',' or string.split(body)[0] == bot_nick):
 		body=' '.join(string.split(body)[1:])
 	body=body.strip()
-=======
-	if bot_nick and string.split(body)[0] == bot_nick+':':
-		body=' '.join(string.split(body)[1:]).strip()
->>>>>>> .r41
 	if not body:
 		return
 	rcmd = body.split(' ')[0]
@@ -519,6 +514,11 @@ def messageHnd(con, msg):
 	if not msg.timestamp:
 		if msgtype == 'groupchat':
 			mtype='public'
+		elif msgtype == 'error':
+			if msg.getErrorCode()=='500':
+				time.sleep(0.6)
+				JCON.send(xmpp.Message(fromjid, body, 'groupchat'))
+				return
 		else:
 			mtype='private'
 		call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
