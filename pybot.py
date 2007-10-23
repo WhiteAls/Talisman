@@ -514,6 +514,11 @@ def messageHnd(con, msg):
 	if not msg.timestamp:
 		if msgtype == 'groupchat':
 			mtype='public'
+		elif msgtype == 'error':
+			if msg.getErrorCode()=='500':
+				time.sleep(0.6)
+				JCON.send(xmpp.Message(fromjid, body, 'groupchat'))
+				return
 		else:
 			mtype='private'
 		call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)

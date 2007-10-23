@@ -187,11 +187,11 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 				while minutes>=60:
 					minutes=int(minutes)-60
 				if len(str(hours))==1:
-					minutes='0'+str(hours)
+					hours='0'+str(hours)
 				elif len(str(minutes))==1:
 					minutes='0'+str(minutes)
 				elif len(str(seconds))==1:
-					minutes='0'+str(seconds)				
+					seconds='0'+str(seconds)				
 				time=str(hours)+':'+str(minutes)+':'+str(seconds)
 				if nick:
 					reply(type,source, u'у '+nick+u' сейчас '+time+' ('+date+')')
