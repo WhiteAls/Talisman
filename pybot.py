@@ -406,6 +406,7 @@ def change_access_perm_glob(source, level=0):
 	else:
 		del temp_access[jid]
 	write_file(GLOBACCESS_FILE, str(temp_access))
+	get_access_levels()
 
 def user_level(source, gch):
 	global ACCBYCONF
