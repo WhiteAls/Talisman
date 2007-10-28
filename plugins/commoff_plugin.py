@@ -16,24 +16,12 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 
-def __init__(source):
-	na=[u'доступ',u'дать_доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'помощь',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
-	valcomm,notvalcomm,alrcomm,npcomm,vcnt,ncnt,acnt,nocnt,commoff,rep=u'',u'',u'',u'',0,0,0,0,{},u''
-	if check_file(source[1],'config.cfg'):
-		DBPATH='dynamic/'+source[1]+'/config.cfg'
-		cfgdb = eval(read_file(DBPATH))
-		if cfgdb.has_key('commoff'):
-			commoff=cfgdb
-		else:
-			commoff['commoff']='commoff'
-			commoff['commoff']=[]
-		get_commoff(source[1])
-	else:
-		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
-		return	
-
 def handler_commoff(type,source,parameters):
-
+	na=[u'доступ',u'дать_доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'помощь',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
+	valcomm,notvalcomm,alrcomm,npcomm,vcnt,ncnt,acnt,nocnt,rep,commoff=u'',u'',u'',u'',0,0,0,0,u'',[]
+	if not source[1] in COMMOFF:
+		get_commoff(source[1])
+	commoff=COMMOFF[source[1]]
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:
@@ -65,7 +53,7 @@ def handler_commoff(type,source,parameters):
 	else:
 		for x in commoff:
 			vcnt+=1
-			valcomm+=str(vcnt)+u' '+x+u'\n'
+			valcomm+=str(vcnt)+u') '+x+u'\n'
 		if valcomm:
 			rep=u'в этой конфе отключены следующие команды:\n'+valcomm
 		else:
@@ -75,7 +63,11 @@ def handler_commoff(type,source,parameters):
 	reply(type,source,rep[:-1])
 		
 def handler_common(type,source,parameters):
-
+	na=[u'доступ',u'дать_доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'помощь',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
+	valcomm,notvalcomm,alrcomm,npcomm,vcnt,ncnt,acnt,nocnt,rep,commoff=u'',u'',u'',u'',0,0,0,0,u'',[]
+	if not source[1] in COMMOFF:
+		get_commoff(source[1])
+	commoff=COMMOFF[source[1]]
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:

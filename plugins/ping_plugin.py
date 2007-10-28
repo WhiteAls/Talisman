@@ -33,6 +33,9 @@ def handler_ping(type, source, parameters):
 			if not nick in nicks:
 				iq.setTo(param)
 			else:
+				if GROUPCHATS[groupchat][nick]['ishere']==0:
+					reply(type, source, u'а он тут? :-O')
+					return
 				param=nick
 				jid=groupchat+'/'+nick
 				iq.setTo(jid)
@@ -52,16 +55,13 @@ def handler_ping_answ(coze, res, t0, mtype, source, param):
 		print 'someone is doing wrong...'
 		return
 	if res:
-		if res.getType() == 'result':
-			t = time.time()
-			rep = u'понг от '
-			if param:
-				rep += param
-			else:
-				rep += u'тебя'
-			rep+=u' '+str(round(t-t0, 3))+u' секунд'
+		t = time.time()
+		rep = u'понг от '
+		if param:
+			rep += param
 		else:
-			rep = u'не пингуется'
+			rep += u'тебя'
+		rep+=u' '+str(round(t-t0, 3))+u' секунд'
 	else:
 		rep = u'не дождался :('
 	reply(mtype, source, rep)

@@ -45,7 +45,7 @@ def status_change(prs):
 	status = prs.getShow()
 	if not status:
 		status=u'online'
-	if nick in GROUPCHATS[groupchat]:
+	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat]:
 		GROUPCHATS[groupchat][nick]['status']=status
 		GROUPCHATS[groupchat][nick]['stmsg']=stmsg
 

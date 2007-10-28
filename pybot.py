@@ -251,6 +251,9 @@ def get_commoff(gch=None):
 			except:
 				pass
 	else:
+		if not check_file(gch,'config.cfg'):
+			print 'unable to create commoff file for new groupchat!'
+			return
 		cfgfile='dynamic/'+gch+'/config.cfg'
 		try:
 			cfg = eval(read_file(cfgfile))
@@ -495,12 +498,29 @@ def findPresenceItem(node):
 	return None
 
 def messageHnd(con, msg):
+	if msg.timestamp:
+		return
 	msgtype = msg.getType()
 	body = msg.getBody()
 	if not body:
 		return
 	fromjid = msg.getFrom()
+	if msgtype == 'groupchat':
+		mtype='public'
+	elif msgtype == 'error':
+		if msg.getErrorCode()=='500':
+			time.sleep(0.6)
+			JCON.send(xmpp.Message(fromjid, body, 'groupchat'))
+			return
+		print 'got error message from server, error code is ',msg.getErrorCode()
+		return
+	else:
+		mtype='private'
+	call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
+	
 	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
+	if fromjid.getResource() == bot_nick:
+		return
 	command,parameters,cbody,rcmd = '','','',''
 	if bot_nick and (string.split(body)[0] == bot_nick+':' or string.split(body)[0] == bot_nick+',' or string.split(body)[0] == bot_nick):
 		body=' '.join(string.split(body)[1:])
@@ -512,24 +532,11 @@ def messageHnd(con, msg):
 	command = string.lower(string.split(cbody)[0])
 	if cbody.count(' '):
 		parameters = cbody[(cbody.find(' ') + 1):]
-	if not msg.timestamp:
-		if msgtype == 'groupchat':
-			mtype='public'
-		elif msgtype == 'error':
-			if msg.getErrorCode()=='500':
-				time.sleep(0.6)
-				JCON.send(xmpp.Message(fromjid, body, 'groupchat'))
-				return
+	if command in COMMANDS:
+		if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
+			return
 		else:
-			mtype='private'
-		call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
-		if command in COMMANDS:
-			if fromjid.getStripped() in COMMOFF.keys() and command in COMMOFF[fromjid.getStripped()]:
-				return
-			else:
-				if fromjid.getResource() == bot_nick:
-					return
-				call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
+			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 
 def presenceHnd(con, prs):
 	ptype = prs.getType()
@@ -540,63 +547,36 @@ def presenceHnd(con, prs):
 	if groupchat in GROUPCHATS:
 		if ptype == 'unavailable':
 			jid = item['jid']
-			try:
-				code = prs.getStatusCode()
-			except:
-				code = None
-			try:
-				reason = prs.getStatus()
-			except:
-				reason = None
+			code = prs.getStatusCode()
 			if code == '303':
 				newnick = prs.getNick()
-				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'status': '', 'stmsg': ''}
-				del GROUPCHATS[groupchat][nick]
+				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'ishere': 1}
+				for x in ['idle','status','stmsg','ismoder']:
+					del GROUPCHATS[groupchat][nick][x]
+				GROUPCHATS[groupchat][nick]['ishere']=0
 			else:
 				try:
-					del GROUPCHATS[groupchat][nick]
+					for x in ['idle','status','stmsg','ismoder']:
+						del GROUPCHATS[groupchat][nick][x]
+						GROUPCHATS[groupchat][nick]['ishere']=0
 					call_leave_handlers(groupchat, nick, reason)
 				except:
 					pass
 		elif ptype == 'available' or ptype == None:
 			if item['jid'] == None:
-#				msg(groupchat, u'я кажется не имею прав модера... без них работать не могу. ухожу')
-#				leave_groupchat(groupchat)        
+				time.sleep(2)
+				msg(groupchat, u'моя функциональность в полной мере без прав модератора невозможна')
+				leave_groupchat(groupchat)        
 				pass
 			else:
 				jid = item['jid']
 				if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid:
-					return
+					pass
 				else:
 					aff=prs.getAffiliation()
 					role=prs.getRole()
 					call_join_handlers(groupchat, nick, aff, role)
-					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'status': '', 'stmsg': ''}
-					if jid in GLOBACCESS:
-						return
-					else:
-						if groupchat in ACCBYCONFFILE and jid in ACCBYCONFFILE[groupchat]:
-							pass
-						else:
-							if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat]:
-								if jid != None:
-									role = item['role']
-									aff = item['affiliation']
-									if role in ROLES:
-										accr = ROLES[role]
-										if role=='moderator':
-											ismoder = 1
-										else:
-											ismoder = 0
-										GROUPCHATS[groupchat][nick]['ismoder'] = ismoder
-									else:
-										accr = 0
-									if aff in AFFILIATIONS:
-										acca = AFFILIATIONS[aff]
-									else:
-										acca = 0
-									access = int(accr)+int(acca)
-									change_access_temp(groupchat, jid, access)
+					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'ishere': 1}
 		elif ptype == 'error':
 			try:
 				code = prs.getErrorCode()
@@ -612,13 +592,12 @@ def iqHnd(con, iq):
 		osname=os.popen("uname -sr", 'r')
 		osver=osname.read().strip()
 		osname.close()
-		pipe = os.popen('sh -c ' + '"' + 'python -V 2>&1' + '"')
-		pyver = pipe.read(1024).strip()
+		pyver = sys.version
 		osver = osver + ' ' + pyver
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'Тао-Альфа-Лямбда-Ипсилон-Сигма-Мю-Альфа-Ню')
-		query.setTagData('version', 'ver.1')
+		query.setTagData('version', 'ver.1 (svn rev 45)')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed

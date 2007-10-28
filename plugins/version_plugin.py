@@ -37,6 +37,9 @@ def handler_version(type, source, parameters):
 			if not nick in nicks:
 				iq.setTo(param)
 			else:
+				if GROUPCHATS[groupchat][nick]['ishere']==0:
+					reply(type, source, u'а он тут? :-O')
+					return
 				iq.setTo(jid)
 	else:
 		jid=groupchat+'/'+nick

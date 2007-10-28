@@ -29,16 +29,19 @@ def handler_vcardget(type, source, parameters):
 		if GROUPCHATS.has_key(source[1]):
 			nicks = GROUPCHATS[source[1]].keys()
 			nick = parameters.strip()
-			if nick in nicks:
+			if not nick in nicks:
+				vcard_iq.setTo(nick)
+			else:
+				if GROUPCHATS[groupchat][nick]['ishere']==0:
+					reply(type, source, u'а он тут? :-O')
+					return				
 				jid=source[1]+'/'+nick
 				vcard_iq.setTo(jid)
-			else:
-				reply(type, source, u'а он тут? :-O')
-				return
 	else:
 		jid=source[1]+'/'+source[2]
 		vcard_iq.setTo(jid)
 		nick=''
+	print unicode(vcard_iq)
 	JCON.SendAndCallForResponse(vcard_iq, handler_vcardget_answ, {'type': type, 'source': source, 'nick': nick})
 		
 
@@ -51,6 +54,7 @@ def handler_vcardget_answ(coze, res, type, source, nick):
 		return
 	rep =''
 	if res:
+		print unicode(res)
 		if res.getType()=='error':
 			if not nick:
 				reply(type,source,u'хехе, твой клиент ничего не знает про вкарды')

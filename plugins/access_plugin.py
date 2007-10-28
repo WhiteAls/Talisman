@@ -60,7 +60,7 @@ def handler_access_view_access(type, source, parameters):
 
 def handler_access_set_access(type, source, parameters):
 	splitdata = string.split(parameters)
-	nicks=GROUPCHATS[source[1]].keys()
+	nicks=GROUPCHATS[source[1]]
 	if len(splitdata) > 4:
 		if not splitdata[0:1].strip() in nicks:
 			reply(type, source, u'а он тут? :-O')

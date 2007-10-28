@@ -29,6 +29,8 @@ def xml_esc(s):
 	s = s.replace('\'', '&apos;')
 	s = s.replace('>', '&gt;')
 	s = s.replace('<', '&lt;')
+	s = s.replace('&', '&amp;')
+	s = s.replace('\"', '&quot;')
 	return s
 	
 def macro_get_rand(args, source):
@@ -240,11 +242,13 @@ class Macros:
 				if len(command)<=len(macro) and command == macro[0:len(macro)]:
 					if self.macrolist[source[1]][macro]:
 						exp = self.apply(self.macrolist[source[1]][macro], args, source)
-			if not exp:
-				for macro in self.gmacrolist:
-					if len(command)<=len(macro) and command == macro[0:len(macro)]:
-						if self.gmacrolist[macro]:
-							exp = self.apply(self.gmacrolist[macro], args, source)
+		except:
+			pass
+		try:
+			for macro in self.gmacrolist:
+				if len(command)<=len(macro) and command == macro[0:len(macro)]:
+					if self.gmacrolist[macro]:
+						exp = self.apply(self.gmacrolist[macro], args, source)
 		except:
 			pass
 		if not exp:
@@ -304,11 +308,12 @@ class Macros:
 			if self.accesslist[gch].has_key(macro):
 				return self.accesslist[gch][macro]
 		except:
-			try:
-				if self.gaccesslist.has_key(macro):
-					return self.gaccesslist[macro]
-			except:
-				return -1
+			pass
+		try:
+			if self.gaccesslist.has_key(macro):
+				return self.gaccesslist[macro]
+		except:
+			return -1
 		
 	def give_access(self, macro, access, gch=None):
 		if gch:

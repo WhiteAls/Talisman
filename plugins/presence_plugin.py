@@ -18,7 +18,7 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 
-def handler_presence_presence(prs):
+def handler_presence_subscr(prs):
 	type = prs.getType()
 	who = prs.getFrom()
 	if not type:
@@ -97,7 +97,7 @@ def handler_presence_moder_check(prs):
 					leave_groupchat(groupchat)
 					time.sleep(0.2)
 					join_groupchat(groupchat)		
-"""
+
 def handler_presence_ra_change(prs):
 	groupchat = prs.getFrom().getStripped()
 	nick = prs.getFrom().getResource()
@@ -125,7 +125,7 @@ def handler_presence_ra_change(prs):
 					acca = 0
 				access = int(accr)+int(acca)
 				change_access_temp(groupchat, jid, access)
-				
+"""				
 def handler_presence_ra_change(prs):
 	groupchat = prs.getFrom().getStripped()
 	nick = prs.getFrom().getResource()
@@ -141,19 +141,20 @@ def handler_presence_ra_change(prs):
 				if jid != None:
 					role = item['role']
 					aff = item['affiliation']
-					if role in ROLES.keys():
+					if role in ROLES:
 						accr = ROLES[role]
 					else:
 						accr = 0
-					if aff in AFFILIATIONS.keys():
+					if aff in AFFILIATIONS:
 						acca = AFFILIATIONS[aff]
 					else:
 						acca = 0
-					access = int(accr)+int(acca)
+					access = accr+acca
 					change_access_temp(groupchat, jid, access)
 
 
-register_presence_handler(handler_presence_presence)
+register_presence_handler(handler_presence_subscr)
+register_presence_handler(handler_presence_ra_change)
 
 #  listed below command handler are not recommended. it's not working at now.
 #  register_presence_handler(handler_presence_moder_check)
