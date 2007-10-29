@@ -528,15 +528,19 @@ def messageHnd(con, msg):
 	if not body:
 		return
 	rcmd = body.split(' ')[0]
-	cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
-	command = string.lower(string.split(cbody)[0])
-	if cbody.count(' '):
-		parameters = cbody[(cbody.find(' ') + 1):]
-	if command in COMMANDS:
-		if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
-			return
-		else:
-			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
+	bodies=[]
+	for x in body.split('&&&'):
+		bodies.append(x.strip())
+	for body in bodies:
+		cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
+		command = string.lower(string.split(cbody)[0])
+		if cbody.count(' '):
+			parameters = cbody[(cbody.find(' ') + 1):]
+		if command in COMMANDS:
+			if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
+				return
+			else:
+				call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 
 def presenceHnd(con, prs):
 	ptype = prs.getType()
@@ -548,20 +552,24 @@ def presenceHnd(con, prs):
 		if ptype == 'unavailable':
 			jid = item['jid']
 			code = prs.getStatusCode()
+			reason = prs.getStatus()
 			if code == '303':
 				newnick = prs.getNick()
-				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'ishere': 1}
-				for x in ['idle','status','stmsg','ismoder']:
-					del GROUPCHATS[groupchat][nick][x]
-				GROUPCHATS[groupchat][nick]['ishere']=0
-			else:
-				try:
-					for x in ['idle','status','stmsg','ismoder']:
+				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1}
+				for x in ['idle','status','stmsg','ismoder','joined']:
+					try:
 						del GROUPCHATS[groupchat][nick][x]
 						GROUPCHATS[groupchat][nick]['ishere']=0
-					call_leave_handlers(groupchat, nick, reason)
-				except:
-					pass
+					except:
+						pass
+			else:
+				for x in ['idle','status','stmsg','ismoder','joined']:
+					try:
+						del GROUPCHATS[groupchat][nick][x]
+						GROUPCHATS[groupchat][nick]['ishere']=0
+					except:
+						pass
+				call_leave_handlers(groupchat, nick, reason)
 		elif ptype == 'available' or ptype == None:
 			if item['jid'] == None:
 				time.sleep(2)
@@ -576,7 +584,11 @@ def presenceHnd(con, prs):
 					aff=prs.getAffiliation()
 					role=prs.getRole()
 					call_join_handlers(groupchat, nick, aff, role)
-					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'ishere': 1}
+					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1}
+					if role=='moderator':
+						GROUPCHATS[groupchat][nick]['ismoder'] = 1
+					else:
+						GROUPCHATS[groupchat][nick]['ismoder'] = 0
 		elif ptype == 'error':
 			try:
 				code = prs.getErrorCode()
@@ -692,7 +704,7 @@ def start():
 	JCON.RegisterHandler('presence', presenceHnd)
 	JCON.RegisterHandler('iq', iqHnd)
 	JCON.RegisterDisconnectHandler(dcHnd)
-#	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
+	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
 	JCON.getRoster()
 	JCON.sendInitPresence()
@@ -714,7 +726,7 @@ def start():
 	load_plugins()
 	
 
-	print '\nOk, i\'m ready to work :)'
+	print '\nOk, i\'m ready to work :)\n'
 
 	while 1:
 		JCON.Process(10)
@@ -732,14 +744,14 @@ if __name__ == "__main__":
 		sys.exit(0)
 	except:
 		if AUTO_RESTART:
-			if sys.exc_info()[0] is not SystemExit:
-				traceback.print_exc()
+#			if sys.exc_info()[0] is not SystemExit:
+			traceback.print_exc()
 			try:
 				JCON.disconnected()
 			except IOError:
 				pass
 			try:
-				time.sleep(3)
+				time.sleep(5)
 			except KeyboardInterrupt:
 				print '\nINTERUPT (Ctrl+C)'
 				for gch in GROUPCHATS.keys():

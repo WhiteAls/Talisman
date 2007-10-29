@@ -143,6 +143,10 @@ def handler_presence_ra_change(prs):
 					aff = item['affiliation']
 					if role in ROLES:
 						accr = ROLES[role]
+						if role=='moderator':
+							GROUPCHATS[groupchat][nick]['ismoder'] = 1
+						else:
+							GROUPCHATS[groupchat][nick]['ismoder'] = 0
 					else:
 						accr = 0
 					if aff in AFFILIATIONS:

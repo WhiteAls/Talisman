@@ -22,6 +22,7 @@ def handler_commoff(type,source,parameters):
 	if not source[1] in COMMOFF:
 		get_commoff(source[1])
 	commoff=COMMOFF[source[1]]
+	DBPATH='dynamic/'+source[1]+'/config.cfg'
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:
@@ -68,6 +69,7 @@ def handler_common(type,source,parameters):
 	if not source[1] in COMMOFF:
 		get_commoff(source[1])
 	commoff=COMMOFF[source[1]]
+	DBPATH='dynamic/'+source[1]+'/config.cfg'
 	if parameters:
 		param=string.split(parameters, ' ')
 		for y in param:

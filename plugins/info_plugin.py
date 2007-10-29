@@ -23,7 +23,7 @@ def handler_getrealjid(type, source, parameters):
 		nicks = GROUPCHATS[groupchat].keys()
 		nick = parameters.strip()
 		if not nick in nicks:
-			reply(type,source,u'ты уверен, что <'+nick+u'> сейчас тут?')
+			reply(type,source,u'ты уверен, что <'+nick+u'> был тут?')
 			return
 		else:
 			jidsource=groupchat+'/'+nick
