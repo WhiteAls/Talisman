@@ -297,6 +297,28 @@ def get_greetz(gch=None):
 
 ################################################################################
 
+"""
+def get_true_jid(jid):
+	true_jid = ''
+	if type(jid) is types.ListType:
+		jid = jid[0]
+	if type(jid) is types.InstanceType:
+		jid = unicode(jid)
+	jid = string.split(jid, '/', 1)
+	stripped_jid = jid[0]
+	resource = ''
+	if len(jid) == 2:
+		resource = jid[1]
+	if GROUPCHATS.has_key(stripped_jid):
+		if GROUPCHATS[stripped_jid].has_key(resource):
+			true_jid = string.split(unicode(GROUPCHATS[stripped_jid][resource]['jid']), '/', 1)[0]
+		else:
+			true_jid = None
+	else:
+		true_jid = None
+	return true_jid
+"""
+
 def get_true_jid(jid):
 	true_jid = ''
 	if type(jid) is types.ListType:
@@ -410,6 +432,14 @@ def change_access_perm_glob(source, level=0):
 		del temp_access[jid]
 	write_file(GLOBACCESS_FILE, str(temp_access))
 	get_access_levels()
+	
+def change_access_temp_glob(source, level=0):
+	global GLOBACCESS
+	jid = get_true_jid(source)
+	if level:
+		GLOBACCESS[jid] = level
+	else:
+		del GLOBACCESS[jid]
 
 def user_level(source, gch):
 	global ACCBYCONF
@@ -500,10 +530,10 @@ def findPresenceItem(node):
 def messageHnd(con, msg):
 	if msg.timestamp:
 		return
-	msgtype = msg.getType()
 	body = msg.getBody()
 	if not body:
 		return
+	msgtype = msg.getType()
 	fromjid = msg.getFrom()
 	if msgtype == 'groupchat':
 		mtype='public'
@@ -522,25 +552,21 @@ def messageHnd(con, msg):
 	if fromjid.getResource() == bot_nick:
 		return
 	command,parameters,cbody,rcmd = '','','',''
-	if bot_nick and (string.split(body)[0] == bot_nick+':' or string.split(body)[0] == bot_nick+',' or string.split(body)[0] == bot_nick):
+	if bot_nick and string.split(body)[0] in [bot_nick+x for x in string.punctuation]:
 		body=' '.join(string.split(body)[1:])
 	body=body.strip()
 	if not body:
 		return
 	rcmd = body.split(' ')[0]
-	bodies=[]
-	for x in body.split('&&&'):
-		bodies.append(x.strip())
-	for body in bodies:
-		cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
-		command = string.lower(string.split(cbody)[0])
-		if cbody.count(' '):
-			parameters = cbody[(cbody.find(' ') + 1):]
-		if command in COMMANDS:
-			if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
-				return
-			else:
-				call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
+	cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
+	command = string.lower(string.split(cbody)[0])
+	if cbody.count(' '):
+		parameters = cbody[(cbody.find(' ') + 1):]
+	if command in COMMANDS:
+		if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
+			return
+		else:
+			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 
 def presenceHnd(con, prs):
 	ptype = prs.getType()
@@ -559,14 +585,16 @@ def presenceHnd(con, prs):
 				for x in ['idle','status','stmsg','ismoder','joined']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
-						GROUPCHATS[groupchat][nick]['ishere']=0
+						if GROUPCHATS[groupchat][nick]['ishere']==1:
+							GROUPCHATS[groupchat][nick]['ishere']=0
 					except:
 						pass
 			else:
 				for x in ['idle','status','stmsg','ismoder','joined']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
-						GROUPCHATS[groupchat][nick]['ishere']=0
+						if GROUPCHATS[groupchat][nick]['ishere']==1:
+							GROUPCHATS[groupchat][nick]['ishere']=0
 					except:
 						pass
 				call_leave_handlers(groupchat, nick, reason)
@@ -608,8 +636,8 @@ def iqHnd(con, iq):
 		osver = osver + ' ' + pyver
 		result = iq.buildReply('result')
 		query = result.getTag('query')
-		query.setTagData('name', 'Тао-Альфа-Лямбда-Ипсилон-Сигма-Мю-Альфа-Ню')
-		query.setTagData('version', 'ver.1 (svn rev 48)')
+		query.setTagData('name', 'ταλιςμαη')
+		query.setTagData('version', 'ver.1 (svn rev 49)')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed

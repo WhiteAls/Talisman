@@ -55,15 +55,16 @@ def handler_ping_answ(coze, res, t0, mtype, source, param):
 		print 'someone is doing wrong...'
 		return
 	if res:
-		t = time.time()
-		rep = u'понг от '
-		if param:
-			rep += param
+		if res.getType() == 'result':
+			t = time.time()
+			rep = u'понг от '
+			if param:
+				rep += param
+			else:
+				rep += u'тебя'
+			rep+=u' '+str(round(t-t0, 3))+u' секунд'
 		else:
-			rep += u'тебя'
-		rep+=u' '+str(round(t-t0, 3))+u' секунд'
-	else:
-		rep = u'не дождался :('
+			rep = u'не пингуется'
 	reply(mtype, source, rep)
 	
 register_command_handler(handler_ping, 'пинг', ['инфо','мук','все'], 0, 'Пингует тебя или определённый ник или сервер.', 'пинг [ник]', ['пинг guy','пинг jabber.aq'])

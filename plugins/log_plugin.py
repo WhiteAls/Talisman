@@ -231,9 +231,8 @@ def log_presence(prs):
 			
 if PUBLIC_LOG_DIR:
 	register_message_handler(log_handler_message)
+	register_join_handler(log_handler_join)
+	register_leave_handler(log_handler_leave)
+	register_presence_handler(log_handler_presence)
 if PRIVATE_LOG_DIR:
 	register_outgoing_message_handler(log_handler_outgoing_message)
-register_join_handler(log_handler_join)
-register_leave_handler(log_handler_leave)
-register_presence_handler(log_handler_presence)
-
