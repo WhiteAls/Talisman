@@ -642,7 +642,7 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 49)')
+		query.setTagData('version', 'ver.1 (svn rev 51) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
