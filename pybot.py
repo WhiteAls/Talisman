@@ -533,10 +533,15 @@ def messageHnd(con, msg):
 	body = msg.getBody()
 	if not body:
 		return
+	body=body.strip()
+	if not body:
+		return	
 	msgtype = msg.getType()
 	fromjid = msg.getFrom()
 	if msgtype == 'groupchat':
 		mtype='public'
+		if GROUPCHATS.has_key(fromjid.getStripped()) and GROUPCHATS[fromjid.getStripped()].has_key(fromjid.getResource()):
+			GROUPCHATS[fromjid.getStripped()][fromjid.getResource()]['idle'] = time.time()	
 	elif msgtype == 'error':
 		if msg.getErrorCode()=='500':
 			time.sleep(0.6)
@@ -582,7 +587,7 @@ def presenceHnd(con, prs):
 			if code == '303':
 				newnick = prs.getNick()
 				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1}
-				for x in ['idle','status','stmsg','ismoder','joined']:
+				for x in ['idle','status','stmsg','ismoder','joined','status','stmsg']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
 						if GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -590,7 +595,7 @@ def presenceHnd(con, prs):
 					except:
 						pass
 			else:
-				for x in ['idle','status','stmsg','ismoder','joined']:
+				for x in ['idle','status','stmsg','ismoder','joined','status','stmsg']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
 						if GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -606,17 +611,17 @@ def presenceHnd(con, prs):
 				pass
 			else:
 				jid = item['jid']
-				if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid:
+				if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid and GROUPCHATS[groupchat][nick]['ishere']==1:
 					pass
 				else:
 					aff=prs.getAffiliation()
 					role=prs.getRole()
-					call_join_handlers(groupchat, nick, aff, role)
-					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1}
+					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1, 'status': '', 'stmsg': ''}
 					if role=='moderator':
 						GROUPCHATS[groupchat][nick]['ismoder'] = 1
 					else:
 						GROUPCHATS[groupchat][nick]['ismoder'] = 0
+					call_join_handlers(groupchat, nick, aff, role)
 		elif ptype == 'error':
 			try:
 				code = prs.getErrorCode()

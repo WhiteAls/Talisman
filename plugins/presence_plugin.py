@@ -158,23 +158,24 @@ def handler_presence_ra_change(prs):
 
 def handler_presence_nickcommand(prs):
 	groupchat = prs.getFrom().getStripped()
-	code = prs.getStatusCode()
-	if code == '303':
-		nick = prs.getNick()
-	else:
-		nick = prs.getFrom().getResource()
-	nicksource=nick.split()[0].strip()
-	if nicksource in (COMMANDS.keys() + MACROS.gmacrolist.keys() + MACROS.macrolist[groupchat].keys()):
-		iq = xmpp.Iq('set')
-		iq.setTo(groupchat)
-		iq.setID('kick'+str(random.randrange(1000, 9999)))
-		query = xmpp.Node('query')
-		query.setNamespace('http://jabber.org/protocol/muc#admin')
-		reason=query.addChild('item', {'nick':nick, 'role':'none'})
-		reason.setTagData('reason', u'not allowed')
-		iq.addChild(node=query)
-		JCON.send(iq)
-		return
+	if groupchat in GROUPCHATS:
+		code = prs.getStatusCode()
+		if code == '303':
+			nick = prs.getNick()
+		else:
+			nick = prs.getFrom().getResource()
+		nicksource=nick.split()[0].strip()
+		if nicksource in (COMMANDS.keys() + MACROS.gmacrolist.keys() + MACROS.macrolist[groupchat].keys()):
+			iq = xmpp.Iq('set')
+			iq.setTo(groupchat)
+			iq.setID('kick'+str(random.randrange(1000, 9999)))
+			query = xmpp.Node('query')
+			query.setNamespace('http://jabber.org/protocol/muc#admin')
+			reason=query.addChild('item', {'nick':nick, 'role':'none'})
+			reason.setTagData('reason', u'not allowed')
+			iq.addChild(node=query)
+			JCON.send(iq)
+			return
 
 	
 register_presence_handler(handler_presence_subscr)

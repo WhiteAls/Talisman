@@ -55,7 +55,7 @@ def handler_query_get_private(type, source, parameters):
 			body = ' '.join(args[1:])
 			if get_bot_nick(groupchat) != nick:
 				if nick in nicks:
-					tojid = groupchat+'/'+nick	
+					tojid = groupchat+'/'+nick
 		else:
 			tojid = groupchat+'/'+source[2]
 			body = parameters
@@ -143,6 +143,20 @@ def handler_query_search(type, source, parameters):
 	else:
 		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 		return
+		
+def handler_query_all(type, source, parameters):
+	groupchat=source[1]
+	DBPATH='dynamic/'+groupchat+'/localdb.txt'
+	if check_file(groupchat,'localdb.txt'):
+		localdb = eval(read_file(DBPATH))
+		num=len(localdb.keys())
+		if num == 0:
+			reply(type, source, 'база пуста!')
+			return
+		reply(type, source, ', '.join(localdb.keys()))
+	else:
+		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
+		return
 
 
 register_command_handler(handler_query_get_public, '???', ['инфо','wtf','все'], 10, 'Ищет ответ на вопрос в локальной базе (аналог wtf в сульцах).', '??? <запрос>', ['??? что-то', '??? что-то ещё'])
@@ -151,3 +165,4 @@ register_command_handler(handler_query_set, '!!!', ['инфо','wtf','админ
 register_command_handler(handler_query_count, '???count', ['инфо','wtf','все'], 10, 'Показывает количество вопросов в базе конфы (аналог wtfcount в сульцах).', '!!! ???count', ['???count'])
 register_command_handler(handler_query_get_random, '???rand', ['инфо','wtf','все'], 10, 'Показывает случайно выбранный ответ на вопрос (аналог wtfrand в сульцах).', '???rand', ['???rand'])
 register_command_handler(handler_query_search, '???search', ['инфо','wtf','все'], 10, 'Поиск по базе.', '???search <запрос>', ['???search что-то'])
+register_command_handler(handler_query_all, '???all', ['инфо','wtf','все'], 10, 'Показывает все ключи базы (осторожно, может быть много!).', '???all', ['???all'])

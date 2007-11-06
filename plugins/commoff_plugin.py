@@ -28,8 +28,8 @@ def handler_commoff(type,source,parameters):
 		for y in param:
 			if COMMANDS.has_key(y) or y in MACROS.macrolist[source[1]] or y in MACROS.gmacrolist:
 				if not y in na:
-					if not y in commoff['commoff']:
-						commoff['commoff'].append(y)
+					if not y in commoff:
+						commoff.append(y)
 						vcnt+=1
 						valcomm+=str(vcnt)+u') '+y+u'\n'
 					else:
@@ -49,7 +49,12 @@ def handler_commoff(type,source,parameters):
 			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
 		if npcomm:
 			rep+=u'\nследующие команды отключать вообще нельзя:\n'+npcomm
-		write_file(DBPATH, str(commoff))
+		cfgdb = eval(read_file(DBPATH))
+		if not cfgdb.has_key('commoff'):
+			cfgdb['commoff']='commoff'
+			cfgdb['commoff']=[]
+		cfgdb['commoff']=commoff
+		write_file(DBPATH, str(cfgdb))
 		get_commoff(source[1])
 	else:
 		for x in commoff:
@@ -75,8 +80,8 @@ def handler_common(type,source,parameters):
 		for y in param:
 			if COMMANDS.has_key(y) or y in MACROS.macrolist[source[1]] or y in MACROS.gmacrolist:
 				if not y in na:
-					if y in commoff['commoff']:
-						commoff['commoff'].remove(y)
+					if y in commoff:
+						commoff.remove(y)
 						vcnt+=1
 						valcomm+=str(vcnt)+u') '+y+u'\n'
 					else:
@@ -96,7 +101,12 @@ def handler_common(type,source,parameters):
 			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
 		if npcomm:
 			rep+=u'\nследующие команды не отключаются вообще:\n'+npcomm
-		write_file(DBPATH, str(commoff))
+		cfgdb = eval(read_file(DBPATH))
+		if not cfgdb.has_key('commoff'):
+			cfgdb['commoff']='commoff'
+			cfgdb['commoff']=[]
+		cfgdb['commoff']=commoff
+		write_file(DBPATH, str(cfgdb))
 		get_commoff(source[1])
 	else:
 		rep=u'ииии?'

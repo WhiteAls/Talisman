@@ -34,7 +34,7 @@ def handler_psay(ltype, source, parameters):
 				return
 			if get_bot_nick(groupchat) != nick:
 				tojid = groupchat+'/'+nick
-				if nick in nicks:
+				if nick in nicks and GROUPCHATS[groupchat][nick]['ishere']==1:
 					reply(ltype, source, u'он тут сидит')
 				else:
 					if not sendqueue.has_key(tojid):

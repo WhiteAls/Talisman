@@ -71,12 +71,7 @@ def handler_idle_answ(coze, res, type, source, param):
 	else:
 		rep = u'глюк'
 	reply(type, source, rep)
-	
-def handler_userinfo_message(type, source, body):
-	if type == 'public':
-		if GROUPCHATS.has_key(source[1]) and GROUPCHATS[source[1]].has_key(source[2]):
-			GROUPCHATS[source[1]][source[2]]['idle'] = time.time()	
-	
+
 def handler_userinfo_idle(type, source, parameters):
 	if GROUPCHATS.has_key(source[1]):
 		if not parameters:
@@ -110,6 +105,5 @@ def handler_userinfo_idle(type, source, parameters):
 
 
 
-register_message_handler(handler_userinfo_message)
 register_command_handler(handler_idle, 'аптайм', ['инфо','мук','все'], 10, 'Показывает аптайм определённого сервера.', 'аптайм <сервер>', ['аптайм jabber.aq'])
 register_command_handler(handler_userinfo_idle, 'жив', ['инфо','мук','все'], 10, 'Показывает сколько времени неактивен юзер.', 'жив <ник>', ['жив guy'])
