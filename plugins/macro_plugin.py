@@ -23,10 +23,20 @@ def macroadd_handler(type, source, parameters):
 	if (len(pl)<2):
 		rep = u'мало аргументофф'
 	else:
-		MACROS.add(pl[0], pl[1], source[1])
-#		write_file('dynamic/'+source[1]+'macros.txt', str(MACROS.macrolist[source[1]]))
-		MACROS.flush()
-		rep = u'добавил'
+		print pl[1].split()[0]
+		if pl[1].split()[0] in COMMAND_HANDLERS or pl[1].split()[0] in MACROS.gmacrolist or pl[1].split()[0] in MACROS.macrolist[source[1]]:
+			real_access = MACROS.get_access(pl[1].split()[0], source[1])
+			if real_access < 0:
+				real_access = COMMANDS[pl[1].split()[0]]['access']
+			if has_access(source, real_access, source[1]):
+				MACROS.add(pl[0], pl[1], source[1])
+				MACROS.flush()
+				rep = u'добавил'
+			else:
+				rep = u'размечтался ]:->'
+		else:
+			rep = u'что это было?'
+
 	reply(type, source, rep)
 	
 def gmacroadd_handler(type, source, parameters):

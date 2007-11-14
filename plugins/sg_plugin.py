@@ -48,7 +48,7 @@ def second_handler_SG(coze,stats,parameters,type,source):
 		for stat in pay:
 			result=result+stat.getAttrs()['name']+': '+stat.getAttrs()['value'] + ' '+stat.getAttrs()['units'] + '\n'
 			
-		reply(type,source,result)
+		reply(type,source,result.strip())
 		
 		
 register_command_handler(handler_SG_get, 'инфа', ['инфо','все'], 10, 'Возвращает статистику о сервере юзая XEP-0039.', 'инфа <сервер>', ['инфа jabber.aq'])

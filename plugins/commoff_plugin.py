@@ -49,12 +49,11 @@ def handler_commoff(type,source,parameters):
 			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
 		if npcomm:
 			rep+=u'\nследующие команды отключать вообще нельзя:\n'+npcomm
-		cfgdb = eval(read_file(DBPATH))
-		if not cfgdb.has_key('commoff'):
-			cfgdb['commoff']='commoff'
-			cfgdb['commoff']=[]
-		cfgdb['commoff']=commoff
-		write_file(DBPATH, str(cfgdb))
+		if not GCHCFGS[source[1]].has_key('commoff'):
+			GCHCFGS[source[1]]['commoff']='commoff'
+			GCHCFGS[source[1]]['commoff']=[]
+		GCHCFGS[source[1]]['commoff']=commoff
+		write_file(DBPATH, str(GCHCFGS[source[1]]))
 		get_commoff(source[1])
 	else:
 		for x in commoff:
@@ -66,7 +65,7 @@ def handler_commoff(type,source,parameters):
 			rep=u'в этой конфе включены все команды\\'
 			
 		
-	reply(type,source,rep[:-1])
+	reply(type,source,rep.strip())
 		
 def handler_common(type,source,parameters):
 	na=[u'доступ',u'дать_доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'помощь',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
@@ -101,17 +100,16 @@ def handler_common(type,source,parameters):
 			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
 		if npcomm:
 			rep+=u'\nследующие команды не отключаются вообще:\n'+npcomm
-		cfgdb = eval(read_file(DBPATH))
-		if not cfgdb.has_key('commoff'):
-			cfgdb['commoff']='commoff'
-			cfgdb['commoff']=[]
-		cfgdb['commoff']=commoff
-		write_file(DBPATH, str(cfgdb))
+		if not GCHCFGS[source[1]].has_key('commoff'):
+			GCHCFGS[source[1]]['commoff']='commoff'
+			GCHCFGS[source[1]]['commoff']=[]
+		GCHCFGS[source[1]]['commoff']=commoff
+		write_file(DBPATH, str(GCHCFGS[source[1]]))
 		get_commoff(source[1])
 	else:
 		rep=u'ииии?'
 		
-	reply(type,source,rep)
+	reply(type,source,rep.strip())
 	
 	
 register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 20, 'Отключает определённые команды для текущей конфы, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])

@@ -81,7 +81,7 @@ def handler_userinfo_idle(type, source, parameters):
 		if nick==source[2]:
 			reply(type,source,u'и что я должен сказать? ;)')
 			return
-		if GROUPCHATS[source[1]].has_key(nick):
+		if GROUPCHATS[source[1]].has_key(nick) and GROUPCHATS[source[1]][nick]['ishere']==1:
 			groupchat = source[1]
 			idletime = int(time.time() - GROUPCHATS[groupchat][nick]['idle'])
 			rep = ''

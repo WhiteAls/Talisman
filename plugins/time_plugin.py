@@ -188,9 +188,9 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 					minutes=int(minutes)-60
 				if len(str(hours))==1:
 					hours='0'+str(hours)
-				elif len(str(minutes))==1:
+				if len(str(minutes))==1:
 					minutes='0'+str(minutes)
-				elif len(str(seconds))==1:
+				if len(str(seconds))==1:
 					seconds='0'+str(seconds)				
 				time=str(hours)+':'+str(minutes)+':'+str(seconds)
 				if nick:

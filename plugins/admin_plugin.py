@@ -19,17 +19,15 @@
 
 def popups_check(gch):
 	DBPATH='dynamic/'+gch+'/config.cfg'
-	if check_file(gch,'config.cfg'):
-		gchconfdb = eval(read_file(DBPATH))
-		if gchconfdb.has_key('popups'):
-			if gchconfdb['popups'] == 1:
-				return 1
-			else:
-				return 0
-		else:
-			gchconfdb['popups']=1
-			write_file(DBPATH,str(gchconfdb))
+	if GCHCFGS[gch].has_key('popups'):
+		if GCHCFGS[gch]['popups'] == 1:
 			return 1
+		else:
+			return 0
+	else:
+		GCHCFGS[gch]['popups']=1
+		write_file(DBPATH,str(GCHCFGS[gch]))
+		return 1
 				
 def handler_admin_join(type, source, parameters):
 	if parameters:
@@ -38,7 +36,6 @@ def handler_admin_join(type, source, parameters):
 		if len(args)>1:
 			groupchat = args[0]
 			passw = string.split(args[1], 'pass=', 1)
-			print passw
 			if passw[0]=='':
 				reason = ' '.join(args[2:])
 			else:
@@ -48,12 +45,16 @@ def handler_admin_join(type, source, parameters):
 			reason = ''
 		if len(passw)==1 or len(passw)==0:
 			join_groupchat(groupchat)
+			get_gch_cfg(groupchat)
 			add_gch(groupchat, DEFAULT_NICK)
 			get_commoff(groupchat)
 		else:
 			join_groupchat(groupchat, passw[1])
+			get_gch_cfg(groupchat)
 			add_gch(groupchat, DEFAULT_NICK, passw[1])
 			get_commoff(groupchat)
+		MACROS.init()
+		get_order_pl_cfg(groupchat)
 		reply(type, source, u'я зашёл в -> <' + groupchat + '>')
 		if popups_check(groupchat):
 			if reason:
@@ -64,19 +65,26 @@ def handler_admin_join(type, source, parameters):
 		reply(type, source, u'необходимо написать конфу, а потом причину (не обязательно)')
 
 def handler_admin_leave(type, source, parameters):
-	args = parameters.split(' ')
-	groupchat = args[0]
+	args = parameters.strip().split(' ')
 	if len(args)>=2:
-		reason = ' '.join(args[1:])
-		if not GROUPCHATS.has_key(groupchat):
+		level=int(user_level(source[1]+'/'+source[2], source[1]))
+		if level<40 and args[0]!=source[1]:
+			reply(type, source, u'ага, щаззз')
+			return
+		reason = ' '.join(args[1:]).strip()
+		if not GROUPCHATS.has_key(args[0]):
 			reply(type, source, u'а меня там нету')
 			return
-	elif len(args)==1 and not args[0]=='':
+	elif len(args)==1:
+		level=int(user_level(source[1]+'/'+source[2], source[1]))
+		if level<40 and args[0]!=source[1]:
+			reply(type, source, u'ага, щаззз')
+			return
 		if not GROUPCHATS.has_key(args[0]):
 			reply(type, source, u'а меня там нету')
 			return
 		reason = ''
-	elif not parameters:
+	else:
 			groupchat = source[1]
 			reason = ''
 	if popups_check(groupchat):
@@ -169,30 +177,21 @@ def handler_popups_startstop(type, source, parameters):
 		args = parameters.split(' ')
 		if GROUPCHATS.has_key(args[0]):
 			DBPATH='dynamic/'+args[0]+'/config.cfg'
-			if check_file(args[0],'config.cfg'):
-				gchconfdb = eval(read_file(DBPATH))
-				if args[1]=='1':
-					gchconfdb['popups']=1
-					reply(type,source,u'глобальные оповещения включены')
-				else:
-					gchconfdb['popups']=0
-					reply(type,source,u'глобальные оповещения выключены')
-				write_file(DBPATH,str(gchconfdb))
+			if args[1]=='1':
+				GCHCFGS[args[0]]['popups']=1
+				reply(type,source,u'глобальные оповещения включены')
 			else:
-				reply(type,source,u'ошибка при создании базы')
+				GCHCFGS[args[0]]['popups']=0
+				reply(type,source,u'глобальные оповещения выключены')
+			write_file(DBPATH,str(GCHCFGS[args[0]]))
 		else:
 			reply(type,source,u'ты уверен, что я там есть?')
 	else:
-		DBPATH='dynamic/'+source[1]+'/config.cfg'
-		if check_file(source[1],'config.cfg'):
-			gchconfdb = eval(read_file(DBPATH))
-		ison=gchconfdb['popups']
+		ison=GCHCFGS[source[1]]['popups']
 		if ison==1:
 			reply(type,source,u'здесь глобальные оповещения включены')
 		else:
 			reply(type,source,u'здесь глобальные оповещения выключены')
-
-
 
 
 register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу. Если она запаролена то пишите пароль сразу после названия конфы.', 'зайти <конфа> [pass=пароль] [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря', 'зайти ы@conference.jabber.aq pass=1234 уря'])

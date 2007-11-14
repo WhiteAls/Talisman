@@ -60,13 +60,16 @@ def handler_access_view_access(type, source, parameters):
 
 def handler_access_set_access(type, source, parameters):
 	splitdata = string.split(parameters)
+	if splitdata[1].strip() >100 or splitdata[1].strip()<-100:
+		reply(type, source, u'очень смешно')
+		return		
 	nicks=GROUPCHATS[source[1]]
 	if len(splitdata) > 4:
-		if not splitdata[0:1].strip() in nicks:
+		if not splitdata[0:1].strip() in nicks and GROUPCHATS[source[1]][splitdata[0].strip()]['ishere']==0:
 			reply(type, source, u'а он тут? :-O')
 			return
 	else:
-		if not splitdata[0].strip() in nicks:
+		if not splitdata[0].strip() in nicks and GROUPCHATS[source[1]][splitdata[0].strip()]['ishere']==0:
 			reply(type, source, u'а он тут? :-O')
 			return
 	tjidto=get_true_jid(source[1]+'/'+splitdata[0].strip())
@@ -75,7 +78,7 @@ def handler_access_set_access(type, source, parameters):
 	jidacc=user_level(source, groupchat)
 	if tjidsource in ADMINS:
 		pass
-	elif int(splitdata[1]) >= int(jidacc) and not int(jidacc) >= 30:
+	elif int(splitdata[1]) >= int(jidacc):
 		reply(type, source, u'ага, щаззз')
 		return
 	if len(splitdata) == 2:
@@ -90,28 +93,24 @@ def handler_access_set_access(type, source, parameters):
 		
 def handler_access_set_access_glob(type, source, parameters):
 	if parameters:
-		splitdata = string.split(parameters)
-		if len(splitdata)<2:
+		splitdata = string.strip().split(parameters)
+		if len(splitdata)<1 or len(splitdata)>2:
 			reply(type, source, u'эээ?')
 			return
 		nicks=GROUPCHATS[source[1]].keys()
-		if not splitdata[0].strip() in nicks:
+		if not splitdata[0].strip() in nicks and GROUPCHATS[source[1]][splitdata[0].strip()]['ishere']==0:
 			reply(type, source, u'а он тут? :-O')
 			return
 		tjidto=get_true_jid(source[1]+'/'+splitdata[0])
-		change_access_perm_glob(tjidto, splitdata[1])
-		reply(type, source, u'дал')
-
-def handler_access_unset_access_glob(type, source, parameters):
-	splitdata = string.split(parameters)
-	tjidto=get_true_jid(source[1]+'/'+splitdata[0])
-	change_access_perm_glob(tjidto)
-	reply(type, source, u'снял')
-
+		if len(splitdata)==2:
+			change_access_perm_glob(tjidto, splitdata[1])
+			reply(type, source, u'дал')
+		else:
+			change_access_perm_glob(tjidto)
+			reply(type, source, u'снял')
 
 register_command_handler(handler_access_login, 'логин', ['доступ','админ','все'], 0, 'Залогиниться как админ.', 'логин <пароль>', ['логин мой_пароль'])
 register_command_handler(handler_access_login, 'логаут', ['доступ','админ','все'], 0, 'Разлогиниться.', 'логаут', ['логаут'])
 register_command_handler(handler_access_view_access, 'доступ', ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.', 'доступ [ник]', ['доступ', 'доступ guy'])
-register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота из конфы.', 'дать_дотсуп <ник> <уровень> [навсегда]', ['дать_дотсуп guy 100', 'дать_дотсуп guy 100 что-нить там'])
-register_command_handler(handler_access_set_access_glob, 'globacc', ['доступ','суперадмин','все'], 100, 'Устанавливает уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО.', 'globacc <ник> <уровень>', ['globacc gay 100'])
-register_command_handler(handler_access_unset_access_glob, 'unglobacc', ['доступ','суперадмин','все'], 100, 'Снимает глобальный уровень доступа с ЖИДА.', 'unglobacc <жид> ', ['globacc guy'])
+register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота из конфы.', 'дать_доступ <ник> <уровень> [навсегда]', ['дать_доступ guy 100', 'дать_доступ guy 100 что-нить там'])
+register_command_handler(handler_access_set_access_glob, 'globacc', ['доступ','суперадмин','все'], 100, 'Устанавливает или снимает (если ник писать без уровня) уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО.', 'globacc <ник> <уровень>', ['globacc guy 100','globacc guy'])

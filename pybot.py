@@ -94,6 +94,8 @@ ACCBYCONFFILE = {}
 COMMOFF = {}
 GREETZ={}
 
+GCHCFGS={}
+
 JCON = None
 ################################################################################
 
@@ -229,71 +231,53 @@ def load_plugins():
 	loaded=', '.join(plugins)
 	print loaded,'\n'
 
-def get_commoff(gch=None):
-	if not gch:
-		for x in GROUPCHATS.keys():
-			try:
-				files = os.listdir('dynamic/'+x)
-				for y in files:
-					if y == 'config.cfg':
-						cfgfile='dynamic/'+x+'/'+y
-						try:
-							cfg = eval(read_file(cfgfile))
-							if cfg.has_key('commoff'):
-								commoff=cfg['commoff']
-								COMMOFF[x]=x
-								COMMOFF[x]=commoff
-							else:
-								COMMOFF[x]=x
-								COMMOFF[x]=[]
-						except:
-							pass
-			except:
-				pass
-	else:
-		if not check_file(gch,'config.cfg'):
-			print 'unable to create commoff file for new groupchat!'
-			return
-		cfgfile='dynamic/'+gch+'/config.cfg'
-		try:
-			cfg = eval(read_file(cfgfile))
-			if cfg.has_key('commoff'):
-				commoff=cfg['commoff']
-				COMMOFF[gch]=gch
-				COMMOFF[gch]=commoff
-			else:
-				COMMOFF[gch]=gch
-				COMMOFF[gch]=[]
-		except:
-			pass
+def get_commoff(gch):
+	try:
+		if GCHCFGS[gch].has_key('commoff'):
+			commoff=GCHCFGS[gch]['commoff']
+			COMMOFF[gch]=gch
+			COMMOFF[gch]=commoff
+		else:
+			COMMOFF[gch]=gch
+			COMMOFF[gch]=[]
+	except:
+		pass
 			
-def get_greetz(gch=None):
-	if not gch:
-		for x in GROUPCHATS.keys():
-			try:
-				files = os.listdir('dynamic/'+x)
-				for y in files:
-					if y == 'greetz.txt':
-						grtfile='dynamic/'+x+'/'+y
-						try:
-							grt = eval(read_file(grtfile))
-							GREETZ[x]=x
-							GREETZ[x]=grt
-						except:
-							pass
-			except:
-				pass
+def get_greetz(gch):
+	grtfile='dynamic/'+gch+'/greetz.txt'
+	try:
+		grt = eval(read_file(grtfile))
+		if gch in GREETZ.keys():
+			GREETZ[gch]=grt
+		else:
+			GREETZ[gch]=gch
+			GREETZ[gch]=grt				
+	except:
+		pass
+			
+def get_gch_cfg(gch):
+	cfgfile='dynamic/'+gch+'/config.cfg'
+	if not check_file(gch,'config.cfg'):
+		print 'unable to create config file for new groupchat!'
+		raise
+	try:
+		cfg = eval(read_file(cfgfile))
+		GCHCFGS[gch]=gch
+		GCHCFGS[gch]=cfg
+	except:
+		pass
+
+def get_order_pl_cfg(gch):		
+	if not 'filt' in GCHCFGS[gch]:
+		GCHCFGS[gch]['filt']={}		
+		for x in ['smile','time','presence','len','like']:
+			GCHCFGS[gch]['filt'][x]=1
 	else:
-		grtfile='dynamic/'+gch+'/greetz.txt'
-		try:
-			grt = eval(read_file(grtfile))
-			if gch in GREETZ.keys():
-				GREETZ[gch]=grt
-			else:
-				GREETZ[gch]=gch
-				GREETZ[gch]=grt				
-		except:
-			pass	
+		for x in ['smile','time','presence','len','like']:
+			if not x in GCHCFGS[gch]['filt']:
+				GCHCFGS[gch]['filt'][x]=1
+	DBPATH='dynamic/'+gch+'/config.cfg'
+	write_file(DBPATH, str(GCHCFGS[gch]))
 
 ################################################################################
 
@@ -587,7 +571,7 @@ def presenceHnd(con, prs):
 			if code == '303':
 				newnick = prs.getNick()
 				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1}
-				for x in ['idle','status','stmsg','ismoder','joined','status','stmsg']:
+				for x in ['idle','status','stmsg','joined','status','stmsg']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
 						if GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -595,7 +579,7 @@ def presenceHnd(con, prs):
 					except:
 						pass
 			else:
-				for x in ['idle','status','stmsg','ismoder','joined','status','stmsg']:
+				for x in ['idle','status','stmsg','joined','status','stmsg']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
 						if GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -607,8 +591,9 @@ def presenceHnd(con, prs):
 			if item['jid'] == None:
 				time.sleep(2)
 				msg(groupchat, u'моя функциональность в полной мере без прав модератора невозможна')
+				time.sleep(1)
 				leave_groupchat(groupchat)        
-				pass
+				return
 			else:
 				jid = item['jid']
 				if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid and GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -642,7 +627,7 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 51) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 52) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
@@ -749,8 +734,10 @@ def start():
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
 			thread.start_new_thread(join_groupchat, (groupchat.decode('utf-8'),groupchats[groupchat]['nick'].decode('utf-8'),groupchats[groupchat]['passw']))
+			get_gch_cfg(groupchat.decode('utf-8'))
 			get_commoff(groupchat.decode('utf-8'))
-			get_greetz(groupchat.decode('utf-8'))			
+			get_greetz(groupchat.decode('utf-8'))
+			get_order_pl_cfg(groupchat.decode('utf-8'))
 	else:
 		print 'Error: unable to create chatrooms list file!'
 	time.sleep(1)
