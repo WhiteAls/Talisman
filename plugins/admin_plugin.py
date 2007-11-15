@@ -65,8 +65,8 @@ def handler_admin_join(type, source, parameters):
 		reply(type, source, u'необходимо написать конфу, а потом причину (не обязательно)')
 
 def handler_admin_leave(type, source, parameters):
-	args = parameters.strip().split(' ')
-	if len(args)>=2:
+	args = parameters.split()
+	if len(args)>1:
 		level=int(user_level(source[1]+'/'+source[2], source[1]))
 		if level<40 and args[0]!=source[1]:
 			reply(type, source, u'ага, щаззз')
@@ -75,6 +75,7 @@ def handler_admin_leave(type, source, parameters):
 		if not GROUPCHATS.has_key(args[0]):
 			reply(type, source, u'а меня там нету')
 			return
+		groupchat = args[0]
 	elif len(args)==1:
 		level=int(user_level(source[1]+'/'+source[2], source[1]))
 		if level<40 and args[0]!=source[1]:
@@ -84,9 +85,10 @@ def handler_admin_leave(type, source, parameters):
 			reply(type, source, u'а меня там нету')
 			return
 		reason = ''
+		groupchat = args[0]
 	else:
-			groupchat = source[1]
-			reason = ''
+		groupchat = source[1]
+		reason = ''
 	if popups_check(groupchat):
 		if reason:
 			msg(groupchat, u'меня уводит '+source[2]+u' по причине:\n'+reason)

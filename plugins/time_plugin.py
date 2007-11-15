@@ -172,7 +172,7 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 			if tzo and utc:
 				try:
 					[sign, tzh, tzm] = re.match('(\+|-)?([0-9]+):([0-9]+)',tzo).groups()
-					[date, hours, minutes, seconds] = re.match('(.{10})T([0-9]+):([0-9]+):([0-9]+)',utc).groups()
+					[year, month, day, hours, minutes, seconds] = re.match('([0-9]+)-([0-9]+)-([0-9]+)T([0-9]+):([0-9]+):([0-9]+)',utc).groups()
 				except:
 					reply(type,source, u'не парсится :(')
 					return
@@ -182,6 +182,7 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 				else:
 					hours=int(hours)+int(tzh)
 					minutes=int(minutes)+int(tzm)
+				if hours >= 24: day = int(day) + 1
 				while hours>=24:
 					hours=int(hours)-24
 				while minutes>=60:
@@ -193,6 +194,7 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 				if len(str(seconds))==1:
 					seconds='0'+str(seconds)				
 				time=str(hours)+':'+str(minutes)+':'+str(seconds)
+				date=str(year)+'-'+str(month)+'-'+str(day)
 				if nick:
 					reply(type,source, u'у '+nick+u' сейчас '+time+' ('+date+')')
 				else:

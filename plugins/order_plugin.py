@@ -192,8 +192,11 @@ def handler_order_presence(prs):
 #						if code == '307': # kick
 #							order_stats[groupchat][jid]['kicked']+=1
 #						if code == '301': # ban
-#							del order_stats[groupchat][jid]			
-		order_stats[groupchat][jid]['prstime']=time.time()
+#							del order_stats[groupchat][jid]
+		try:
+			order_stats[groupchat][jid]['prstime']=time.time()
+		except:
+			pass
 
 ######################################################################################################################
 
