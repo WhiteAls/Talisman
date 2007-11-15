@@ -270,12 +270,9 @@ def get_gch_cfg(gch):
 def get_order_pl_cfg(gch):		
 	if not 'filt' in GCHCFGS[gch]:
 		GCHCFGS[gch]['filt']={}		
-		for x in ['smile','time','presence','len','like']:
+	for x in ['smile','time','presence','len','like']:
+		if not x in GCHCFGS[gch]['filt']:
 			GCHCFGS[gch]['filt'][x]=1
-	else:
-		for x in ['smile','time','presence','len','like']:
-			if not x in GCHCFGS[gch]['filt']:
-				GCHCFGS[gch]['filt'][x]=1
 	DBPATH='dynamic/'+gch+'/config.cfg'
 	write_file(DBPATH, str(GCHCFGS[gch]))
 
@@ -531,7 +528,6 @@ def messageHnd(con, msg):
 			time.sleep(0.6)
 			JCON.send(xmpp.Message(fromjid, body, 'groupchat'))
 			return
-		print 'got error message from server, error code is ',msg.getErrorCode()
 		return
 	else:
 		mtype='private'
@@ -728,16 +724,15 @@ def start():
 	JCON.sendInitPresence()
 	print 'Entering Rooms'
 
-	MACROS.init()
-
 	if check_file(file='chatrooms.list'):
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
-			thread.start_new_thread(join_groupchat, (groupchat.decode('utf-8'),groupchats[groupchat]['nick'].decode('utf-8'),groupchats[groupchat]['passw']))
-			get_gch_cfg(groupchat.decode('utf-8'))
-			get_commoff(groupchat.decode('utf-8'))
-			get_greetz(groupchat.decode('utf-8'))
-			get_order_pl_cfg(groupchat.decode('utf-8'))
+			thread.start_new_thread(join_groupchat, (groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw']))
+			MACROS.init(groupchat)
+			get_gch_cfg(groupchat)
+			get_commoff(groupchat)
+			get_greetz(groupchat)
+			get_order_pl_cfg(groupchat)
 	else:
 		print 'Error: unable to create chatrooms list file!'
 	time.sleep(1)

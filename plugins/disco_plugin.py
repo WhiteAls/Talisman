@@ -114,7 +114,7 @@ def handler_disco_answ(type,source,trig,stop,disco):
 			rep += str(total)+u') '+x+u'\n'
 			if str(total)==stop:
 				break
-	if len(disco)!=int(stop):
+	if len(disco)!=int(total):
 		rep+=u'всего '+str(len(disco))+u' пунктов'
 	reply(type, source, rep.strip())
 	disco=[]

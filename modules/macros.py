@@ -139,41 +139,60 @@ class Macros:
 	
 	macrocmds = MacroCommands()
 	
-	def init(self):
+	def init(self,gch):
 		self.gmacrolist = eval(read_file("dynamic/macros.txt"))
 		self.gaccesslist = eval(read_file("dynamic/macroaccess.txt"))
 
-		poss = os.listdir('dynamic')
-		for x in poss:
-			try:
-				files = os.listdir('dynamic/'+x)
-				for y in files:
-					if y == 'macros.txt':
-						mcrfile='dynamic/'+x+'/macros.txt'
-						try:
-							mcr = eval(read_file(mcrfile))
-							if not mcr=='{}':
-								self.macrolist[x]=x
-								self.macrolist[x]=mcr
-							else:
-								self.macrolist[x]=x
-								self.macrolist[x]={}
-						except:
-							pass
-					elif y == 'macroaccess.txt':
-						mcracfile='dynamic/'+x+'/macroaccess.txt'
-						try:
-							mcrac = eval(read_file(mcracfile))
-							if not mcrac=='{}':
-								self.accesslist[x]=x
-								self.accesslist[x]=mcrac
-							else:
-								self.accesslist[x]=x
-								self.accesslist[x]={}
-						except:
-							pass
-			except:
-				pass
+		mcrfile='dynamic/'+gch+'/macros.txt'
+		mcracfile='dynamic/'+gch+'/macroaccess.txt'
+
+		try:
+			mcr = eval(read_file(mcrfile))
+			if not mcr=='{}':
+				self.macrolist[gch]=gch
+				self.macrolist[gch]=mcr
+			else:
+				self.macrolist[gch]=gch
+				self.macrolist[gch]={}
+		except:
+			pass
+
+		try:
+			mcrac = eval(read_file(mcracfile))
+			if not mcrac=='{}':
+				self.accesslist[gch]=gch
+				self.accesslist[gch]=mcrac
+			else:
+				self.accesslist[gch]=gch
+				self.accesslist[gch]={}
+		except:
+			pass
+
+	def load(self,gch):
+		mcrfile='dynamic/'+gch+'/macros.txt'
+		mcracfile='dynamic/'+gch+'/macroaccess.txt'
+
+		try:
+			mcr = eval(read_file(mcrfile))
+			if not mcr=='{}':
+				self.macrolist[gch]=gch
+				self.macrolist[gch]=mcr
+			else:
+				self.macrolist[gch]=gch
+				self.macrolist[gch]={}
+		except:
+			pass
+
+		try:
+			mcrac = eval(read_file(mcracfile))
+			if not mcrac=='{}':
+				self.accesslist[gch]=gch
+				self.accesslist[gch]=mcrac
+			else:
+				self.accesslist[gch]=gch
+				self.accesslist[gch]={}
+		except:
+			pass		
 		
 	def flush(self):
 		for x in self.macrolist.keys():
@@ -227,7 +246,7 @@ class Macros:
 				args[m[i]-1]+=me[i]
 			i+=1
 		return args
-	
+
 	def expand(self, cmd, source):
 		if type(cmd) is None:
 			return ''

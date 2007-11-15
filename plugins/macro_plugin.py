@@ -23,7 +23,6 @@ def macroadd_handler(type, source, parameters):
 	if (len(pl)<2):
 		rep = u'мало аргументофф'
 	else:
-		print pl[1].split()[0]
 		if pl[1].split()[0] in COMMAND_HANDLERS or pl[1].split()[0] in MACROS.gmacrolist or pl[1].split()[0] in MACROS.macrolist[source[1]]:
 			real_access = MACROS.get_access(pl[1].split()[0], source[1])
 			if real_access < 0:
@@ -101,15 +100,11 @@ def macroinfo_handler(type, source, parameters):
 def gmacroinfo_handler(type, source, parameters):
 	rep=''
 	if parameters:
-		try:
-			if MACROS.macrolist[source[1]].has_key(parameters):
-				rep = parameters+' -> '+MACROS.macrolist[source[1]][parameters]
-			elif MACROS.gmacrolist.has_key(parameters):
-				rep = parameters+' -> '+MACROS.gmacrolist[parameters]
-		except:
+		if MACROS.gmacrolist.has_key(parameters):
+			rep = parameters+' -> '+MACROS.gmacrolist[parameters]
+		else:
 			rep = u'нет такого макроса'
 	elif parameters == 'allmac':
-		rep += '\n'.join([x+' -> '+ MACROS.macrolist[source[1]][x] for x in MACROS.macrolist[source[1]]])
 		rep += '\n'.join([x+' -> '+ MACROS.macrolist[x] for x in MACROS.macrolist])
 	reply(type, source, rep)
 	
@@ -144,7 +139,6 @@ def macroaccess_handler(type, source, parameters):
 			MACROS.give_access(macro,access,source[1])
 			reply(type,source,u'дал')
 			time.sleep(1)
-#			write_file('dynamic/'+source[1]+'macroaccess.txt', str(MACROS.accesslist[source[1]]))
 			MACROS.flush()
 		else:
 			reply(type,source,u'что за бред?')

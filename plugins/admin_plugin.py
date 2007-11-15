@@ -53,7 +53,7 @@ def handler_admin_join(type, source, parameters):
 			get_gch_cfg(groupchat)
 			add_gch(groupchat, DEFAULT_NICK, passw[1])
 			get_commoff(groupchat)
-		MACROS.init()
+		MACROS.load(groupchat)
 		get_order_pl_cfg(groupchat)
 		reply(type, source, u'я зашёл в -> <' + groupchat + '>')
 		if popups_check(groupchat):

@@ -172,7 +172,7 @@ def handler_presence_nickcommand(prs):
 			query = xmpp.Node('query')
 			query.setNamespace('http://jabber.org/protocol/muc#admin')
 			reason=query.addChild('item', {'nick':nick, 'role':'none'})
-			reason.setTagData('reason', u'not allowed')
+			reason.setTagData('reason', u'your nickname is invalid here')
 			iq.addChild(node=query)
 			JCON.send(iq)
 			return
