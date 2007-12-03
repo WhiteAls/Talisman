@@ -32,7 +32,7 @@ def first_handler_SG(coze,res,parameters,type,source):
 	#print par
 	payload=res.getQueryPayload()
 	if res.getType()=='error':
-		reply(type,source,u'аблом '+res.getErrorCode()+ ': '+res.getError())
+		reply(type,source,u'не судьба :(')
 		pass
 	elif res.getType()=='result':
 		iq = xmpp.Iq('get')
@@ -40,6 +40,8 @@ def first_handler_SG(coze,res,parameters,type,source):
 		iq.setQueryPayload(payload)
 		iq.setTo(parameters.strip())
 		JCON.SendAndCallForResponse(iq,second_handler_SG,{'parameters':parameters,'type':type,'source':source})
+	else:
+		reply(type,source,u'не дождался :(')
 
 def second_handler_SG(coze,stats,parameters,type,source):
 	pay=stats.getQueryPayload()

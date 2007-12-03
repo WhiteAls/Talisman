@@ -39,7 +39,6 @@ def order_kick(groupchat, nick, reason):
 	kick.setTagData('reason', reason)
 	iq.addChild(node=query)
 	JCON.send(iq)
-	return
 	
 def order_visitor(groupchat, nick):
 	iq = xmpp.Iq('set')
@@ -50,7 +49,6 @@ def order_visitor(groupchat, nick):
 	visitor=query.addChild('item', {'nick':nick, 'role':'visitor'})
 	iq.addChild(node=query)
 	JCON.send(iq)
-	return
 	
 def order_ban(groupchat, nick, reason):
 	iq = xmpp.Iq('set')
@@ -62,7 +60,6 @@ def order_ban(groupchat, nick, reason):
 	ban.setTagData('reason', reason)
 	iq.addChild(node=query)
 	JCON.send(iq)
-	return
 	
 def order_unban(groupchat, jid):
 	iq = xmpp.Iq('set')
@@ -73,7 +70,6 @@ def order_unban(groupchat, jid):
 	query.addChild('item', {'jid':jid, 'affiliation':'none'})
 	iq.addChild(node=query)
 	JCON.send(iq)
-	return
 
 def handler_order_message(ltype, source, body):
 	nick=source[2]
@@ -100,28 +96,36 @@ def handler_order_message(ltype, source, body):
 					elif GCHCFGS[groupchat]['filt']['len']==1 and len(body)>=700:
 						order_stats[groupchat][jid]['flood']+=1
 						order_kick(groupchat, nick, 'flood')
-					if GCHCFGS[groupchat]['filt']['like']==1 and order_stats[groupchat][jid]['msgbody'] is not None:
-						if now-lastmsg>60:
+					elif GCHCFGS[groupchat]['filt']['caps']==1:
+						for x in [x for x in sourcebody.replace(' ', '').strip()]:
+							if x.isupper():
+								cnt+=1
+						if cnt>=len(body)/2 and cnt>=4:
+							order_stats[groupchat][jid]['flood']+=1
+							order_kick(groupchat, nick, 'too many caps')
+					elif GCHCFGS[groupchat]['filt']['like']==1:
+						if order_stats[groupchat][jid]['msgbody'] is not None:
+							if now-lastmsg>60:
+								order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
+								return
+							for x in order_stats[groupchat][jid]['msgbody']:
+								for y in sourcebody.strip().split():
+									if x==y:
+										cnt+=1
+							if cnt:
+								lensrcmsgbody=len(sourcebody.strip().split())
+								lenoldmsgbody=len(order_stats[groupchat][jid]['msgbody'])
+								avg=(lensrcmsgbody+lenoldmsgbody/2)/2
+								if cnt>avg:
+									order_stats[groupchat][jid]['msg']+=1
+									if order_stats[groupchat][jid]['msg']>2:
+										order_stats[groupchat][jid]['flood']+=1
+										order_stats[groupchat][jid]['msg']=0
+										order_kick(groupchat, nick, 'your messages looks like repeat-flood')
 							order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
-							return
-						for x in order_stats[groupchat][jid]['msgbody']:
-							for y in sourcebody.strip().split():
-								if x==y:
-									cnt+=1
-						if cnt:
-							lensrcmsgbody=len(sourcebody.strip().split())
-							lenoldmsgbody=len(order_stats[groupchat][jid]['msgbody'])
-							avg=(lensrcmsgbody+lenoldmsgbody/2)/2
-							if cnt>avg:
-								order_stats[groupchat][jid]['msg']+=1
-								if order_stats[groupchat][jid]['msg']>2:
-									order_stats[groupchat][jid]['flood']+=1
-									order_stats[groupchat][jid]['msg']=0
-									order_kick(groupchat, nick, 'your messages looks like repeat-flood')
-						order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
-					else:
-						order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
-
+						else:
+							order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
+						
 #					elif check_order_obscene_words(sourcebody):
 #						order_stats[groupchat][jid]['obscene']+=1
 #						order_kick(groupchat, nick, 'obscene lexicon')
@@ -152,8 +156,12 @@ def handler_order_join(groupchat, nick, aff, role):
 			order_stats[groupchat][jid]['flood']=0
 			order_stats[groupchat][jid]['msgbody']=None
 			order_stats[groupchat][jid]['msgtime']=0
-			order_stats[groupchat][jid]['prstime']=0
-			order_stats[groupchat][jid]['prs']=0
+			order_stats[groupchat][jid]['prstime']={}
+			order_stats[groupchat][jid]['prstime']['fly']=0
+			order_stats[groupchat][jid]['prstime']['status']=0			
+			order_stats[groupchat][jid]['prs']={}
+			order_stats[groupchat][jid]['prs']['fly']=0
+			order_stats[groupchat][jid]['prs']['status']=0
 			order_stats[groupchat][jid]['msg']=0
 			
 	
@@ -163,27 +171,63 @@ def handler_order_presence(prs):
 	nick = prs.getFrom().getResource()
 	jid=get_true_jid(groupchat+'/'+nick)
 	item=findPresenceItem(prs)
-	if jid!=groupchat and groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 0:
-		if ptype=='available' or ptype==None:
+	if jid!=groupchat and groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 0 and GCHCFGS[groupchat]['filt']['presence']==1:
+
+		if ptype==None:
 			try:
-				now = time.time()
-				lastprs=order_stats[groupchat][jid]['prstime']
-				if GCHCFGS[groupchat]['filt']['presence']==1 and now-lastprs<=10:
-					if now-lastprs>=60:
-						order_stats[groupchat][jid]['prs']=0
-					else:
-						order_stats[groupchat][jid]['prs']+=1
-					if order_stats[groupchat][jid]['prs']>5:
-						order_stats[groupchat][jid]['prs']=0
-						order_kick(groupchat, nick, 'presence flood')
 				if item['role']=='participant':
 					order_stats[groupchat][jid]['flood']=0
+				now = time.time()
+				lastprs=order_stats[groupchat][jid]['prstime']['status']
+				if now-lastprs<=10:
+					if now-lastprs>=60:
+						order_stats[groupchat][jid]['prs']['status']=0
+					else:
+						order_stats[groupchat][jid]['prs']['status']+=1
+						if order_stats[groupchat][jid]['prs']['status']>5:
+							order_stats[groupchat][jid]['prs']['status']=0
+							order_kick(groupchat, nick, 'presence flood')					
+				order_stats[groupchat][jid]['prstime']['status']=time.time()
 			except:
 				pass
+
+		elif ptype=='available':
+			try:
+				now = time.time()
+				lastprs=order_stats[groupchat][jid]['prstime']['fly']
+				if now-lastprs<=60:
+					if now-lastprs>=300:
+						order_stats[groupchat][jid]['prs']['fly']=0
+					else:
+						order_stats[groupchat][jid]['prs']['fly']+=1
+						if order_stats[groupchat][jid]['prs']['fly']>5:
+							order_stats[groupchat][jid]['prs']['fly']=0
+							order_kick(groupchat, nick, 'flying flood')
+				order_stats[groupchat][jid]['prstime']['fly']=time.time()
+			except:
+				pass
+				
+				
 #			if check_order_obscene_words(GROUPCHATS[groupchat][nick]['stmsg']):
 #				order_stats[groupchat][jid]['obscene']+=1
 #				order_kick(groupchat, nick, 'obscene lexicon in status msg')		
-#		elif ptype=='unavailable':
+		elif ptype=='unavailable':
+			try:
+				now = time.time()
+				lastprs=order_stats[groupchat][jid]['prstime']['fly']
+				if now-lastprs<=60:
+					if now-lastprs>=300:
+						order_stats[groupchat][jid]['prs']['fly']=0
+					else:
+						order_stats[groupchat][jid]['prs']['fly']+=1
+						if order_stats[groupchat][jid]['prs']['fly']>5:
+							order_stats[groupchat][jid]['prs']['fly']=0
+							order_kick(groupchat, nick, 'flying flood')
+				order_stats[groupchat][jid]['prstime']['fly']=time.time()
+			except:
+				pass
+			
+			
 #			order_stats[groupchat][jid]['prs']=0
 #			code = prs.getStatusCode()
 #			if code:
@@ -193,10 +237,7 @@ def handler_order_presence(prs):
 #							order_stats[groupchat][jid]['kicked']+=1
 #						if code == '301': # ban
 #							del order_stats[groupchat][jid]
-		try:
-			order_stats[groupchat][jid]['prstime']=time.time()
-		except:
-			pass
+
 
 ######################################################################################################################
 
@@ -243,7 +284,14 @@ def handler_order_filt(type, source, parameters):
 					GCHCFGS[source[1]]['filt']['like']=int(param[1])
 				elif param[1]=='1':
 					reply(type,source,u'фильтрация подозрительно одинаковых сообщений включена')
-					GCHCFGS[source[1]]['filt']['like']=int(param[1])					
+					GCHCFGS[source[1]]['filt']['like']=int(param[1])		
+			elif param[0]=='caps':
+				if param[1]=='0':
+					reply(type,source,u'фильтрация капса отключена')
+					GCHCFGS[source[1]]['filt']['caps']=int(param[1])
+				elif param[1]=='1':
+					reply(type,source,u'фильтрация капса включена')
+					GCHCFGS[source[1]]['filt']['caps']=int(param[1])					
 			else:
 				reply(type,source,u'синтакс инвалид')
 				return					
@@ -257,6 +305,7 @@ def handler_order_filt(type, source, parameters):
 			GCHCFGS[source[1]]['filt']['presence']=1
 			GCHCFGS[source[1]]['filt']['len']=1
 			GCHCFGS[source[1]]['filt']['like']=1
+			GCHCFGS[source[1]]['filt']['caps']=1
 			DBPATH='dynamic/'+source[1]+'/config.cfg'
 			write_file(DBPATH, str(GCHCFGS[source[1]]))
 	else:
@@ -267,6 +316,7 @@ def handler_order_filt(type, source, parameters):
 			GCHCFGS[source[1]]['filt']['presence']=1
 			GCHCFGS[source[1]]['filt']['len']=1
 			GCHCFGS[source[1]]['filt']['like']=1
+			GCHCFGS[source[1]]['filt']['caps']=1
 			DBPATH='dynamic/'+source[1]+'/config.cfg'
 			write_file(DBPATH, str(GCHCFGS[source[1]]))
 		rep=u''
@@ -275,6 +325,7 @@ def handler_order_filt(type, source, parameters):
 		prs=GCHCFGS[source[1]]['filt']['presence']
 		len=GCHCFGS[source[1]]['filt']['len']
 		like=GCHCFGS[source[1]]['filt']['like']
+		caps=GCHCFGS[source[1]]['filt']['caps']
 		if smile:
 			rep += u'фильтрация смайлов включена\n'
 		else:
@@ -292,13 +343,17 @@ def handler_order_filt(type, source, parameters):
 		else:
 			rep += u'фильтрация длинных сообщений отключена\n'
 		if like:
-			rep += u'фильтрация подозрительно одинаковых сообщений включена'
+			rep += u'фильтрация подозрительно одинаковых сообщений включена\n'
 		else:
-			rep += u'фильтрация подозрительно одинаковых сообщений отключена'		
+			rep += u'фильтрация подозрительно одинаковых сообщений отключена\n'
+		if caps:
+			rep += u'фильтрация капса включена'
+		else:
+			rep += u'фильтрация капса отключена'
 		reply(type,source,rep.strip())
 
 
 register_message_handler(handler_order_message)
 register_join_handler(handler_order_join)
 register_presence_handler(handler_order_presence)
-register_command_handler(handler_order_filt, 'filt', ['админ','мук','все'], 20, 'Включает или отключает определённые фильтры для конференции.\nsmile - фильтр смайлов\ntime - временной фильтр\nlen - количественный фильтр\npresence - фильтр презенсов\nlike - фильтр одинаковых сообщений', 'filt [фильтр] [состояние]', ['filt smile 1', 'filt len 0'])
+register_command_handler(handler_order_filt, 'filt', ['админ','мук','все'], 20, 'Включает или отключает определённые фильтры для конференции.\nsmile - фильтр смайлов\ntime - временной фильтр\nlen - количественный фильтр\npresence - фильтр презенсов\nlike - фильтр одинаковых сообщений\ncaps - фильтр капса (ЗАГЛАВНЫХ букв)', 'filt [фильтр] [состояние]', ['filt smile 1', 'filt len 0'])

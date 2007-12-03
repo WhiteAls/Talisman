@@ -270,7 +270,7 @@ def get_gch_cfg(gch):
 def get_order_pl_cfg(gch):		
 	if not 'filt' in GCHCFGS[gch]:
 		GCHCFGS[gch]['filt']={}		
-	for x in ['smile','time','presence','len','like']:
+	for x in ['smile','time','presence','len','like','caps']:
 		if not x in GCHCFGS[gch]['filt']:
 			GCHCFGS[gch]['filt'][x]=1
 	DBPATH='dynamic/'+gch+'/config.cfg'
@@ -623,7 +623,7 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 52) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 55) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed

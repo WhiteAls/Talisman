@@ -98,6 +98,9 @@ def handler_disco_ext(coze, res, type, source, stop, parameters):
 	
 def handler_disco_answ(type,source,trig,stop,disco):
 	total=0
+	if str(total)==stop:
+		reply(type, source, u'всего '+str(len(disco))+u' пунктов')
+		return
 	rep = u'надискаверил:\n'
 	if trig==1:
 		disco.sort(lambda x,y: x[2] - y[2])
@@ -117,6 +120,7 @@ def handler_disco_answ(type,source,trig,stop,disco):
 	if len(disco)!=int(total):
 		rep+=u'всего '+str(len(disco))+u' пунктов'
 	reply(type, source, rep.strip())
-	disco=[]
+	
+disco=[]
 			
 register_command_handler(handler_disco, 'диско', ['мук','инфо','все'], 10, 'Показывает результату discovery для указанного жида. Об ограничениях - "диско ограничния".', 'диско <сервер> <кол-во результатов>', ['диско jabber.aq','диско conference.jabber.aq 5'])

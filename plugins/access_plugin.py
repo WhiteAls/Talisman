@@ -60,7 +60,7 @@ def handler_access_view_access(type, source, parameters):
 
 def handler_access_set_access(type, source, parameters):
 	splitdata = string.split(parameters)
-	if splitdata[1].strip() >100 or splitdata[1].strip()<-100:
+	if int(splitdata[1].strip())>100 or int(splitdata[1].strip())<-1:
 		reply(type, source, u'очень смешно')
 		return		
 	nicks=GROUPCHATS[source[1]]
@@ -111,6 +111,6 @@ def handler_access_set_access_glob(type, source, parameters):
 
 register_command_handler(handler_access_login, 'логин', ['доступ','админ','все'], 0, 'Залогиниться как админ.', 'логин <пароль>', ['логин мой_пароль'])
 register_command_handler(handler_access_login, 'логаут', ['доступ','админ','все'], 0, 'Разлогиниться.', 'логаут', ['логаут'])
-register_command_handler(handler_access_view_access, 'доступ', ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.', 'доступ [ник]', ['доступ', 'доступ guy'])
-register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота из конфы.', 'дать_доступ <ник> <уровень> [навсегда]', ['дать_доступ guy 100', 'дать_доступ guy 100 что-нить там'])
+register_command_handler(handler_access_view_access, 'доступ', ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.\nПодробнее о стандартных уровнях доступа - напиишите "доступ !desc".', 'доступ [ник]', ['доступ', 'доступ guy'])
+register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота из конфы.\nПодробнее о стандартных уровнях доступа - напиишите "доступ !desc".', 'дать_доступ <ник> <уровень> [навсегда]', ['дать_доступ guy 100', 'дать_доступ guy 100 что-нить там'])
 register_command_handler(handler_access_set_access_glob, 'globacc', ['доступ','суперадмин','все'], 100, 'Устанавливает или снимает (если ник писать без уровня) уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО.', 'globacc <ник> <уровень>', ['globacc guy 100','globacc guy'])

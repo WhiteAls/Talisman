@@ -27,17 +27,17 @@ def handler_complaint(type, source, parameters):
 			args = parameters.split(' ')
 			nick = args[0]
 			body = ' '.join(args[1:])
-			if not nick in nicks:
+			if not nick in nicks and GROUPCHATS[groupchat][nick]['ishere']==1:
 				rep = u'ты уверен, что <'+nick+u'> сейчас тут?'
 				reply(type,source,rep)
 			else:
+				jidsource=groupchat+'/'+nick
+				if user_level(jidsource,groupchat)>=15:
+					reply('private',source,u'если попробуешь ещё хоть раз пожаловатся на модера - пойдёшь в баню ]:->')
+					return				
 				for x in nicks:
 					jid=groupchat+'/'+x
-					jidsource=groupchat+'/'+nick
-					if has_access(jidsource, 20, groupchat):
-						reply('private',source,u'если попробуешь ещё хоть раз пожаловатся на модера - пойдёшь в баню ]:->')
-						return
-					elif has_access(jid, 20):
+					if user_level(jid,groupchat)>=15:
 						msg(jid, u'юзер <'+source[2]+u'>\nжалуется на <'+nick+u'>\nпо причине <'+body+u'>')
 				reply('private', source, u'жалоба на <'+nick+u'> ушла всем модераторам данной конференции. если вашу жалобу сочтут спамом, то вас забанят!')
 			
