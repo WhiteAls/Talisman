@@ -100,7 +100,7 @@ def handler_order_message(ltype, source, body):
 						for x in [x for x in sourcebody.replace(' ', '').strip()]:
 							if x.isupper():
 								cnt+=1
-						if cnt>=len(body)/2 and cnt>=6:
+						if cnt>=len(body)/2 and cnt>9:
 							order_stats[groupchat][jid]['flood']+=1
 							order_kick(groupchat, nick, 'too many caps')
 					elif GCHCFGS[groupchat]['filt']['like']==1:
