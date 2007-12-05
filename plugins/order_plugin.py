@@ -134,6 +134,7 @@ def handler_order_message(ltype, source, body):
 def handler_order_join(groupchat, nick, aff, role):
 	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 0:
 		jid=get_true_jid(groupchat+'/'+nick)
+		now = time.time()
 		if not groupchat in order_stats.keys():
 			order_stats[groupchat] = {}
 		if jid in order_stats[groupchat].keys():
@@ -163,8 +164,20 @@ def handler_order_join(groupchat, nick, aff, role):
 			order_stats[groupchat][jid]['prs']['fly']=0
 			order_stats[groupchat][jid]['prs']['status']=0
 			order_stats[groupchat][jid]['msg']=0
-			
-	
+	try:
+		lastprs=order_stats[groupchat][jid]['prstime']['fly']
+		if now-lastprs<=70:
+			if now-lastprs>=300:
+				order_stats[groupchat][jid]['prs']['fly']=0
+			else:
+				order_stats[groupchat][jid]['prs']['fly']+=1
+				if order_stats[groupchat][jid]['prs']['fly']>5:
+					order_stats[groupchat][jid]['prs']['fly']=0
+					order_kick(groupchat, nick, 'flying flood')
+		order_stats[groupchat][jid]['prstime']['fly']=time.time()					
+	except:
+		pass		
+
 def handler_order_presence(prs):
 	ptype = prs.getType()
 	groupchat = prs.getFrom().getStripped()
@@ -175,7 +188,7 @@ def handler_order_presence(prs):
 		now = time.time()
 		if ptype==None or ptype=='available':
 			try:
-				if GROUPCHATS[groupchat][nick]['ishere']==1:
+				if now-GROUPCHATS[groupchat][nick]['joined']>1:
 					if item['role']=='participant':
 						order_stats[groupchat][jid]['flood']=0
 					lastprs=order_stats[groupchat][jid]['prstime']['status']
@@ -188,34 +201,23 @@ def handler_order_presence(prs):
 								order_stats[groupchat][jid]['prs']['status']=0
 								order_kick(groupchat, nick, 'presence flood')					
 					order_stats[groupchat][jid]['prstime']['status']=time.time()
-				else:
-					lastprs=order_stats[groupchat][jid]['prstime']['fly']
-					if now-lastprs<=70:
-						if now-lastprs>=300:
-							order_stats[groupchat][jid]['prs']['fly']=0
-						else:
-							order_stats[groupchat][jid]['prs']['fly']+=1
-							if order_stats[groupchat][jid]['prs']['fly']>5:
-								order_stats[groupchat][jid]['prs']['fly']=0
-								order_kick(groupchat, nick, 'flying flood')
-					order_stats[groupchat][jid]['prstime']['fly']=time.time()					
 			except:
 				pass
 
-		elif ptype=='unavailable':
-			try:
-				lastprs=order_stats[groupchat][jid]['prstime']['fly']
-				if now-lastprs<=70:
-					if now-lastprs>=300:
-						order_stats[groupchat][jid]['prs']['fly']=0
-					else:
-						order_stats[groupchat][jid]['prs']['fly']+=1
-						if order_stats[groupchat][jid]['prs']['fly']>5:
-							order_stats[groupchat][jid]['prs']['fly']=0
-							order_kick(groupchat, nick, 'flying flood')
-				order_stats[groupchat][jid]['prstime']['fly']=time.time()
-			except:
-				pass
+#		elif ptype=='unavailable':
+#			try:
+#				lastprs=order_stats[groupchat][jid]['prstime']['fly']
+#				if now-lastprs<=70:
+#					if now-lastprs>=300:
+#						order_stats[groupchat][jid]['prs']['fly']=0
+#					else:
+#						order_stats[groupchat][jid]['prs']['fly']+=1
+#						if order_stats[groupchat][jid]['prs']['fly']>5:
+#							order_stats[groupchat][jid]['prs']['fly']=0
+#							order_kick(groupchat, nick, 'flying flood')
+#				order_stats[groupchat][jid]['prstime']['fly']=time.time()
+#			except:
+#				pass
 			
 #		if check_order_obscene_words(GROUPCHATS[groupchat][nick]['stmsg']):
 #			order_stats[groupchat][jid]['obscene']+=1
@@ -231,6 +233,24 @@ def handler_order_presence(prs):
 #						if code == '301': # ban
 #							del order_stats[groupchat][jid]
 
+def handler_order_leave(groupchat, nick, reason):
+	jid=get_true_jid(groupchat+'/'+nick)
+	now = time.time()
+	if reason=='Replaced by new connection':
+		return
+	try:
+		lastprs=order_stats[groupchat][jid]['prstime']['fly']
+		if now-lastprs<=70:
+			if now-lastprs>=300:
+				order_stats[groupchat][jid]['prs']['fly']=0
+			else:
+				order_stats[groupchat][jid]['prs']['fly']+=1
+				if order_stats[groupchat][jid]['prs']['fly']>5:
+					order_stats[groupchat][jid]['prs']['fly']=0
+					order_kick(groupchat, nick, 'flying flood')
+		order_stats[groupchat][jid]['prstime']['fly']=time.time()
+	except:
+		pass
 
 ######################################################################################################################
 
@@ -348,5 +368,6 @@ def handler_order_filt(type, source, parameters):
 
 register_message_handler(handler_order_message)
 register_join_handler(handler_order_join)
+register_leave_handler(handler_order_leave)
 register_presence_handler(handler_order_presence)
 register_command_handler(handler_order_filt, 'filt', ['админ','мук','все'], 20, 'Включает или отключает определённые фильтры для конференции.\nsmile - фильтр смайлов\ntime - временной фильтр\nlen - количественный фильтр\npresence - фильтр презенсов\nlike - фильтр одинаковых сообщений\ncaps - фильтр капса (ЗАГЛАВНЫХ букв)', 'filt [фильтр] [состояние]', ['filt smile 1', 'filt len 0'])
