@@ -84,7 +84,7 @@ def handler_order_message(ltype, source, body):
 				if body != '':
 					sourcebody=body
 					body = body.lower().replace(' ', '').strip()
-					if GCHCFGS[groupchat]['filt']['smile']==1 and body.count(')') > 7 or body.count('(') > 7 or body.count('*') > 7:
+					if GCHCFGS[groupchat]['filt']['smile']==1 and body.count(')') > 7 or body.count('(') > 7 or body.count('*') > 7 or body.count(':') > 7:
 						order_stats[groupchat][jid]['flood']+=1
 						order_kick(groupchat, nick, 'smile flood')
 					elif GCHCFGS[groupchat]['filt']['time']==1 and now-lastmsg<=2.2:
@@ -100,7 +100,7 @@ def handler_order_message(ltype, source, body):
 						for x in [x for x in sourcebody.replace(' ', '').strip()]:
 							if x.isupper():
 								cnt+=1
-						if cnt>=len(body)/2 and cnt>=4:
+						if cnt>=len(body)/2 and cnt>=6:
 							order_stats[groupchat][jid]['flood']+=1
 							order_kick(groupchat, nick, 'too many caps')
 					elif GCHCFGS[groupchat]['filt']['like']==1:
@@ -172,50 +172,40 @@ def handler_order_presence(prs):
 	jid=get_true_jid(groupchat+'/'+nick)
 	item=findPresenceItem(prs)
 	if jid!=groupchat and groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 0 and GCHCFGS[groupchat]['filt']['presence']==1:
-
-		if ptype==None:
+		now = time.time()
+		if ptype==None or ptype=='available':
 			try:
-				if item['role']=='participant':
-					order_stats[groupchat][jid]['flood']=0
-				now = time.time()
-				lastprs=order_stats[groupchat][jid]['prstime']['status']
-				if now-lastprs<=10:
-					if now-lastprs>=60:
-						order_stats[groupchat][jid]['prs']['status']=0
-					else:
-						order_stats[groupchat][jid]['prs']['status']+=1
-						if order_stats[groupchat][jid]['prs']['status']>5:
+				if GROUPCHATS[groupchat][nick]['ishere']==1:
+					if item['role']=='participant':
+						order_stats[groupchat][jid]['flood']=0
+					lastprs=order_stats[groupchat][jid]['prstime']['status']
+					if now-lastprs<=10:
+						if now-lastprs>=300:
 							order_stats[groupchat][jid]['prs']['status']=0
-							order_kick(groupchat, nick, 'presence flood')					
-				order_stats[groupchat][jid]['prstime']['status']=time.time()
+						else:
+							order_stats[groupchat][jid]['prs']['status']+=1
+							if order_stats[groupchat][jid]['prs']['status']>5:
+								order_stats[groupchat][jid]['prs']['status']=0
+								order_kick(groupchat, nick, 'presence flood')					
+					order_stats[groupchat][jid]['prstime']['status']=time.time()
+				else:
+					lastprs=order_stats[groupchat][jid]['prstime']['fly']
+					if now-lastprs<=70:
+						if now-lastprs>=300:
+							order_stats[groupchat][jid]['prs']['fly']=0
+						else:
+							order_stats[groupchat][jid]['prs']['fly']+=1
+							if order_stats[groupchat][jid]['prs']['fly']>5:
+								order_stats[groupchat][jid]['prs']['fly']=0
+								order_kick(groupchat, nick, 'flying flood')
+					order_stats[groupchat][jid]['prstime']['fly']=time.time()					
 			except:
 				pass
 
-		elif ptype=='available':
-			try:
-				now = time.time()
-				lastprs=order_stats[groupchat][jid]['prstime']['fly']
-				if now-lastprs<=60:
-					if now-lastprs>=300:
-						order_stats[groupchat][jid]['prs']['fly']=0
-					else:
-						order_stats[groupchat][jid]['prs']['fly']+=1
-						if order_stats[groupchat][jid]['prs']['fly']>5:
-							order_stats[groupchat][jid]['prs']['fly']=0
-							order_kick(groupchat, nick, 'flying flood')
-				order_stats[groupchat][jid]['prstime']['fly']=time.time()
-			except:
-				pass
-				
-				
-#			if check_order_obscene_words(GROUPCHATS[groupchat][nick]['stmsg']):
-#				order_stats[groupchat][jid]['obscene']+=1
-#				order_kick(groupchat, nick, 'obscene lexicon in status msg')		
 		elif ptype=='unavailable':
 			try:
-				now = time.time()
 				lastprs=order_stats[groupchat][jid]['prstime']['fly']
-				if now-lastprs<=60:
+				if now-lastprs<=70:
 					if now-lastprs>=300:
 						order_stats[groupchat][jid]['prs']['fly']=0
 					else:
@@ -227,6 +217,9 @@ def handler_order_presence(prs):
 			except:
 				pass
 			
+#		if check_order_obscene_words(GROUPCHATS[groupchat][nick]['stmsg']):
+#			order_stats[groupchat][jid]['obscene']+=1
+#			order_kick(groupchat, nick, 'obscene lexicon in status msg')	
 			
 #			order_stats[groupchat][jid]['prs']=0
 #			code = prs.getStatusCode()

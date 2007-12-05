@@ -135,11 +135,18 @@ def macroaccess_handler(type, source, parameters):
 		args = parameters.split(' ')
 		if len(args)==2:
 			macro = args[0]
-			access = args[1]
-			MACROS.give_access(macro,access,source[1])
-			reply(type,source,u'дал')
-			time.sleep(1)
-			MACROS.flush()
+			if macro in COMMAND_HANDLERS or macro in MACROS.gmacrolist or macro in MACROS.macrolist[source[1]]:
+				real_access = MACROS.get_access(macro, source[1])
+				if real_access < 0:
+					real_access = COMMANDS[macro]['access']
+				if not has_access(source, real_access, source[1]):
+					reply(type,source,u'размечтался ]:->')
+					return
+				access = args[1]
+				MACROS.give_access(macro,access,source[1])
+				reply(type,source,u'дал')
+				time.sleep(1)
+				MACROS.flush()
 		else:
 			reply(type,source,u'что за бред?')
 			

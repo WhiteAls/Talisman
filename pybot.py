@@ -425,13 +425,13 @@ def change_access_temp_glob(source, level=0):
 def user_level(source, gch):
 	global ACCBYCONF
 	global GLOBACCESS
-	ACCFILE = eval(read_file(ACCBYCONF_FILE))
+	global ACCBYCONFFILE
 	jid = get_true_jid(source)
 	if GLOBACCESS.has_key(jid):
 		return GLOBACCESS[jid]
-	if ACCFILE.has_key(gch):
-		if ACCFILE[gch].has_key(jid):
-			return ACCFILE[gch][jid]
+	if ACCBYCONFFILE.has_key(gch):
+		if ACCBYCONFFILE[gch].has_key(jid):
+			return ACCBYCONFFILE[gch][jid]
 	if ACCBYCONF.has_key(gch):
 		if ACCBYCONF[gch].has_key(jid):
 			return ACCBYCONF[gch][jid]
@@ -623,7 +623,7 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 55) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 56) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed

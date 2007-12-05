@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #  Talisman plugin
-#  seen_plugin.py
+#  status_plugin.py
 
 #  Initial Copyright © 2007 Als <Als@exploit.in>
 
