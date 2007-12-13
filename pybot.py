@@ -270,7 +270,7 @@ def get_gch_cfg(gch):
 def get_order_pl_cfg(gch):		
 	if not 'filt' in GCHCFGS[gch]:
 		GCHCFGS[gch]['filt']={}		
-	for x in ['smile','time','presence','len','like','caps']:
+	for x in ['smile','time','presence','len','like','caps','prsstlen']:
 		if not x in GCHCFGS[gch]['filt']:
 			GCHCFGS[gch]['filt'][x]=1
 	DBPATH='dynamic/'+gch+'/config.cfg'
@@ -537,14 +537,18 @@ def messageHnd(con, msg):
 	if fromjid.getResource() == bot_nick:
 		return
 	command,parameters,cbody,rcmd = '','','',''
-	if bot_nick and string.split(body)[0] in [bot_nick+x for x in string.punctuation]:
-		body=' '.join(string.split(body)[1:])
+	if bot_nick and body.split()[0] in [bot_nick+x for x in string.punctuation]:
+		body=' '.join(body.split()[1:])
+	if body.split()[0].replace(':','').replace(',','') in GROUPCHATS[fromjid.getStripped()]:
+		body=' '.join(body.split()[1:])
 	body=body.strip()
 	if not body:
 		return
-	rcmd = body.split(' ')[0]
+	rcmd = body.split(' ')[0].lower()
+	if fromjid.getStripped() in COMMOFF and rcmd in COMMOFF[fromjid.getStripped()]:
+		return
 	cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
-	command = string.lower(string.split(cbody)[0])
+	command=cbody.split()[0].lower()
 	if cbody.count(' '):
 		parameters = cbody[(cbody.find(' ') + 1):]
 	if command in COMMANDS:
@@ -598,7 +602,7 @@ def presenceHnd(con, prs):
 					aff=prs.getAffiliation()
 					role=prs.getRole()
 					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1, 'status': '', 'stmsg': ''}
-					if role=='moderator':
+					if role=='moderator' or user_level(jid,groupchat)>=15:
 						GROUPCHATS[groupchat][nick]['ismoder'] = 1
 					else:
 						GROUPCHATS[groupchat][nick]['ismoder'] = 0
@@ -623,7 +627,8 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 58) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 59) [antiflood]')
+#		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed

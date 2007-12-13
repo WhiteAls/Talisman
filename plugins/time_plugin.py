@@ -63,7 +63,7 @@ def handler_gettime_xep_disco_answ(coze, res, type, source, parameters, jid):
 	rep =''
 	if res:
 		if not res.getType() == 'result':
-			reply(type,source,u'диско не идёт')
+			reply(type,source,u'не дискаверится')
 			return			
 		res=res.getQueryChildren()
 		for x in res:
@@ -118,9 +118,9 @@ def gettime_xep0090_answ(coze, res, nick, type, source):
 	if res:
 		if res.getType()=='error':
 			if nick:
-				reply(type,source, u'хехе, твой клиент не дружит с этим')
+				reply(type,source, u'его клиент не дружит с этим')
 			else:
-				reply(type,source, u'хехе, его клиент не дружит с этим')
+				reply(type,source, u'твой клиент не дружит с этим')
 		elif res.getType() == 'result':
 			time = ''
 			props = res.getQueryChildren()

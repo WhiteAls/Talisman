@@ -40,7 +40,7 @@ def handler_help_commands(type, source, parameters):
 	date=time.strftime('%d %b %Y (%a)', time.gmtime()).decode('utf-8')
 	groupchat=source[1]
 	if parameters:
-		rep,dsbl = '',''
+		rep,dsbl = [],[]
 		total = 0
 		param=parameters.encode("utf-8")
 		catcom=set([((param in COMMANDS[x]['category']) and x) or None for x in COMMANDS]) - set([None])
@@ -50,16 +50,18 @@ def handler_help_commands(type, source, parameters):
 		for cat in catcom:
 			if has_access(source, COMMANDS[cat]['access'],groupchat):
 				if cat in COMMOFF[source[1]]:
-					dsbl += cat+' '
+					dsbl.append(cat)
 				else:
-					rep += cat+' '
+					rep.append(cat)
 					total = total + 1
 		if rep:
 			if type == 'public':
 				reply(type,source,u'ушли')
-			answ=u'Список команд в категории <'+parameters+u'> на '+date+u':\n\n' + rep+u' ('+str(total)+u' штук)'
+			rep.sort()
+			answ=u'Список команд в категории <'+parameters+u'> на '+date+u':\n\n' + u', '.join(rep) +u' - ('+str(total)+u' штук)'
 			if dsbl:
-				answ+=u'\n\nСледующие команды отключены в этой конференции:\n\n'+dsbl
+				dsbl.sort()
+				answ+=u'\n\nСледующие команды отключены в этой конференции:\n\n'+', '.join(dsbl)
 			reply('private', source,answ)
 		else:
 			reply(type,source,u'размечтался ]:->')

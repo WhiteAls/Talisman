@@ -71,10 +71,10 @@ def order_unban(groupchat, jid):
 	iq.addChild(node=query)
 	JCON.send(iq)
 
-def handler_order_message(ltype, source, body):
+def handler_order_message(type, source, body):
 	nick=source[2]
 	groupchat=source[1]
-	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 0:
+	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and user_level(source,groupchat)<11:
 		if get_bot_nick(groupchat)!=nick and nick!='':
 			jid=get_true_jid(groupchat+'/'+nick)
 			if groupchat in order_stats.keys() and jid in order_stats[groupchat]:
@@ -93,10 +93,13 @@ def handler_order_message(ltype, source, body):
 							order_stats[groupchat][jid]['flood']+=1
 							order_stats[groupchat][jid]['msg']=0
 							order_kick(groupchat, nick, 'you send messages is too fast')
-					elif GCHCFGS[groupchat]['filt']['len']==1 and len(body)>=700:
+					elif GCHCFGS[groupchat]['filt']['len']==1 and len(sourcebody)>700:
 						order_stats[groupchat][jid]['flood']+=1
 						order_kick(groupchat, nick, 'flood')
 					elif GCHCFGS[groupchat]['filt']['caps']==1:
+						nicks = GROUPCHATS[groupchat].keys()
+						if sourcebody.strip().split()[0].replace(':', '').replace(',', '').replace('>', '') in nicks:
+							sourcebody=' '.join(sourcebody.split()[1:]).strip()
 						for x in [x for x in sourcebody.replace(' ', '').strip()]:
 							if x.isupper():
 								cnt+=1
@@ -107,22 +110,22 @@ def handler_order_message(ltype, source, body):
 						if order_stats[groupchat][jid]['msgbody'] is not None:
 							if now-lastmsg>60:
 								order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
-								return
-							for x in order_stats[groupchat][jid]['msgbody']:
-								for y in sourcebody.strip().split():
-									if x==y:
-										cnt+=1
-							if cnt:
-								lensrcmsgbody=len(sourcebody.strip().split())
-								lenoldmsgbody=len(order_stats[groupchat][jid]['msgbody'])
-								avg=(lensrcmsgbody+lenoldmsgbody/2)/2
-								if cnt>avg:
-									order_stats[groupchat][jid]['msg']+=1
-									if order_stats[groupchat][jid]['msg']>2:
-										order_stats[groupchat][jid]['flood']+=1
-										order_stats[groupchat][jid]['msg']=0
-										order_kick(groupchat, nick, 'your messages looks like repeat-flood')
-							order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
+							else:
+								for x in order_stats[groupchat][jid]['msgbody']:
+									for y in sourcebody.strip().split():
+										if x==y:
+											cnt+=1
+								if cnt:
+									lensrcmsgbody=len(sourcebody.strip().split())
+									lenoldmsgbody=len(order_stats[groupchat][jid]['msgbody'])
+									avg=(lensrcmsgbody+lenoldmsgbody/2)/2
+									if cnt>avg:
+										order_stats[groupchat][jid]['msg']+=1
+										if order_stats[groupchat][jid]['msg']>2:
+											order_stats[groupchat][jid]['flood']+=1
+											order_stats[groupchat][jid]['msg']=0
+											order_kick(groupchat, nick, 'your messages looks like repeat-flood')
+								order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
 						else:
 							order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
 						
@@ -132,8 +135,8 @@ def handler_order_message(ltype, source, body):
 				order_stats[groupchat][jid]['msgtime']=time.time()
 						
 def handler_order_join(groupchat, nick, aff, role):
-	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 0:
-		jid=get_true_jid(groupchat+'/'+nick)
+	jid=get_true_jid(groupchat+'/'+nick)
+	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
 		now = time.time()
 		if not groupchat in order_stats.keys():
 			order_stats[groupchat] = {}
@@ -164,27 +167,30 @@ def handler_order_join(groupchat, nick, aff, role):
 			order_stats[groupchat][jid]['prs']['fly']=0
 			order_stats[groupchat][jid]['prs']['status']=0
 			order_stats[groupchat][jid]['msg']=0
-	try:
-		lastprs=order_stats[groupchat][jid]['prstime']['fly']
-		if now-lastprs<=70:
-			if now-lastprs>=300:
-				order_stats[groupchat][jid]['prs']['fly']=0
-			else:
-				order_stats[groupchat][jid]['prs']['fly']+=1
-				if order_stats[groupchat][jid]['prs']['fly']>5:
-					order_stats[groupchat][jid]['prs']['fly']=0
-					order_kick(groupchat, nick, 'flying flood')
-		order_stats[groupchat][jid]['prstime']['fly']=time.time()					
-	except:
-		pass		
+			
+		if GCHCFGS[groupchat]['filt']['presence']==1:
+			try:
+				lastprs=order_stats[groupchat][jid]['prstime']['fly']
+				if now-lastprs<=70:
+					if now-lastprs>=300:
+						order_stats[groupchat][jid]['prs']['fly']=0
+					else:
+						order_stats[groupchat][jid]['prs']['fly']+=1
+						if order_stats[groupchat][jid]['prs']['fly']>4:
+							order_stats[groupchat][jid]['prs']['fly']=0
+							order_kick(groupchat, nick, 'flying flood')
+				order_stats[groupchat][jid]['prstime']['fly']=time.time()					
+			except:
+				pass		
 
 def handler_order_presence(prs):
 	ptype = prs.getType()
 	groupchat = prs.getFrom().getStripped()
 	nick = prs.getFrom().getResource()
+	stmsg = prs.getStatus()
 	jid=get_true_jid(groupchat+'/'+nick)
 	item=findPresenceItem(prs)
-	if jid!=groupchat and groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and 'ismoder' in GROUPCHATS[groupchat][nick] and GROUPCHATS[groupchat][nick]['ismoder'] == 0 and GCHCFGS[groupchat]['filt']['presence']==1:
+	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
 		now = time.time()
 		if ptype==None or ptype=='available':
 			try:
@@ -192,14 +198,17 @@ def handler_order_presence(prs):
 					if item['role']=='participant':
 						order_stats[groupchat][jid]['flood']=0
 					lastprs=order_stats[groupchat][jid]['prstime']['status']
-					if now-lastprs<=10:
+					if GCHCFGS[groupchat]['filt']['presence']==1 and now-lastprs<=10:
 						if now-lastprs>=300:
 							order_stats[groupchat][jid]['prs']['status']=0
 						else:
 							order_stats[groupchat][jid]['prs']['status']+=1
 							if order_stats[groupchat][jid]['prs']['status']>5:
 								order_stats[groupchat][jid]['prs']['status']=0
-								order_kick(groupchat, nick, 'presence flood')					
+								order_kick(groupchat, nick, 'presence flood')
+					elif GCHCFGS[groupchat]['filt']['prsstlen']==1 and len(stmsg)>=170:
+						order_stats[groupchat][jid]['flood']+=1
+						order_kick(groupchat, nick, 'status msg is too long')						
 					order_stats[groupchat][jid]['prstime']['status']=time.time()
 			except:
 				pass
@@ -234,23 +243,24 @@ def handler_order_presence(prs):
 #							del order_stats[groupchat][jid]
 
 def handler_order_leave(groupchat, nick, reason):
-	jid=get_true_jid(groupchat+'/'+nick)
-	now = time.time()
-	if reason=='Replaced by new connection':
-		return
-	try:
-		lastprs=order_stats[groupchat][jid]['prstime']['fly']
-		if now-lastprs<=70:
-			if now-lastprs>=300:
-				order_stats[groupchat][jid]['prs']['fly']=0
-			else:
-				order_stats[groupchat][jid]['prs']['fly']+=1
-				if order_stats[groupchat][jid]['prs']['fly']>5:
+	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11 and GCHCFGS[groupchat]['filt']['presence']==1:
+		jid=get_true_jid(groupchat+'/'+nick)
+		now = time.time()
+		if reason=='Replaced by new connection':
+			return
+		try:
+			lastprs=order_stats[groupchat][jid]['prstime']['fly']
+			if now-lastprs<=70:
+				if now-lastprs>=300:
 					order_stats[groupchat][jid]['prs']['fly']=0
-					order_kick(groupchat, nick, 'flying flood')
-		order_stats[groupchat][jid]['prstime']['fly']=time.time()
-	except:
-		pass
+				else:
+					order_stats[groupchat][jid]['prs']['fly']+=1
+					if order_stats[groupchat][jid]['prs']['fly']>4:
+						order_stats[groupchat][jid]['prs']['fly']=0
+						order_kick(groupchat, nick, 'flying flood')
+			order_stats[groupchat][jid]['prstime']['fly']=time.time()
+		except:
+			pass
 
 ######################################################################################################################
 
@@ -304,7 +314,14 @@ def handler_order_filt(type, source, parameters):
 					GCHCFGS[source[1]]['filt']['caps']=int(param[1])
 				elif param[1]=='1':
 					reply(type,source,u'фильтрация капса включена')
-					GCHCFGS[source[1]]['filt']['caps']=int(param[1])					
+					GCHCFGS[source[1]]['filt']['caps']=int(param[1])		
+			elif param[0]=='prsstlen':
+				if param[1]=='0':
+					reply(type,source,u'фильтрация длинных статусных сообщений отключена')
+					GCHCFGS[source[1]]['filt']['prsstlen']=int(param[1])
+				elif param[1]=='1':
+					reply(type,source,u'фильтрация длинных статусных сообщений включена')
+					GCHCFGS[source[1]]['filt']['prsstlen']=int(param[1])										
 			else:
 				reply(type,source,u'синтакс инвалид')
 				return					
@@ -319,6 +336,7 @@ def handler_order_filt(type, source, parameters):
 			GCHCFGS[source[1]]['filt']['len']=1
 			GCHCFGS[source[1]]['filt']['like']=1
 			GCHCFGS[source[1]]['filt']['caps']=1
+			GCHCFGS[source[1]]['filt']['prsstlen']=1
 			DBPATH='dynamic/'+source[1]+'/config.cfg'
 			write_file(DBPATH, str(GCHCFGS[source[1]]))
 	else:
@@ -330,6 +348,7 @@ def handler_order_filt(type, source, parameters):
 			GCHCFGS[source[1]]['filt']['len']=1
 			GCHCFGS[source[1]]['filt']['like']=1
 			GCHCFGS[source[1]]['filt']['caps']=1
+			GCHCFGS[source[1]]['filt']['prsstlen']=1
 			DBPATH='dynamic/'+source[1]+'/config.cfg'
 			write_file(DBPATH, str(GCHCFGS[source[1]]))
 		rep=u''
@@ -339,6 +358,7 @@ def handler_order_filt(type, source, parameters):
 		len=GCHCFGS[source[1]]['filt']['len']
 		like=GCHCFGS[source[1]]['filt']['like']
 		caps=GCHCFGS[source[1]]['filt']['caps']
+		prsstlen=GCHCFGS[source[1]]['filt']['prsstlen']
 		if smile:
 			rep += u'фильтрация смайлов включена\n'
 		else:
@@ -360,9 +380,13 @@ def handler_order_filt(type, source, parameters):
 		else:
 			rep += u'фильтрация подозрительно одинаковых сообщений отключена\n'
 		if caps:
-			rep += u'фильтрация капса включена'
+			rep += u'фильтрация капса включена\n'
 		else:
-			rep += u'фильтрация капса отключена'
+			rep += u'фильтрация капса отключена\n'
+		if prsstlen:
+			rep += u'фильтрация длинных статусных сообщений включена'
+		else:
+			rep += u'фильтрация длинных статусных сообщений отключена'
 		reply(type,source,rep.strip())
 
 
@@ -370,4 +394,4 @@ register_message_handler(handler_order_message)
 register_join_handler(handler_order_join)
 register_leave_handler(handler_order_leave)
 register_presence_handler(handler_order_presence)
-register_command_handler(handler_order_filt, 'filt', ['админ','мук','все'], 20, 'Включает или отключает определённые фильтры для конференции.\nsmile - фильтр смайлов\ntime - временной фильтр\nlen - количественный фильтр\npresence - фильтр презенсов\nlike - фильтр одинаковых сообщений\ncaps - фильтр капса (ЗАГЛАВНЫХ букв)', 'filt [фильтр] [состояние]', ['filt smile 1', 'filt len 0'])
+register_command_handler(handler_order_filt, 'filt', ['админ','мук','все'], 20, 'Включает или отключает определённые фильтры для конференции.\nsmile - фильтр смайлов\ntime - временной фильтр\nlen - количественный фильтр\npresence - фильтр презенсов\nlike - фильтр одинаковых сообщений\ncaps - фильтр капса (ЗАГЛАВНЫХ букв)\nprsstlen - фильтр длинных статусных сообщений', 'filt [фильтр] [состояние]', ['filt smile 1', 'filt len 0'])

@@ -93,7 +93,7 @@ def handler_access_set_access(type, source, parameters):
 		
 def handler_access_set_access_glob(type, source, parameters):
 	if parameters:
-		splitdata = string.strip().split(parameters)
+		splitdata = parameters.strip().split()
 		if len(splitdata)<1 or len(splitdata)>2:
 			reply(type, source, u'эээ?')
 			return

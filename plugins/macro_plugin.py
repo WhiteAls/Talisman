@@ -18,25 +18,46 @@
 #  GNU General Public License for more details.
 
 
+#def macroadd_handler(type, source, parameters):
+#	pl = MACROS.parse_cmd(parameters)
+#	if (len(pl)<2):
+#		rep = u'мало аргументофф'
+#	else:
+#		if pl[1].split()[0] in COMMAND_HANDLERS or pl[1].split()[0] in MACROS.gmacrolist or pl[1].split()[0] in MACROS.macrolist[source[1]]:
+#			real_access = MACROS.get_access(pl[1].split()[0], source[1])
+#			if real_access < 0:
+#				real_access = COMMANDS[pl[1].split()[0]]['access']
+#			if has_access(source, real_access, source[1]):
+#				MACROS.add(pl[0], pl[1], source[1])
+#				MACROS.flush()
+#				rep = u'добавил'
+#			else:
+#				rep = u'размечтался ]:->'
+#		else:
+#			rep = u'что это было?'
+#
+#	reply(type, source, rep)
+	
+	
 def macroadd_handler(type, source, parameters):
 	pl = MACROS.parse_cmd(parameters)
 	if (len(pl)<2):
 		rep = u'мало аргументофф'
 	else:
-		if pl[1].split()[0] in COMMAND_HANDLERS or pl[1].split()[0] in MACROS.gmacrolist or pl[1].split()[0] in MACROS.macrolist[source[1]]:
-			real_access = MACROS.get_access(pl[1].split()[0], source[1])
-			if real_access < 0:
-				real_access = COMMANDS[pl[1].split()[0]]['access']
-			if has_access(source, real_access, source[1]):
-				MACROS.add(pl[0], pl[1], source[1])
-				MACROS.flush()
-				rep = u'добавил'
+		for x in pl[1].split('&&&'):
+			if x.split()[0] in COMMAND_HANDLERS or x.split()[0] in MACROS.gmacrolist or x.split()[0] in MACROS.macrolist[source[1]]:
+				real_access = MACROS.get_access(x.split()[0], source[1])
+				if real_access < 0:
+					real_access = COMMANDS[x.split()[0]]['access']
+				if not has_access(source, real_access, source[1]):
+					reply(type, source, u'размечтался ]:->')
+					return
 			else:
-				rep = u'размечтался ]:->'
-		else:
-			rep = u'что это было?'
-
-	reply(type, source, rep)
+				reply(type, source, u'что это было?')
+				return				
+		MACROS.add(pl[0], pl[1], source[1])
+		MACROS.flush()		
+		reply(type, source, u'добавил')
 	
 def gmacroadd_handler(type, source, parameters):
 	pl = MACROS.parse_cmd(parameters)
@@ -50,7 +71,7 @@ def gmacroadd_handler(type, source, parameters):
 
 def macrodel_handler(type, source, parameters):
 	if parameters:
-		answ=MACROS.remove(parameters, source[1])
+		MACROS.remove(parameters, source[1])
 #		write_file('dynamic/'+source[1]+'macros.txt', str(MACROS.macrolist[source[1]]))
 		MACROS.flush()
 		rep = u'убил'
@@ -60,7 +81,7 @@ def macrodel_handler(type, source, parameters):
 	
 def gmacrodel_handler(type, source, parameters):
 	if parameters:
-		answ=MACROS.remove(parameters)
+		MACROS.remove(parameters)
 		write_file('dynamic/macros.txt', str(MACROS.gmacrolist))
 		rep = u'убил'
 	else:
@@ -109,23 +130,30 @@ def gmacroinfo_handler(type, source, parameters):
 	reply(type, source, rep)
 	
 def macrolist_handler(type, source, parameters):
-	rep,dsbll,dsblg=u'Cписок макросов:',u'',u''
-	try:
-		if MACROS.macrolist[source[1]]:
-			rep += u'\nЛОКАЛЬНЫЕ\n'+', '.join(MACROS.macrolist[source[1]].keys())
-			for macro in MACROS.macrolist[source[1]].keys():
-				if macro in COMMOFF[source[1]]:
-					dsbll += macro+' '
-			if dsbll:
-				rep+=u'\n\nСледующие локальные макросы отключены в этой конференции:\n'+dsbll
-	except:
+	rep,dsbll,dsblg,glist,llist=u'Cписок макросов:',[],[],[],[]
+	if MACROS.macrolist[source[1]]:
+		for macro in MACROS.macrolist[source[1]].keys():
+			if macro in COMMOFF[source[1]]:
+				dsbll.append(macro)
+			else:
+				llist.append(macro)
+		dsbll.sort()
+		llist.sort()
+		rep += u'\nЛОКАЛЬНЫЕ\n'+', '.join(llist)
+		if dsbll:
+			rep+=u'\n\nСледующие локальные макросы отключены в этой конференции:\n'+', '.join(dsbll)
+	else:
 		rep+=u'\nнет локальных макросов'
-	rep += u'\nГЛОБАЛЬНЫЕ\n'+', '.join(MACROS.gmacrolist.keys())
 	for macro in MACROS.gmacrolist.keys():
 		if macro in COMMOFF[source[1]]:
-			dsblg += macro+' '
+			dsblg.append(macro)
+		else:
+			glist.append(macro)
+	dsblg.sort()
+	glist.sort()
+	rep += u'\nГЛОБАЛЬНЫЕ\n'+', '.join(glist)
 	if dsblg:
-		rep+=u'\n\nСледующие глобальные макросы отключены в этой конференции:\n'+dsblg
+		rep+=u'\n\nСледующие глобальные макросы отключены в этой конференции:\n'+', '.join(dsblg)
 	if type=='public':
 		reply(type, source, u'ушёл')
 	reply('private', source, rep)
@@ -135,18 +163,22 @@ def macroaccess_handler(type, source, parameters):
 		args = parameters.split(' ')
 		if len(args)==2:
 			macro = args[0]
-			if macro in COMMAND_HANDLERS or macro in MACROS.gmacrolist or macro in MACROS.macrolist[source[1]]:
+			if macro in MACROS.gmacrolist or macro in MACROS.macrolist[source[1]]:
 				real_access = MACROS.get_access(macro, source[1])
 				if real_access < 0:
-					real_access = COMMANDS[macro]['access']
-				if not has_access(source, real_access, source[1]):
-					reply(type,source,u'размечтался ]:->')
-					return
-				access = args[1]
-				MACROS.give_access(macro,access,source[1])
-				reply(type,source,u'дал')
-				time.sleep(1)
-				MACROS.flush()
+					pass
+				else:
+					if not has_access(source, real_access, source[1]):
+						reply(type,source,u'размечтался ]:->')
+						return
+			elif macro in COMMAND_HANDLERS:
+				reply(type,source,u'размечтался ]:->')
+				return
+			access = args[1]
+			MACROS.give_access(macro,access,source[1])
+			reply(type,source,u'дал')
+			time.sleep(1)
+			MACROS.flush()
 		else:
 			reply(type,source,u'что за бред?')
 			

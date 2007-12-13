@@ -24,13 +24,14 @@ def handler_vote_vote(type, source, parameters):
 	jid=get_true_jid(source)
 	if GROUPCHATS.has_key(source[1]) and GROUPCHATS[source[1]].has_key(source[2]):
 		if CURRENT_POLL.has_key(source[1]):
-			if isadmin(jid) or not 'isvoted' in CURRENT_POLL[source[1]]['jids'][jid]:
+			if not jid in CURRENT_POLL[source[1]]['jids']:
+				CURRENT_POLL[source[1]]['jids'][jid]=jid
+				CURRENT_POLL[source[1]]['jids'][jid]={}
+				CURRENT_POLL[source[1]]['jids'][jid]['isnotified']=1
+				CURRENT_POLL[source[1]]['jids'][jid]['isvoted']=0
+			if isadmin(jid) or CURRENT_POLL[source[1]]['jids'][jid]['isvoted']==0:
 				if CURRENT_POLL[source[1]]['options'].has_key(parameters.strip().lower()):
 					CURRENT_POLL[source[1]]['options'][parameters.strip().lower()] += 1
-					if not jid in CURRENT_POLL[source[1]]['jids']:
-						CURRENT_POLL[source[1]]['jids'][jid]
-						CURRENT_POLL[source[1]]['jids'][jid]={}
-						CURRENT_POLL[source[1]]['jids'][jid]['isnotified']=1
 					CURRENT_POLL[source[1]]['jids'][jid]['isvoted']=1
 					
 					reply(type, source, u'понял')

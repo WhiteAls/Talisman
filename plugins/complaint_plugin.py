@@ -25,12 +25,12 @@ def handler_complaint(type, source, parameters):
 		if GROUPCHATS.has_key(groupchat):
 			nicks = GROUPCHATS[groupchat].keys()
 			args = parameters.split(' ')
-			nick = args[0]
+			nick = args[0].strip()
 			body = ' '.join(args[1:])
-			if not nick in nicks and GROUPCHATS[groupchat][nick]['ishere']==1:
-				rep = u'ты уверен, что <'+nick+u'> сейчас тут?'
-				reply(type,source,rep)
-			else:
+			if nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['ishere']==1:
+				if user_level(source,groupchat)>=15:
+					reply('private',source,u'жжошь :D')
+					return						
 				jidsource=groupchat+'/'+nick
 				if user_level(jidsource,groupchat)>=15:
 					reply('private',source,u'если попробуешь ещё хоть раз пожаловатся на модера - пойдёшь в баню ]:->')
@@ -38,8 +38,9 @@ def handler_complaint(type, source, parameters):
 				for x in nicks:
 					jid=groupchat+'/'+x
 					if user_level(jid,groupchat)>=15:
-						msg(jid, u'юзер <'+source[2]+u'>\nжалуется на <'+nick+u'>\nпо причине <'+body+u'>')
+						msg(jid, u'юзер <'+source[2]+u'>\nжалуется на <'+nick+u'>\nпо причине <'+body+u'>\n\nВы можете забанить (банан '+nick+u' `'+body+u'`) или кикнуть (кик '+nick+u' `'+body+u'`) этого юзера прямо сейчас из моего привата')
 				reply('private', source, u'жалоба на <'+nick+u'> ушла всем модераторам данной конференции. если вашу жалобу сочтут спамом, то вас забанят!')
-			
+			else:
+				reply(type,source,u'ты уверен, что <'+nick+u'> сейчас тут?')
 				
 register_command_handler(handler_complaint, 'жалоба',  ['мук','все'], 0, 'Пожаловаться на определённый ник по определённой причине. Работает только у меня в привате!', 'жалоба <ник> <причина>', ['жалоба Nick7 спам'])
