@@ -242,7 +242,7 @@ def handler_order_presence(prs):
 #						if code == '301': # ban
 #							del order_stats[groupchat][jid]
 
-def handler_order_leave(groupchat, nick, reason):
+def handler_order_leave(groupchat, nick, reason, code):
 	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11 and GCHCFGS[groupchat]['filt']['presence']==1:
 		jid=get_true_jid(groupchat+'/'+nick)
 		now = time.time()

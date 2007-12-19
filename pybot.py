@@ -167,12 +167,12 @@ def call_message_handlers(type, source, body):
 def call_outgoing_message_handlers(target, body):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
 		thread.start_new_thread(handler, (target, body,))
-def call_join_handlers(groupchat, nick, aff, role):
+def call_join_handlers(groupchat, nick, afl, role):
 	for handler in JOIN_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, aff, role,))
-def call_leave_handlers(groupchat, nick, reason):
+		thread.start_new_thread(handler, (groupchat, nick, afl, role,))
+def call_leave_handlers(groupchat, nick, reason, code):
 	for handler in LEAVE_HANDLERS:
-		thread.start_new_thread(handler, (groupchat, nick, reason,))
+		thread.start_new_thread(handler, (groupchat, nick, reason, code,))
 def call_iq_handlers(iq):
 	for handler in IQ_HANDLERS:
 		thread.start_new_thread(handler, (iq,))
@@ -380,27 +380,33 @@ def change_access_temp(gch, source, level=0):
 		ACCBYCONF[gch][jid]=jid
 	ACCBYCONF[gch][jid]=level
 
-def change_access_perm(gch, source, level=0):
+def change_access_perm(gch, source, level=None):
 	global ACCBYCONF
 	jid = get_true_jid(source)
 	try:
 		level = int(level)
 	except:
-		level = 0
+		pass
 	temp_access = eval(read_file(ACCBYCONF_FILE))
 	if not temp_access.has_key(gch):
 		temp_access[gch] = gch
 		temp_access[gch] = {}
 	if not temp_access[gch].has_key(jid):
 		temp_access[gch][jid]=jid
-	temp_access[gch][jid]=level
+	if level:
+		temp_access[gch][jid]=level
+	else:
+		del temp_access[gch][jid]
 	write_file(ACCBYCONF_FILE, str(temp_access))
 	if not ACCBYCONF.has_key(gch):
 		ACCBYCONF[gch] = gch
 		ACCBYCONF[gch] = {}
 	if not ACCBYCONF[gch].has_key(jid):
 		ACCBYCONF[gch][jid]=jid
-	ACCBYCONF[gch][jid]=level
+	if level:
+		ACCBYCONF[gch][jid]=level
+	else:
+		del ACCBYCONF[gch][jid]
 	get_access_levels()
 
 def change_access_perm_glob(source, level=0):
@@ -447,7 +453,7 @@ def has_access(source, level, gch):
 
 def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
 	presence=xmpp.protocol.Presence(groupchat+'/'+nick)
-	presence.setStatus(u'напишите "помощь" и следуйте указаниям, чтобы понять что к чему!')
+	presence.setStatus(u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать')
 	pres=presence.setTag('x',namespace=xmpp.NS_MUC)
 	pres.addChild('history',{'maxchars':'0','maxstanzas':'0'})
 	if passw:
@@ -480,7 +486,7 @@ def reply(ltype, source, body):
 		body = body.decode('utf-8', 'backslashreplace')
 	if ltype == 'public':
 		if len(body)>1000:
-			body=body[:1000]+u' [...]'
+			body=body[:1000]+u' >>>>'
 		msg(source[1], source[2] + ': ' + body)
 	elif ltype == 'private':
 		msg(source[0], body)
@@ -509,16 +515,19 @@ def findPresenceItem(node):
 	return None
 
 def messageHnd(con, msg):
+	msgtype = msg.getType()
+	fromjid = msg.getFrom()
+	if not fromjid.getStripped() in GROUPCHATS:
+		return
+	if user_level(fromjid,fromjid.getStripped())==-100:
+		return
 	if msg.timestamp:
 		return
 	body = msg.getBody()
-	if not body:
-		return
-	body=body.strip()
+	if body:
+		body=body.strip()
 	if not body:
 		return	
-	msgtype = msg.getType()
-	fromjid = msg.getFrom()
 	if msgtype == 'groupchat':
 		mtype='public'
 		if GROUPCHATS.has_key(fromjid.getStripped()) and GROUPCHATS[fromjid.getStripped()].has_key(fromjid.getResource()):
@@ -586,7 +595,7 @@ def presenceHnd(con, prs):
 							GROUPCHATS[groupchat][nick]['ishere']=0
 					except:
 						pass
-				call_leave_handlers(groupchat, nick, reason)
+				call_leave_handlers(groupchat, nick, reason, code)
 		elif ptype == 'available' or ptype == None:
 			if item['jid'] == None:
 				time.sleep(2)
@@ -596,24 +605,27 @@ def presenceHnd(con, prs):
 				return
 			else:
 				jid = item['jid']
-				if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid and GROUPCHATS[groupchat][nick]['ishere']==1:
+				if nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid and GROUPCHATS[groupchat][nick]['ishere']==1:
 					pass
 				else:
-					aff=prs.getAffiliation()
+					afl=prs.getAffiliation()
 					role=prs.getRole()
 					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1, 'status': '', 'stmsg': ''}
 					if role=='moderator' or user_level(jid,groupchat)>=15:
 						GROUPCHATS[groupchat][nick]['ismoder'] = 1
 					else:
 						GROUPCHATS[groupchat][nick]['ismoder'] = 0
-					call_join_handlers(groupchat, nick, aff, role)
+					call_join_handlers(groupchat, nick, afl, role)
 		elif ptype == 'error':
-			try:
-				code = prs.getErrorCode()
-			except:
-				code = None
-			if code == '409':
-				join_groupchat(groupchat, nick + '-')
+			code = prs.getErrorCode()
+			if code:
+				if code == '409':
+					join_groupchat(groupchat, nick + '-')
+				elif code in ['404','403']:
+					del GROUPCHATS[groupchat]
+				elif code in ['401','403','405',]:
+					del GROUPCHATS[groupchat]
+					add_gch(groupchat)
 	call_presence_handlers(prs)
 
 def iqHnd(con, iq):
@@ -627,7 +639,7 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 59) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 60) [antiflood]')
 #		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)

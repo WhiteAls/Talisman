@@ -35,7 +35,7 @@ def handler_access_logout(type, source, parameters):
 	reply(type, source, u'бб')
 
 def handler_access_view_access(type, source, parameters):
-	accdesc={'-100':'(ктулху)','-1':'(заблокирован)','0':'(никто)','1':'(лол)','10':'(юзер)','11':'(мембер)','15':'(модер)','16':'(модер)','20':'(админ)','30':'(овнер)','40':'(джойнер)','100':'(админ бота)'}
+	accdesc={'-100':'(полный игнор)','-1':'(заблокирован)','0':'(никто)','1':'(лол)','10':'(юзер)','11':'(мембер)','15':'(модер)','16':'(модер)','20':'(админ)','30':'(овнер)','40':'(джойнер)','100':'(админ бота)'}
 	if parameters==u'!desc':
 		reply('private',source,u'-1 - не сможет сделать ничего\n0 - очень ограниченное кол-во команд и макросов, автоматически присваивается визиторам (visitor)\n10 - стандартный набор команд и макросов, автоматически присваивается партисипантам (participant)\n11 - расширенный набор команд и макросов (например доступ к !!!), автоматически присваивается мемберам (member)\n15 (16) - модераторский набор команд и макросов, автоматически присваевается модераторам (moderator)\n20 - админский набор команд и макросов, автоматически присваивается админам (admin)\n30 - овнерский набор команд и макросов, автоматически присваиватся овнерам (owner)\n40 - не реализовано сейчсас толком, позволяет юзеру с этим доступом заводить и выводить бота из конференций\n100 - администратор бота, может всё')
 		return
@@ -60,9 +60,10 @@ def handler_access_view_access(type, source, parameters):
 
 def handler_access_set_access(type, source, parameters):
 	splitdata = string.split(parameters)
-	if int(splitdata[1].strip())>100 or int(splitdata[1].strip())<-1:
-		reply(type, source, u'очень смешно')
-		return		
+	if len(splitdata) > 1:
+		if int(splitdata[1].strip())>100 or int(splitdata[1].strip())<-100:
+			reply(type, source, u'очень смешно')
+			return		
 	nicks=GROUPCHATS[source[1]]
 	if len(splitdata) > 4:
 		if not splitdata[0:1].strip() in nicks and GROUPCHATS[source[1]][splitdata[0].strip()]['ishere']==0:
@@ -76,20 +77,39 @@ def handler_access_set_access(type, source, parameters):
 	tjidsource=get_true_jid(source)
 	groupchat=source[1]
 	jidacc=user_level(source, groupchat)
-	if tjidsource in ADMINS:
-		pass
-	elif int(splitdata[1]) >= int(jidacc):
-		reply(type, source, u'ага, щаззз')
-		return
-	if len(splitdata) == 2:
+	toacc=user_level(tjidto, groupchat)
+
+	if len(splitdata) > 1:
+		if tjidsource in ADMINS:
+			pass
+		if tjidto==tjidsource:
+			if int(splitdata[1]) > int(jidacc):
+				reply(type, source, u'ага, щаззз')
+				return
+		elif int(toacc) > int(jidacc):
+			reply(type, source, u'ага, щаззз')
+			return		
+		elif int(splitdata[1]) >= int(jidacc):
+			reply(type, source, u'ага, щаззз')
+			return	
+	else:
+		if tjidsource in ADMINS:
+			pass
+		elif tjidto==tjidsource:
+			pass
+		elif int(toacc) > int(jidacc):
+			reply(type, source, u'ага, щаззз')
+			return
+
+	if len(splitdata) == 1:		
+		change_access_perm(source[1], tjidto)
+		reply(type, source, u'постоянный снят')			
+	elif len(splitdata) == 2:
 		change_access_temp(source[1], tjidto, splitdata[1].strip())
 		reply(type, source, u'дал временно')
 	elif len(splitdata) == 3:
 		change_access_perm(source[1], tjidto, splitdata[1].strip())
-		reply(type, source, u'дал навсегда')
-	else:
-		reply(type, source, u'прочитай хелп по команде')
-		
+		reply(type, source, u'дал навсегда')		
 		
 def handler_access_set_access_glob(type, source, parameters):
 	if parameters:
