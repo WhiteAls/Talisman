@@ -44,15 +44,17 @@ def handler_admin_join(type, source, parameters):
 			groupchat = parameters
 			reason = ''
 		if len(passw)==1 or len(passw)==0:
-			join_groupchat(groupchat)
+			MACROS.load(groupchat)
 			get_gch_cfg(groupchat)
 			add_gch(groupchat, DEFAULT_NICK)
 			get_commoff(groupchat)
+			join_groupchat(groupchat)
 		else:
-			join_groupchat(groupchat, passw[1])
+			MACROS.load(groupchat)
 			get_gch_cfg(groupchat)
 			add_gch(groupchat, DEFAULT_NICK, passw[1])
 			get_commoff(groupchat)
+			join_groupchat(groupchat, passw[1])
 		MACROS.load(groupchat)
 		get_order_pl_cfg(groupchat)
 		reply(type, source, u'я зашёл в -> <' + groupchat + '>')
@@ -94,7 +96,10 @@ def handler_admin_leave(type, source, parameters):
 			msg(groupchat, u'меня уводит '+source[2]+u' по причине:\n'+reason)
 		else:
 			msg(groupchat, u'меня уводит '+source[2])
-	leave_groupchat(groupchat)
+	if reason:
+		leave_groupchat(groupchat, u'меня уводит '+source[2]+u' по причине:\n'+reason)
+	else:
+		leave_groupchat(groupchat,u'меня уводит '+source[2])
 	reply(type, source, u'я ушёл из -> <' + groupchat + '>')
 
 
@@ -154,6 +159,12 @@ def handler_admin_restart(type, source, parameters):
 		for x in gch:
 			if popups_check(x):
 				msg(x, u'меня перезагружает '+source[2])
+	prs=xmpp.Presence(typ='unavailable')
+	if reason:
+		prs.setStatus(source[2]+u': рестарт -> '+reason)
+	else:
+		prs.setStatus(source[2]+u': рестарт')
+	JCON.send(prs)
 	JCON.disconnect()
 
 def handler_admin_exit(type, source, parameters):
@@ -171,6 +182,12 @@ def handler_admin_exit(type, source, parameters):
 		for x in gch:
 			if popups_check(x):
 				msg(x, u'меня выключает '+source[2])
+	prs=xmpp.Presence(typ='unavailable')
+	if reason:
+		prs.setStatus(source[2]+u': выключаюсь -> '+reason)
+	else:
+		prs.setStatus(source[2]+u': выключаюсь')
+	JCON.send(prs)
 	os.abort()
 	
 	

@@ -18,27 +18,6 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 
-def handler_presence_subscr(prs):
-	type = prs.getType()
-	who = prs.getFrom()
-	if not type:
-		type = 'available'
-	if type == 'subscribe':
-		JCON.send(xmpp.protocol.Presence(to=who, typ='subscribed'))
-	elif type == 'unsubscribe':
-		JCON.send(xmpp.protocol.Presence(to=who, typ='unsubscribed'))
-	else:
-		pass
-"""
-	elif type == 'subscribed':
-		pass
-	elif type == 'unsubscribed':
-		pass
-	elif type == 'available':
-		pass
-	elif type == 'unavailable':
-		pass
-"""
 """
 def handler_presence_moder_check(prs):
 	time.sleep(1)
@@ -143,7 +122,7 @@ def handler_presence_ra_change(prs):
 					aff = item['affiliation']
 					if role in ROLES:
 						accr = ROLES[role]
-						if role=='moderator':
+						if role=='moderator' or user_level(jid,groupchat)>=15:
 							GROUPCHATS[groupchat][nick]['ismoder'] = 1
 						else:
 							GROUPCHATS[groupchat][nick]['ismoder'] = 0
@@ -164,7 +143,7 @@ def handler_presence_nickcommand(prs):
 			nick = prs.getNick()
 		else:
 			nick = prs.getFrom().getResource()
-		nicksource=nick.split()[0].strip()
+		nicksource=nick.split()[0].strip().lower()
 		if nicksource in (COMMANDS.keys() + MACROS.gmacrolist.keys() + MACROS.macrolist[groupchat].keys()):
 			iq = xmpp.Iq('set')
 			iq.setTo(groupchat)
@@ -177,8 +156,7 @@ def handler_presence_nickcommand(prs):
 			JCON.send(iq)
 			return
 
-	
-register_presence_handler(handler_presence_subscr)
+
 register_presence_handler(handler_presence_ra_change)
 register_presence_handler(handler_presence_nickcommand)
 

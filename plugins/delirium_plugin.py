@@ -43,8 +43,25 @@ def handler_stick(type, source, parameters):
 		if not args[0] == u'себя' or not args[0] == get_bot_nick(source[1]):
 			if len(args)<=1:
 				nick = args[0]
-				replies = [u'/me облил ' +nick+ u' ледяной водой',u'/me закидал ' +nick+ u' тухлыми помидорами',u'/me шарахнул ' +nick+ u' веслом по голове',u'/me ткнул ' +nick+ u' в глаз',u'/me поставил ' +nick+ u' подножку',u'/me постукал ' +nick+ u' головой апстенку',u'/me дал ' +nick+ u' йаду',u'/me slaps ' +nick+ u' around a bit with a large trout',u'приковал наручниками к кровати '+nick+u' и заставлил слушать Децла. МНОГО ДЕЦЛА!',u'/me шарахнул '+nick+u' веслом по голове',u'/me щас засунет '+nick+u' кляп в рот ]:->',u'/me целится плюсомётом в '+nick,u'/me тыкает '+nick+u' со словами "нуу, пратииивный"',u'/me кинул нож в сторону '+nick]
-				rep = random.choice(replies)
+				rep=u'/me '
+				replies = [u'облил ' +nick+ u' ледяной водой',
+									u'закидал ' +nick+ u' тухлыми помидорами',
+									u'шарахнул ' +nick+ u' веслом по голове',
+									u'ткнул ' +nick+ u' в глаз',
+									u'поставил ' +nick+ u' подножку',
+									u'постукал ' +nick+ u' головой апстенку',
+									u'дал ' +nick+ u' йаду',
+									u'slaps ' +nick+ u' around a bit with a large trout',
+									u'приковал наручниками к кровати '+nick+u' и заставлил слушать Децла. МНОГО ДЕЦЛА!',
+									u'шарахнул '+nick+u' веслом по голове',
+									u'потыкал '+nick+u' палочкой',
+									u'целится плюсомётом в '+nick,
+									u'тыкает '+nick+u' со словами "нуу, пратииивный"',
+									u'неожиданно проорал "БУУУУ!" в ухо '+nick,
+									u'случайно опрокинул кирпич на голову '+nick,
+									u'попрыгал с бубном вокруг '+nick,
+									u'кинул нож в сторону '+nick]
+				rep += random.choice(replies)
 				msg(source[1],rep)
 			elif len(args)>=2:
 				nick = args[0]
@@ -62,7 +79,7 @@ def handler_test(type, source, parameters):
 def handler_clean_conf(type, source, parameters):
 	if GROUPCHATS.has_key(source[1]):
 		for x in range(1, 20):
-			msg(source[1], '***')
+			msg(source[1], ' ')
 			time.sleep(1.3)
 
 			

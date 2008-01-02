@@ -17,44 +17,25 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 
-
-#def macroadd_handler(type, source, parameters):
-#	pl = MACROS.parse_cmd(parameters)
-#	if (len(pl)<2):
-#		rep = u'мало аргументофф'
-#	else:
-#		if pl[1].split()[0] in COMMAND_HANDLERS or pl[1].split()[0] in MACROS.gmacrolist or pl[1].split()[0] in MACROS.macrolist[source[1]]:
-#			real_access = MACROS.get_access(pl[1].split()[0], source[1])
-#			if real_access < 0:
-#				real_access = COMMANDS[pl[1].split()[0]]['access']
-#			if has_access(source, real_access, source[1]):
-#				MACROS.add(pl[0], pl[1], source[1])
-#				MACROS.flush()
-#				rep = u'добавил'
-#			else:
-#				rep = u'размечтался ]:->'
-#		else:
-#			rep = u'что это было?'
-#
-#	reply(type, source, rep)
-	
-	
 def macroadd_handler(type, source, parameters):
 	pl = MACROS.parse_cmd(parameters)
 	if (len(pl)<2):
-		rep = u'мало аргументофф'
+		reply(type, source, u'мало аргументофф')
+		return
 	else:
-		for x in pl[1].split('&&&'):
-			if x.split()[0] in COMMAND_HANDLERS or x.split()[0] in MACROS.gmacrolist or x.split()[0] in MACROS.macrolist[source[1]]:
-				real_access = MACROS.get_access(x.split()[0], source[1])
-				if real_access < 0:
-					real_access = COMMANDS[x.split()[0]]['access']
+		if pl[1].split()[0] in COMMAND_HANDLERS or pl[1].split()[0] in MACROS.gmacrolist or pl[1].split()[0] in MACROS.macrolist[source[1]]:
+			real_access = MACROS.get_access(pl[1].split()[0], source[1])
+			if real_access < 0 and pl[1].split()[0] in COMMAND_HANDLERS:
+				real_access = COMMANDS[pl[1].split()[0]]['access']
+			else:
+				pass
+			if real_access:
 				if not has_access(source, real_access, source[1]):
 					reply(type, source, u'размечтался ]:->')
 					return
-			else:
-				reply(type, source, u'что это было?')
-				return				
+		else:
+			reply(type, source, u'не вижу команду внутри макроса')
+			return				
 		MACROS.add(pl[0], pl[1], source[1])
 		MACROS.flush()		
 		reply(type, source, u'добавил')

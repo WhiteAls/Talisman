@@ -20,7 +20,7 @@
 from re import match
 
 disco_pending=[]
-	
+
 def handler_disco(type, source, parameters):
 	if parameters==u'ограничения':
 		reply('private',source,u'В паблик может дать max 30 результатов, без указания кол-ва - 10.\n В приват может дать max 150, без указания кол-ва 50.')
@@ -78,6 +78,8 @@ def handler_disco_ext(coze, res, type, source, stop, parameters):
 						st=re.match('(.*) \(([0-9]+)\)$', att['name'])
 						if st:
 							st=st.groups()
+							if int(st[1])>100:
+								continue
 							disco.append([st[0],att['jid'],int(st[1])])
 							trig=1
 					else:

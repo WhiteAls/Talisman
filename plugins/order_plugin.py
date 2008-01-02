@@ -74,39 +74,44 @@ def order_unban(groupchat, jid):
 def handler_order_message(type, source, body):
 	nick=source[2]
 	groupchat=source[1]
-	if groupchat in GROUPCHATS and nick in GROUPCHATS[groupchat] and user_level(source,groupchat)<11:
+	if nick in GROUPCHATS[groupchat] and user_level(source,groupchat)<11:
 		if get_bot_nick(groupchat)!=nick and nick!='':
 			jid=get_true_jid(groupchat+'/'+nick)
 			if groupchat in order_stats.keys() and jid in order_stats[groupchat]:
 				lastmsg=order_stats[groupchat][jid]['msgtime']
 				now = time.time()
-				cnt=0
 				if body != '':
 					sourcebody=body
 					body = body.lower().replace(' ', '').strip()
 					if GCHCFGS[groupchat]['filt']['smile']==1 and body.count(')') > 7 or body.count('(') > 7 or body.count('*') > 7 or body.count(':') > 7:
 						order_stats[groupchat][jid]['flood']+=1
 						order_kick(groupchat, nick, 'smile flood')
-					elif GCHCFGS[groupchat]['filt']['time']==1 and now-lastmsg<=2.2:
+						return
+					if GCHCFGS[groupchat]['filt']['time']==1 and now-lastmsg<=2.2:
 						order_stats[groupchat][jid]['msg']+=1
 						if order_stats[groupchat][jid]['msg']>2:
 							order_stats[groupchat][jid]['flood']+=1
 							order_stats[groupchat][jid]['msg']=0
 							order_kick(groupchat, nick, 'you send messages is too fast')
-					elif GCHCFGS[groupchat]['filt']['len']==1 and len(sourcebody)>700:
+							return
+					if GCHCFGS[groupchat]['filt']['len']==1 and len(sourcebody)>700:
 						order_stats[groupchat][jid]['flood']+=1
 						order_kick(groupchat, nick, 'flood')
-					elif GCHCFGS[groupchat]['filt']['caps']==1:
+						return
+					if GCHCFGS[groupchat]['filt']['caps']==1:
+						ccnt=0
 						nicks = GROUPCHATS[groupchat].keys()
 						if sourcebody.strip().split()[0].replace(':', '').replace(',', '').replace('>', '') in nicks:
 							sourcebody=' '.join(sourcebody.split()[1:]).strip()
 						for x in [x for x in sourcebody.replace(' ', '').strip()]:
 							if x.isupper():
-								cnt+=1
-						if cnt>=len(body)/2 and cnt>9:
+								ccnt+=1
+						if ccnt>=len(body)/2 and ccnt>9:
 							order_stats[groupchat][jid]['flood']+=1
 							order_kick(groupchat, nick, 'too many caps')
-					elif GCHCFGS[groupchat]['filt']['like']==1:
+							return
+					if GCHCFGS[groupchat]['filt']['like']==1:
+						lcnt=0
 						if order_stats[groupchat][jid]['msgbody'] is not None:
 							if now-lastmsg>60:
 								order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
@@ -114,17 +119,18 @@ def handler_order_message(type, source, body):
 								for x in order_stats[groupchat][jid]['msgbody']:
 									for y in sourcebody.strip().split():
 										if x==y:
-											cnt+=1
-								if cnt:
+											lcnt+=1
+								if lcnt:
 									lensrcmsgbody=len(sourcebody.strip().split())
 									lenoldmsgbody=len(order_stats[groupchat][jid]['msgbody'])
 									avg=(lensrcmsgbody+lenoldmsgbody/2)/2
-									if cnt>avg:
+									if lcnt>avg:
 										order_stats[groupchat][jid]['msg']+=1
-										if order_stats[groupchat][jid]['msg']>2:
+										if order_stats[groupchat][jid]['msg']>=2:
 											order_stats[groupchat][jid]['flood']+=1
 											order_stats[groupchat][jid]['msg']=0
 											order_kick(groupchat, nick, 'your messages looks like repeat-flood')
+											return
 								order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
 						else:
 							order_stats[groupchat][jid]['msgbody']=sourcebody.strip().split()
@@ -151,8 +157,6 @@ def handler_order_join(groupchat, nick, aff, role):
 				elif order_stats[groupchat][jid]['flood']>3:
 					order_stats[groupchat][jid]['flood']=0
 					order_ban(groupchat, nick, 'flood excess')
-					time.sleep(5)
-					order_unban(groupchat, jid)
 		else:
 			order_stats[groupchat][jid]=jid
 			order_stats[groupchat][jid]={}
@@ -178,7 +182,9 @@ def handler_order_join(groupchat, nick, aff, role):
 						order_stats[groupchat][jid]['prs']['fly']+=1
 						if order_stats[groupchat][jid]['prs']['fly']>4:
 							order_stats[groupchat][jid]['prs']['fly']=0
-							order_kick(groupchat, nick, 'flying flood')
+							order_ban(groupchat, nick, 'flying flood')
+							time.sleep(120)
+							order_unban(groupchat, jid)
 				order_stats[groupchat][jid]['prstime']['fly']=time.time()					
 			except:
 				pass		
@@ -255,9 +261,6 @@ def handler_order_leave(groupchat, nick, reason, code):
 					order_stats[groupchat][jid]['prs']['fly']=0
 				else:
 					order_stats[groupchat][jid]['prs']['fly']+=1
-					if order_stats[groupchat][jid]['prs']['fly']>4:
-						order_stats[groupchat][jid]['prs']['fly']=0
-						order_kick(groupchat, nick, 'flying flood')
 			order_stats[groupchat][jid]['prstime']['fly']=time.time()
 		except:
 			pass

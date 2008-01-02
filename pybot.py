@@ -35,6 +35,10 @@ import traceback
 import codecs
 import macros
 
+#import locale
+#print locale.setlocale(locale.LC_ALL,locale.getdefaultlocale())
+
+
 ################################################################################
 GENERAL_CONFIG_FILE = 'config.txt'
 
@@ -335,14 +339,14 @@ def add_gch(groupchat=None, nick=None, passw=None):
 		if not groupchat in gchdb:
 			gchdb[groupchat] = groupchat
 			gchdb[groupchat] = {}
-			gchdb[groupchat]['nick'] = nick
+			gchdb[groupchat]['nick'] = nick.encode('utf8')
 			gchdb[groupchat]['passw'] = passw
 		else:
 			if nick and groupchat and passw:
-				gchdb[groupchat]['nick'] = nick
+				gchdb[groupchat]['nick'] = nick.encode('utf8')
 				gchdb[groupchat]['passw'] = passw
 			elif nick and groupchat:
-				gchdb[groupchat]['nick'] = nick
+				gchdb[groupchat]['nick'] = nick.encode('utf8')
 			elif groupchat:
 				del gchdb[groupchat]
 			elif passw:
@@ -452,13 +456,13 @@ def has_access(source, level, gch):
 ################################################################################
 
 def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
-	presence=xmpp.protocol.Presence(groupchat+'/'+nick)
-	presence.setStatus(u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать')
-	pres=presence.setTag('x',namespace=xmpp.NS_MUC)
+	prs=xmpp.protocol.Presence(groupchat+'/'+nick)
+	prs.setStatus(u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать')
+	pres=prs.setTag('x',namespace=xmpp.NS_MUC)
 	pres.addChild('history',{'maxchars':'0','maxstanzas':'0'})
 	if passw:
 		pres.setTagData('password', passw)
-	JCON.send(presence)
+	JCON.send(prs)
 	if not groupchat in GROUPCHATS:
 		GROUPCHATS[groupchat] = {}
 	if check_file(groupchat,'macros.txt'):
@@ -466,8 +470,11 @@ def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
 	else:
 		msg(groupchat, u'ВНИМАНИЕ!!! Локальная база макросов не была создана! Возникла ошибка, срочно сообщите о ней администраору бота!')
 
-def leave_groupchat(groupchat):
-	JCON.send(xmpp.Presence(groupchat, 'unavailable'))
+def leave_groupchat(groupchat,status=''):
+	prs=xmpp.Presence(groupchat, 'unavailable')
+	if status:
+		prs.setStatus(status)
+	JCON.send(prs)
 	if GROUPCHATS.has_key(groupchat):
 		del GROUPCHATS[groupchat]
 		add_gch(groupchat)
@@ -542,13 +549,11 @@ def messageHnd(con, msg):
 		mtype='private'
 	call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
 	
-	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf-8')
+	bot_nick = get_bot_nick(fromjid.getStripped())
 	if fromjid.getResource() == bot_nick:
 		return
 	command,parameters,cbody,rcmd = '','','',''
 	if bot_nick and body.split()[0] in [bot_nick+x for x in string.punctuation]:
-		body=' '.join(body.split()[1:])
-	if body.split()[0].replace(':','').replace(',','') in GROUPCHATS[fromjid.getStripped()]:
 		body=' '.join(body.split()[1:])
 	body=body.strip()
 	if not body:
@@ -601,7 +606,7 @@ def presenceHnd(con, prs):
 				time.sleep(2)
 				msg(groupchat, u'моя функциональность в полной мере без прав модератора невозможна')
 				time.sleep(1)
-				leave_groupchat(groupchat)        
+				leave_groupchat(groupchat, u'отсутствие прав модератора')        
 				return
 			else:
 				jid = item['jid']
@@ -621,11 +626,18 @@ def presenceHnd(con, prs):
 			if code:
 				if code == '409':
 					join_groupchat(groupchat, nick + '-')
-				elif code in ['404','403']:
+				elif code == '404':
 					del GROUPCHATS[groupchat]
 				elif code in ['401','403','405',]:
 					del GROUPCHATS[groupchat]
 					add_gch(groupchat)
+		elif ptype == 'subscribe':
+			JCON.send(xmpp.protocol.Presence(to=prs.getFrom(), typ='subscribed'))
+		elif ptype == 'unsubscribe':
+			JCON.send(xmpp.protocol.Presence(to=prs.getFrom(), typ='unsubscribed'))
+		else:
+			pass
+
 	call_presence_handlers(prs)
 
 def iqHnd(con, iq):
@@ -639,8 +651,8 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 60) [antiflood]')
-#		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
+#		query.setTagData('version', 'ver.1 (svn rev 60) [antiflood]')
+		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
@@ -744,7 +756,7 @@ def start():
 	if check_file(file='chatrooms.list'):
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
-			thread.start_new_thread(join_groupchat, (groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw']))
+			thread.start_new_thread(join_groupchat, (groupchat,groupchats[groupchat]['nick'].encode('utf-8'),groupchats[groupchat]['passw']))
 			MACROS.init(groupchat)
 			get_gch_cfg(groupchat)
 			get_commoff(groupchat)

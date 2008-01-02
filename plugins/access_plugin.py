@@ -24,14 +24,14 @@ def handler_access_login(type, source, parameters):
 	elif type == 'private':
 		jid = get_true_jid(source)
 		if parameters.strip() == ADMIN_PASSWORD:
-			change_access_temp(source[1], jid, 100)
+			GLOBACCESS[jid]=100
 			reply(type, source, u'угу, точняк')
 		else:
 			reply(type, source, u'пшёл вон, я хз кто ты >)')
 
 def handler_access_logout(type, source, parameters):
 	jid = get_true_jid(source)
-	change_access_temp(source[1], jid, 10)
+	del GLOBACCESS[jid]
 	reply(type, source, u'бб')
 
 def handler_access_view_access(type, source, parameters):
@@ -82,24 +82,26 @@ def handler_access_set_access(type, source, parameters):
 	if len(splitdata) > 1:
 		if tjidsource in ADMINS:
 			pass
-		if tjidto==tjidsource:
-			if int(splitdata[1]) > int(jidacc):
+		else:
+			if tjidto==tjidsource:
+				if int(splitdata[1]) > int(jidacc):
+					reply(type, source, u'ага, щаззз')
+					return
+			elif int(toacc) > int(jidacc):
 				reply(type, source, u'ага, щаззз')
-				return
-		elif int(toacc) > int(jidacc):
-			reply(type, source, u'ага, щаззз')
-			return		
-		elif int(splitdata[1]) >= int(jidacc):
-			reply(type, source, u'ага, щаззз')
-			return	
+				return		
+			elif int(splitdata[1]) >= int(jidacc):
+				reply(type, source, u'ага, щаззз')
+				return	
 	else:
 		if tjidsource in ADMINS:
 			pass
-		elif tjidto==tjidsource:
-			pass
-		elif int(toacc) > int(jidacc):
-			reply(type, source, u'ага, щаззз')
-			return
+		else:
+			if tjidto==tjidsource:
+				pass
+			elif int(toacc) > int(jidacc):
+				reply(type, source, u'ага, щаззз')
+				return
 
 	if len(splitdata) == 1:		
 		change_access_perm(source[1], tjidto)

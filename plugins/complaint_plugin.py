@@ -27,14 +27,14 @@ def handler_complaint(type, source, parameters):
 			args = parameters.split(' ')
 			nick = args[0].strip()
 			body = ' '.join(args[1:])
-			if nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['ishere']==1:
-				if user_level(source,groupchat)>=15:
-					reply('private',source,u'жжошь :D')
-					return						
+			if nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['ishere']==1:		
 				jidsource=groupchat+'/'+nick
 				if user_level(jidsource,groupchat)>=15:
 					reply('private',source,u'если попробуешь ещё хоть раз пожаловатся на модера - пойдёшь в баню ]:->')
-					return				
+					return			
+				if len(nick)>20 or len(body)>30:
+					reply('private', source, u'а не много ли ты написал?')
+					return
 				for x in nicks:
 					jid=groupchat+'/'+x
 					if user_level(jid,groupchat)>=15:
