@@ -135,12 +135,11 @@ def handler_glob_msg(type, source, parameters):
 
 def handler_admin_say(type, source, parameters):
 	if parameters:
-		args=string.split(parameters)
-		if not args[0] in COMMANDS.keys() or not args[0] in MACROS.macrolist[source[1]].keys() or not args[0] in MACROS.gmacrolist.keys():
-			msg(source[1], parameters)
-		else:
+		args=parameters.split()[0]
+		if args in COMMAND_HANDLERS or args in MACROS.macrolist[source[1]] or args in MACROS.gmacrolist:
 			reply(type, source, u'нееее')
-			return
+		else:
+			msg(source[1], parameters)
 	else:
 		reply(type, source, u'мессагу написать не забыл?')
 
@@ -188,6 +187,7 @@ def handler_admin_exit(type, source, parameters):
 	else:
 		prs.setStatus(source[2]+u': выключаюсь')
 	JCON.send(prs)
+	time.sleep(2)
 	os.abort()
 	
 	

@@ -274,7 +274,7 @@ def get_gch_cfg(gch):
 def get_order_pl_cfg(gch):		
 	if not 'filt' in GCHCFGS[gch]:
 		GCHCFGS[gch]['filt']={}		
-	for x in ['smile','time','presence','len','like','caps','prsstlen']:
+	for x in ['smile','time','presence','len','like','caps','prsstlen','obscene']:
 		if not x in GCHCFGS[gch]['filt']:
 			GCHCFGS[gch]['filt'][x]=1
 	DBPATH='dynamic/'+gch+'/config.cfg'
@@ -524,7 +524,7 @@ def findPresenceItem(node):
 def messageHnd(con, msg):
 	msgtype = msg.getType()
 	fromjid = msg.getFrom()
-	if not fromjid.getStripped() in GROUPCHATS:
+	if not fromjid.getStripped() in GROUPCHATS and not fromjid.getStripped() in ADMINS:
 		return
 	if user_level(fromjid,fromjid.getStripped())==-100:
 		return
@@ -549,7 +549,7 @@ def messageHnd(con, msg):
 		mtype='private'
 	call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
 	
-	bot_nick = get_bot_nick(fromjid.getStripped())
+	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf8')
 	if fromjid.getResource() == bot_nick:
 		return
 	command,parameters,cbody,rcmd = '','','',''
@@ -756,7 +756,7 @@ def start():
 	if check_file(file='chatrooms.list'):
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
-			thread.start_new_thread(join_groupchat, (groupchat,groupchats[groupchat]['nick'].encode('utf-8'),groupchats[groupchat]['passw']))
+			thread.start_new_thread(join_groupchat, (groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw']))
 			MACROS.init(groupchat)
 			get_gch_cfg(groupchat)
 			get_commoff(groupchat)
