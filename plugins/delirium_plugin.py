@@ -19,6 +19,9 @@
 stick_nicks={}
 
 def handler_stick(type, source, parameters):
+	if type=='private':
+		reply(type,source,u':-P')
+		return
 	groupchat = source[1]
 	if parameters:
 		if parameters==u'last10':
@@ -39,10 +42,9 @@ def handler_stick(type, source, parameters):
 			stick_nicks[source[1]]=[]
 		else:
 			stick_nicks[source[1]].append(source[2])
-		args = parameters.split(' ')
-		if not args[0] == u'себя' or not args[0] == get_bot_nick(source[1]):
-			if len(args)<=1:
-				nick = args[0]
+		if not parameters == get_bot_nick(source[1]):
+			if parameters in GROUPCHATS[source[1]]:
+				nick = parameters
 				rep=u'/me '
 				replies = [u'облил ' +nick+ u' ледяной водой',
 									u'закидал ' +nick+ u' тухлыми помидорами',
@@ -58,15 +60,16 @@ def handler_stick(type, source, parameters):
 									u'целится плюсомётом в '+nick,
 									u'тыкает '+nick+u' со словами "нуу, пратииивный"',
 									u'неожиданно проорал "БУУУУ!" в ухо '+nick,
-									u'случайно опрокинул кирпич на голову '+nick,
+									u'случайно уронил кирпич на голову '+nick,
 									u'попрыгал с бубном вокруг '+nick,
+									u'размахивает руками перед лицом '+nick,
+									u'воззвал к '+nick,
+									u'тресёт '+nick+u' за плечи',
 									u'кинул нож в сторону '+nick]
 				rep += random.choice(replies)
 				msg(source[1],rep)
-			elif len(args)>=2:
-				nick = args[0]
-				body = ' '.join(args[1:])
-				msg(source[1],  u'/me ткнул '+nick+u' '+body)
+			else:
+				reply(type, source, u'а он тут? :-O')
 		else:
 			reply(type, source, u'шибко умный, да? ]:->')	
 	else:
@@ -79,8 +82,9 @@ def handler_test(type, source, parameters):
 def handler_clean_conf(type, source, parameters):
 	if GROUPCHATS.has_key(source[1]):
 		for x in range(1, 20):
-			msg(source[1], ' ')
+			msg(source[1], str(x))
 			time.sleep(1.3)
+		reply(type,source,u'done')
 
 			
 def handler_kick_ass(type, source, parameters):
@@ -103,7 +107,7 @@ def handler_kick_ass(type, source, parameters):
 					rep = ''
 					time.sleep(0.5)
 	
-register_command_handler(handler_stick, 'тык', ['фан','все'], 10, 'Ткнуть кого-то в глаз или во что-то.', 'тык <ник> <куда>', ['тык qwerty','тык qwerty в живот'])
+register_command_handler(handler_stick, 'тык', ['фан','все'], 10, 'Тыкает юзера. Заставляет его обратить внимание на вас/на чат.', 'тык <ник>', ['тык qwerty'])
 register_command_handler(handler_test, 'тест', ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'тест', ['тест'])
 register_command_handler(handler_test, 'test', ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'test', ['test'])
 register_command_handler(handler_clean_conf, 'фконфу', ['фан','мук','все'], 15, 'Очищает конференцию (считает до 20).', 'фконфу', ['фконфу'])

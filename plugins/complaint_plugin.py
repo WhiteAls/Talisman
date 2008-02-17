@@ -30,17 +30,17 @@ def handler_complaint(type, source, parameters):
 			if nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['ishere']==1:		
 				jidsource=groupchat+'/'+nick
 				if user_level(jidsource,groupchat)>=15:
-					reply('private',source,u'если попробуешь ещё хоть раз пожаловатся на модера - пойдёшь в баню ]:->')
+					reply(type,source,u'если попробуешь ещё хоть раз пожаловатся на модера - пойдёшь в баню ]:->')
 					return			
-				if len(nick)>20 or len(body)>30:
-					reply('private', source, u'а не много ли ты написал?')
+				if len(nick)>20 or len(body)>100:
+					reply(type, source, u'а не много ли ты написал?')
 					return
 				for x in nicks:
 					jid=groupchat+'/'+x
 					if user_level(jid,groupchat)>=15:
-						msg(jid, u'юзер <'+source[2]+u'>\nжалуется на <'+nick+u'>\nпо причине <'+body+u'>\n\nВы можете забанить (банан '+nick+u' `'+body+u'`) или кикнуть (кик '+nick+u' `'+body+u'`) этого юзера прямо сейчас из моего привата')
-				reply('private', source, u'жалоба на <'+nick+u'> ушла всем модераторам данной конференции. если вашу жалобу сочтут спамом, то вас забанят!')
+						msg(jid, u'юзер <'+source[2]+u'>\nжалуется на <'+nick+u'>\nпо причине <'+body+u'>\n\nВы можете забанить (банан '+nick+u' `ризон`) или кикнуть (кик '+nick+u' `ризон`) этого юзера прямо сейчас из моего привата')
+				reply(type, source, u'жалоба на <'+nick+u'> ушла всем модераторам данной конференции. если вашу жалобу сочтут спамом, то вас забанят!')
 			else:
 				reply(type,source,u'ты уверен, что <'+nick+u'> сейчас тут?')
 				
-register_command_handler(handler_complaint, 'жалоба',  ['мук','все'], 0, 'Пожаловаться на определённый ник по определённой причине. Работает только у меня в привате!', 'жалоба <ник> <причина>', ['жалоба Nick7 спам'])
+register_command_handler(handler_complaint, 'жалоба',  ['мук','все'], 11, 'Пожаловаться на определённый ник по определённой причине. Работает только у меня в привате!', 'жалоба <ник> <причина>', ['жалоба Nick7 спам'])

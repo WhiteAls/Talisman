@@ -39,7 +39,11 @@ def handler_getrealjid(type, source, parameters):
 def handler_total_in_muc(type, source, parameters):
 	groupchat=source[1]
 	if GROUPCHATS.has_key(groupchat):
-		reply(type, source, u'я здесь вижу '+str(len(GROUPCHATS[groupchat].keys()))+u' юзеров\n'+u', '.join(GROUPCHATS[groupchat].keys()))
+		inmuc=[]
+		for x in GROUPCHATS[groupchat].keys():
+			if GROUPCHATS[groupchat][x]['ishere']==1:
+				inmuc.append(x)
+		reply(type, source, u'я здесь вижу '+str(len(inmuc))+u' юзеров\n'+u', '.join(inmuc))
 	else:
 		reply(type, source, u'аблом какой-то...')
 		

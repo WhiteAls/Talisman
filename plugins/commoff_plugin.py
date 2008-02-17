@@ -17,7 +17,7 @@
 #  GNU General Public License for more details.
 
 def handler_commoff(type,source,parameters):
-	na=[u'доступ',u'дать_доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
+	na=[u'доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
 	valcomm,notvalcomm,alrcomm,npcomm,vcnt,ncnt,acnt,nocnt,rep,commoff=u'',u'',u'',u'',0,0,0,0,u'',[]
 	if not source[1] in COMMOFF:
 		get_commoff(source[1])
@@ -68,7 +68,7 @@ def handler_commoff(type,source,parameters):
 	reply(type,source,rep.strip())
 		
 def handler_common(type,source,parameters):
-	na=[u'доступ',u'дать_доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
+	na=[u'доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
 	valcomm,notvalcomm,alrcomm,npcomm,vcnt,ncnt,acnt,nocnt,rep,commoff=u'',u'',u'',u'',0,0,0,0,u'',[]
 	if not source[1] in COMMOFF:
 		get_commoff(source[1])

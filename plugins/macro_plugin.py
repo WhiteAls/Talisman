@@ -153,8 +153,11 @@ def macroaccess_handler(type, source, parameters):
 						reply(type,source,u'размечтался ]:->')
 						return
 			elif macro in COMMAND_HANDLERS:
-				reply(type,source,u'размечтался ]:->')
-				return
+				if not user_level(source,source[1])==100:
+					reply(type,source,u'размечтался ]:->')
+					return
+				else:
+					pass
 			access = args[1]
 			MACROS.give_access(macro,access,source[1])
 			reply(type,source,u'дал')

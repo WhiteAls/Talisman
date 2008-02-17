@@ -135,8 +135,7 @@ class Macros:
 	gaccesslist={}
 	
 	macrolist={}
-	accesslist={}	
-	
+	accesslist={}		
 	macrocmds = MacroCommands()
 	
 	def init(self,gch):
@@ -249,13 +248,13 @@ class Macros:
 
 	def expand(self, cmd, source):
 		if type(cmd) is None:
-			return ''
+			return ''		
+		exp=''
 		cl=self.parse_cmd(cmd)
 		if (len(cl)<1):
 			return cmd
-		command=cl[0].split(' ')[0].lower()
+		command=cl[0].split()[0].lower()
 		args=cl[1:]
-		exp = ''
 		try:
 			for macro in self.macrolist[source[1]]:
 				if len(command)<=len(macro) and command == macro[0:len(macro)]:
@@ -289,11 +288,13 @@ class Macros:
 				if len(command)<=len(macro) and command == macro[0:len(macro)]:
 					if self.macrolist[source[1]][macro]:
 						exp = self.apply(self.macrolist[source[1]][macro], args, source)
-			if not exp:
-				for macro in self.gmacrolist:
-					if len(command)<=len(macro) and command == macro[0:len(macro)]:
-						if self.gmacrolist[macro]:
-							exp = self.apply(self.gmacrolist[macro], args, source)
+		except:
+			pass
+		try:
+			for macro in self.gmacrolist:
+				if len(command)<=len(macro) and command == macro[0:len(macro)]:
+					if self.gmacrolist[macro]:
+						exp = self.apply(self.gmacrolist[macro], args, source)
 		except:
 			pass
 		if not exp:

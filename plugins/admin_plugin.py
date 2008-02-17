@@ -136,10 +136,7 @@ def handler_glob_msg(type, source, parameters):
 def handler_admin_say(type, source, parameters):
 	if parameters:
 		args=parameters.split()[0]
-		if args in COMMAND_HANDLERS or args in MACROS.macrolist[source[1]] or args in MACROS.gmacrolist:
-			reply(type, source, u'нееее')
-		else:
-			msg(source[1], parameters)
+		msg(source[1], parameters)
 	else:
 		reply(type, source, u'мессагу написать не забыл?')
 

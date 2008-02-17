@@ -35,8 +35,8 @@ import traceback
 import codecs
 import macros
 
-#import locale
-#print locale.setlocale(locale.LC_ALL,locale.getdefaultlocale())
+import locale
+locale.setlocale(locale.LC_CTYPE, "")
 
 
 ################################################################################
@@ -71,8 +71,7 @@ INITSCRIPT_FILE = GENERAL_CONFIG['INITSCRIPT_FILE']
 ROLES={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
-BOOT = time.time()
-LAST = time.time()
+LAST,BOOT = 0,0
 ################################################################################
 
 COMMANDS = {}
@@ -116,10 +115,18 @@ def read_file(filename):
 	fp.close()
 	return data
 
+#def write_file(filename, data):
+#	fp = file(filename, 'w')
+#	fp.write(data)
+#	fp.close()
+	
 def write_file(filename, data):
+	mtx=thread.allocate_lock()
+	mtx.acquire()
 	fp = file(filename, 'w')
 	fp.write(data)
 	fp.close()
+	mtx.release()
 
 def check_file(gch='',file=''):
 	pth,pthf='',''
@@ -197,6 +204,7 @@ def call_command_handlers(command, type, source, parameters, callee):
 ################################################################################
 
 def find_plugins():
+	print '\nLOADING PLUGINS'
 	valid_plugins = []
 	invalid_plugins = []
 	possibilities = os.listdir('plugins')
@@ -271,14 +279,40 @@ def get_gch_cfg(gch):
 	except:
 		pass
 
-def get_order_pl_cfg(gch):		
+def get_order_pl_cfg(gch):
 	if not 'filt' in GCHCFGS[gch]:
 		GCHCFGS[gch]['filt']={}		
-	for x in ['smile','time','presence','len','like','caps','prsstlen','obscene']:
+	for x in ['smile','time','presence','len','like','caps','prsstlen','obscene','kicks','fly']:
+		if x == 'kicks':
+			if not x in GCHCFGS[gch]['filt']:
+				GCHCFGS[gch]['filt'][x]={}
+				GCHCFGS[gch]['filt'][x]['cond']=1
+				GCHCFGS[gch]['filt'][x]['cnt']=2
+			continue
+		if x == 'fly':
+			if not x in GCHCFGS[gch]['filt']:
+				GCHCFGS[gch]['filt'][x]={}
+				GCHCFGS[gch]['filt'][x]['cond']=1
+				GCHCFGS[gch]['filt'][x]['mode']='ban'
+				GCHCFGS[gch]['filt'][x]['time']=60
+			continue
 		if not x in GCHCFGS[gch]['filt']:
 			GCHCFGS[gch]['filt'][x]=1
 	DBPATH='dynamic/'+gch+'/config.cfg'
 	write_file(DBPATH, str(GCHCFGS[gch]))
+	
+def get_sendpl_cache(gch):
+	sfc='dynamic/'+gch+'/send.txt'
+	if not check_file(gch,'send.txt'):
+		print 'error with caches in send_plugin.py'
+		raise
+	try:
+		cache = eval(read_file(sfc))
+		sendqueue[gch]=gch
+		sendqueue[gch]={}
+		sendqueue[gch]=cache
+	except:
+		pass	
 
 ################################################################################
 
@@ -482,6 +516,8 @@ def leave_groupchat(groupchat,status=''):
 def msg(target, body):
 	msg = xmpp.Message(target, body)
 	if GROUPCHATS.has_key(target):
+		if len(body)>1000:
+			body=body[:1000]+u' >>>>'
 		msg.setType('groupchat')
 	else:
 		msg.setType('chat')
@@ -492,8 +528,6 @@ def reply(ltype, source, body):
 	if type(body) is types.StringType:
 		body = body.decode('utf-8', 'backslashreplace')
 	if ltype == 'public':
-		if len(body)>1000:
-			body=body[:1000]+u' >>>>'
 		msg(source[1], source[2] + ': ' + body)
 	elif ltype == 'private':
 		msg(source[0], body)
@@ -524,7 +558,7 @@ def findPresenceItem(node):
 def messageHnd(con, msg):
 	msgtype = msg.getType()
 	fromjid = msg.getFrom()
-	if not fromjid.getStripped() in GROUPCHATS and not fromjid.getStripped() in ADMINS:
+	if fromjid.getStripped() not in GROUPCHATS and fromjid.getStripped() not in ADMINS:
 		return
 	if user_level(fromjid,fromjid.getStripped())==-100:
 		return
@@ -534,7 +568,9 @@ def messageHnd(con, msg):
 	if body:
 		body=body.strip()
 	if not body:
-		return	
+		return
+	if len(body)>1000:
+		body=body[:1000]+u' >>>>'	
 	if msgtype == 'groupchat':
 		mtype='public'
 		if GROUPCHATS.has_key(fromjid.getStripped()) and GROUPCHATS[fromjid.getStripped()].has_key(fromjid.getResource()):
@@ -548,12 +584,13 @@ def messageHnd(con, msg):
 	else:
 		mtype='private'
 	call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
+	LAST=time.time()
 	
 	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf8')
 	if fromjid.getResource() == bot_nick:
 		return
 	command,parameters,cbody,rcmd = '','','',''
-	if bot_nick and body.split()[0] in [bot_nick+x for x in string.punctuation]:
+	if bot_nick and body.split()[0] in [bot_nick+x for x in [':',',','>']]:
 		body=' '.join(body.split()[1:])
 	body=body.strip()
 	if not body:
@@ -564,25 +601,31 @@ def messageHnd(con, msg):
 	cbody = MACROS.expand(body, [fromjid, fromjid.getStripped(), fromjid.getResource()])
 	command=cbody.split()[0].lower()
 	if cbody.count(' '):
-		parameters = cbody[(cbody.find(' ') + 1):]
+		parameters = cbody[(cbody.find(' ') + 1):].strip()
 	if command in COMMANDS:
 		if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
 			return
 		else:
 			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
+			globals()['LAST'] = time.time()
 
 def presenceHnd(con, prs):
 	ptype = prs.getType()
 	groupchat = prs.getFrom().getStripped()
 	nick = prs.getFrom().getResource()
 	item = findPresenceItem(prs)
+	
+	if ptype == 'subscribe':
+		JCON.send(xmpp.protocol.Presence(to=prs.getFrom(), typ='subscribed'))
+	elif ptype == 'unsubscribe':
+		JCON.send(xmpp.protocol.Presence(to=prs.getFrom(), typ='unsubscribed'))
 
 	if groupchat in GROUPCHATS:
 		if ptype == 'unavailable':
 			jid = item['jid']
-			code = prs.getStatusCode()
+			scode = prs.getStatusCode()
 			reason = prs.getStatus()
-			if code == '303':
+			if scode == '303':
 				newnick = prs.getNick()
 				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1}
 				for x in ['idle','status','stmsg','joined','status','stmsg']:
@@ -600,21 +643,21 @@ def presenceHnd(con, prs):
 							GROUPCHATS[groupchat][nick]['ishere']=0
 					except:
 						pass
-				call_leave_handlers(groupchat, nick, reason, code)
+				call_leave_handlers(groupchat, nick, reason, scode)
 		elif ptype == 'available' or ptype == None:
-			if item['jid'] == None:
+			jid = item['jid']
+			afl=prs.getAffiliation()
+			role=prs.getRole()
+			if not jid:
 				time.sleep(2)
 				msg(groupchat, u'моя функциональность в полной мере без прав модератора невозможна')
 				time.sleep(1)
 				leave_groupchat(groupchat, u'отсутствие прав модератора')        
 				return
 			else:
-				jid = item['jid']
 				if nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid and GROUPCHATS[groupchat][nick]['ishere']==1:
 					pass
 				else:
-					afl=prs.getAffiliation()
-					role=prs.getRole()
 					GROUPCHATS[groupchat][nick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1, 'status': '', 'stmsg': ''}
 					if role=='moderator' or user_level(jid,groupchat)>=15:
 						GROUPCHATS[groupchat][nick]['ismoder'] = 1
@@ -622,23 +665,21 @@ def presenceHnd(con, prs):
 						GROUPCHATS[groupchat][nick]['ismoder'] = 0
 					call_join_handlers(groupchat, nick, afl, role)
 		elif ptype == 'error':
-			code = prs.getErrorCode()
-			if code:
-				if code == '409':
+			ecode = prs.getErrorCode()
+			if ecode:
+				if ecode == '409':
 					join_groupchat(groupchat, nick + '-')
-				elif code == '404':
+				elif ecode == '404':
 					del GROUPCHATS[groupchat]
-				elif code in ['401','403','405',]:
+				elif ecode in ['401','403','405',]:
 					del GROUPCHATS[groupchat]
 					add_gch(groupchat)
-		elif ptype == 'subscribe':
-			JCON.send(xmpp.protocol.Presence(to=prs.getFrom(), typ='subscribed'))
-		elif ptype == 'unsubscribe':
-			JCON.send(xmpp.protocol.Presence(to=prs.getFrom(), typ='unsubscribed'))
+				elif ecode == '503':
+					time.sleep(60)
+					join_groupchat(groupchat, nick)
 		else:
 			pass
-
-	call_presence_handlers(prs)
+		call_presence_handlers(prs)
 
 def iqHnd(con, iq):
 	global JCON
@@ -651,7 +692,8 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 63) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 64) [antiflood]')
+#		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
@@ -685,10 +727,9 @@ def iqHnd(con, iq):
 		timetz=time.strftime("%Z", time.localtime())
 		timeutc=time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
 		result = iq.buildReply('result')
-		reply=result.addChild('query', {}, [], xmpp.NS_TIME)
-		reply.setTagData('utc', timeutc)
-		reply.setTagData('tz', timetz)
-		reply.setTagData('display', timedisp)
+		result.setTagData('utc', timeutc)
+		result.setTagData('tz', timetz)
+		result.setTagData('display', timedisp)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
 	elif iq.getTags('query', {}, 'urn:xmpp:ping'):
@@ -715,7 +756,7 @@ def start():
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
 
 	get_access_levels()
-#	load_plugins()
+	load_plugins()
 
 	print 'Waiting For Connection...\n'
 
@@ -761,16 +802,17 @@ def start():
 			get_commoff(groupchat)
 			get_greetz(groupchat)
 			get_order_pl_cfg(groupchat)
+			get_sendpl_cache(groupchat)
 	else:
 		print 'Error: unable to create chatrooms list file!'
-	time.sleep(1)
-	print '\nLOADING PLUGINS'
 
-	load_plugins()
+#	load_plugins()
 	
 
 	print '\nOk, i\'m ready to work :)\n'
-
+	
+	globals()['BOOT'] = time.time()
+	
 	while 1:
 		JCON.Process(10)
 
@@ -779,8 +821,9 @@ if __name__ == "__main__":
 		start()
 	except KeyboardInterrupt:
 		print '\nINTERUPT (Ctrl+C)'
-		for gch in GROUPCHATS.keys():
-			thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
+		prs=xmpp.Presence(typ='unavailable')
+		prs.setStatus(u'got Ctrl-C -> shutdown')
+		JCON.send(prs)
 		time.sleep(2)
 		print 'DISCONNECTED'
 		print '\n...---===BOT STOPPED===---...\n'
@@ -797,8 +840,9 @@ if __name__ == "__main__":
 				time.sleep(5)
 			except KeyboardInterrupt:
 				print '\nINTERUPT (Ctrl+C)'
-				for gch in GROUPCHATS.keys():
-					thread.start_new_thread(msg, (gch,u'я получил Сtrl+C из консоли -> выключаюсь'))
+				prs=xmpp.Presence(typ='unavailable')
+				prs.setStatus(u'got Ctrl-C -> shutdown')
+				JCON.send(prs)
 				time.sleep(2)
 				print 'DISCONNECTED'
 				print '\n...---===BOT STOPPED===---...\n'

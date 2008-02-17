@@ -176,27 +176,7 @@ def log_write(body, nick, type, jid, ismoder=0):
 def log_handler_join(groupchat, nick, aff, role):
 	log_write('%s joins the room as %s and %s' % (nick, role, aff), '@$$join$$@', 'public', groupchat)
 
-def log_handler_leave(groupchat, nick, reason):
-	if reason:
-		log_write('%s leaves the room (%s)' % (nick,reason), '@$$leave$$@', 'public', groupchat)
-	else:
-		log_write('%s leaves the room' % (nick), '@$$leave$$@', 'public', groupchat)
-		
-def log_handler_presence(prs):	
-	thread.start_new_thread(log_presence, (prs,))
-	
-def log_presence(prs):
-	stmsg,status,code,reason,newnick='','','','',''
-	groupchat = prs.getFrom().getStripped()
-	nick = prs.getFrom().getResource()
-	try:	
-		code = prs.getStatusCode()
-	except:
-		code = None
-	try:
-		reason = prs.getReason()
-	except:
-		reason = None	
+def log_handler_leave(groupchat, nick, reason, code):
 	if code:
 		if code == '307':
 			if reason:
@@ -208,9 +188,21 @@ def log_presence(prs):
 				log_write('%s has been banned (%s)' % (nick,reason), '@$$userban$$@', 'public', groupchat)
 			else:
 				log_write('%s has been banned' % (nick), '@$$userban$$@', 'public', groupchat)			
-		elif code == '303':
-			newnick = prs.getNick()
-			log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)
+	else:
+		if reason:
+			log_write('%s leaves the room (%s)' % (nick,reason), '@$$leave$$@', 'public', groupchat)
+		else:
+			log_write('%s leaves the room' % (nick), '@$$leave$$@', 'public', groupchat)
+
+def log_handler_presence(prs):
+	stmsg,status,code,reason,newnick='','','','',''
+	groupchat = prs.getFrom().getStripped()
+	nick = prs.getFrom().getResource()
+	code = prs.getStatusCode()
+	reason = prs.getReason()
+	if code == '303':
+		newnick = prs.getNick()
+		log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)
 	else:
 		if not prs.getType()=='unavailable':
 			try:

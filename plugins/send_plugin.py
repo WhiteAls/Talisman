@@ -18,7 +18,9 @@
 #  GNU General Public License for more details.
 
 sendqueue={}
-def handler_psay(ltype, source, parameters):
+
+
+def handler_send_save(ltype, source, parameters):
 	groupchat=source[1]
 	if GROUPCHATS.has_key(groupchat):
 		nicks = GROUPCHATS[groupchat].keys()
@@ -37,18 +39,37 @@ def handler_psay(ltype, source, parameters):
 				if nick in nicks and GROUPCHATS[groupchat][nick]['ishere']==1:
 					reply(ltype, source, u'он тут сидит')
 				else:
-					if not sendqueue.has_key(tojid):
-						sendqueue[tojid] = []
-					sendqueue[tojid].append(fromnick+body)
+					if not groupchat in sendqueue:
+						sendqueue[groupchat]=groupchat
+						sendqueue[groupchat]={}
+					if not tojid in sendqueue[groupchat]:
+						sendqueue[groupchat][tojid] = tojid
+						sendqueue[groupchat][tojid] = []
+					sendqueue[groupchat][tojid].append(fromnick+body)
 					reply(ltype, source, u'передам')
+					if check_file(groupchat,file='send.txt'):
+						sendfp='dynamic/'+groupchat+'/send.txt'
+						write_file(sendfp,str(sendqueue[groupchat]))
+					else:
+						print 'send_plugin.py error'
+						pass
 
-def handler_new_join(groupchat, nick, aff, role):
+def handler_send_join(groupchat, nick, aff, role):
 	tojid = groupchat+'/'+nick
-	if sendqueue.has_key(tojid) and sendqueue[tojid]:
-		for x in sendqueue[tojid]:
-			time.sleep(1)
-			msg(tojid, x)
-			sendqueue[tojid].remove(x)
+	if groupchat in sendqueue:
+		if sendqueue[groupchat].has_key(tojid) and sendqueue[groupchat][tojid]:
+			for x in sendqueue[groupchat][tojid]:
+				time.sleep(1)
+				msg(tojid, x)
+				sendqueue[groupchat][tojid].remove(x)
+			if check_file(groupchat,file='send.txt'):
+				sendfp='dynamic/'+groupchat+'/send.txt'
+				write_file(sendfp,str(sendqueue[groupchat]))
+			else:
+				print 'send_plugin.py error'
+				pass
+	else:
+		pass
 
-register_join_handler(handler_new_join)
-register_command_handler(handler_psay, 'передать', ['мук','все'], 10, 'Запоминает сообщение в базе и передаёт его указанному нику как только он зайдёт в конференцию.', 'передать <кому> <что>', ['передать Nick привет! забань Nick666'])
+register_join_handler(handler_send_join)
+register_command_handler(handler_send_save, 'передать', ['мук','все'], 10, 'Запоминает сообщение в базе и передаёт его указанному нику как только он зайдёт в конференцию.', 'передать <кому> <что>', ['передать Nick привет! забань Nick666'])
