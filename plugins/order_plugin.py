@@ -188,7 +188,26 @@ def handler_order_join(groupchat, nick, aff, role):
 			if GCHCFGS[groupchat]['filt']['kicks']['cond']==1:
 				kcnt=GCHCFGS[groupchat]['filt']['kicks']['cnt']
 				if order_stats[groupchat][jid]['kicks']>kcnt:
-					order_ban(groupchat, nick, 'слишком много киков')			
+					order_ban(groupchat, nick, 'слишком много киков')
+
+			if GCHCFGS[groupchat]['filt']['fly']['cond']==1:
+				lastprs=order_stats[groupchat][jid]['prstime']['fly']
+				order_stats[groupchat][jid]['prstime']['fly']=time.time()	
+				if now-lastprs<=70:
+					order_stats[groupchat][jid]['prs']['fly']+=1
+					if order_stats[groupchat][jid]['prs']['fly']>4:
+						order_stats[groupchat][jid]['prs']['fly']=0
+						fmode=GCHCFGS[groupchat]['filt']['fly']['mode']
+						ftime=GCHCFGS[groupchat]['filt']['fly']['time']
+						if fmode=='ban':
+							order_ban(groupchat, nick, 'хватит летать')
+							time.sleep(ftime)
+							order_unban(groupchat, jid)
+						else:
+							order_kick(groupchat, nick, 'хватит летать')
+				else:
+					order_stats[groupchat][jid]['prs']['fly']=0
+
 		elif nick in GROUPCHATS[groupchat]:
 			order_stats[groupchat][jid]={}
 			order_stats[groupchat][jid]['kicks']=0
@@ -206,24 +225,11 @@ def handler_order_join(groupchat, nick, aff, role):
 			order_stats[groupchat][jid]['prs']['fly']=0
 			order_stats[groupchat][jid]['prs']['status']=0
 			order_stats[groupchat][jid]['msg']=0
-			
-		if GCHCFGS[groupchat]['filt']['fly']['cond']==1:
-			lastprs=order_stats[groupchat][jid]['prstime']['fly']
-			order_stats[groupchat][jid]['prstime']['fly']=time.time()	
-			if now-lastprs<=70:
-				order_stats[groupchat][jid]['prs']['fly']+=1
-				if order_stats[groupchat][jid]['prs']['fly']>4:
-					order_stats[groupchat][jid]['prs']['fly']=0
-					fmode=GCHCFGS[groupchat]['filt']['fly']['mode']
-					ftime=GCHCFGS[groupchat]['filt']['fly']['time']
-					if mode=='ban':
-						order_ban(groupchat, nick, 'хватит летать')
-						time.sleep(ftime)
-						order_unban(groupchat, jid)
-					else:
-						order_kick(groupchat, nick, 'хватит летать')
-			else:
-				order_stats[groupchat][jid]['prs']['fly']=0
+
+	elif groupchat in order_stats and jid in order_stats[groupchat]:
+		del order_stats[groupchat][jid]
+	else:
+		pass			
 
 def handler_order_presence(prs):
 	ptype = prs.getType()
@@ -234,6 +240,11 @@ def handler_order_presence(prs):
 	stmsg = prs.getStatus()
 	jid=get_true_jid(groupchat+'/'+nick)
 	item=findPresenceItem(prs)
+	
+	if groupchat in order_stats and jid in order_stats[groupchat]:
+		if item['affiliation']=='member':
+			del order_stats[groupchat][jid]
+			return
 
 	if nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
 		now = time.time()
@@ -258,9 +269,7 @@ def handler_order_presence(prs):
 				order_stats[groupchat][jid]['prstime']['status']=time.time()
 				
 	elif groupchat in order_stats and jid in order_stats[groupchat]:
-		if item['affiliation']=='member':
-			del order_stats[groupchat][jid]
-			return
+		del order_stats[groupchat][jid]
 	else:
 		pass		
 
@@ -294,8 +303,8 @@ def handler_order_presence(prs):
 #							del order_stats[groupchat][jid]
 
 def handler_order_leave(groupchat, nick, reason, code):
+	jid=get_true_jid(groupchat+'/'+nick)
 	if nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
-		jid=get_true_jid(groupchat+'/'+nick)
 		if GCHCFGS[groupchat]['filt']['presence']==1:
 			if reason=='Replaced by new connection':
 				return
@@ -308,7 +317,7 @@ def handler_order_leave(groupchat, nick, reason, code):
 					return
 				elif code=='407': # members-only
 					return
-		if GCHCFGS[groupchat]['filt']['fly']==1:
+		if GCHCFGS[groupchat]['filt']['fly']['cond']==1:
 			now = time.time()
 			lastprs=order_stats[groupchat][jid]['prstime']['fly']
 			order_stats[groupchat][jid]['prstime']['fly']=time.time()
@@ -316,6 +325,10 @@ def handler_order_leave(groupchat, nick, reason, code):
 				order_stats[groupchat][jid]['prs']['fly']+=1
 			else:
 				order_stats[groupchat][jid]['prs']['fly']=0
+	elif groupchat in order_stats and jid in order_stats[groupchat]:
+		del order_stats[groupchat][jid]
+	else:
+		pass		
 
 
 ######################################################################################################################

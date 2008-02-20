@@ -71,7 +71,9 @@ INITSCRIPT_FILE = GENERAL_CONFIG['INITSCRIPT_FILE']
 ROLES={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
-LAST,BOOT = 0,0
+LAST,BOOT = {},0
+LAST['c']=''
+LAST['t']=0
 ################################################################################
 
 COMMANDS = {}
@@ -373,14 +375,14 @@ def add_gch(groupchat=None, nick=None, passw=None):
 		if not groupchat in gchdb:
 			gchdb[groupchat] = groupchat
 			gchdb[groupchat] = {}
-			gchdb[groupchat]['nick'] = nick.encode('utf8')
+			gchdb[groupchat]['nick'] = nick
 			gchdb[groupchat]['passw'] = passw
 		else:
 			if nick and groupchat and passw:
-				gchdb[groupchat]['nick'] = nick.encode('utf8')
+				gchdb[groupchat]['nick'] = nick
 				gchdb[groupchat]['passw'] = passw
 			elif nick and groupchat:
-				gchdb[groupchat]['nick'] = nick.encode('utf8')
+				gchdb[groupchat]['nick'] = nick
 			elif groupchat:
 				del gchdb[groupchat]
 			elif passw:
@@ -526,7 +528,7 @@ def msg(target, body):
 
 def reply(ltype, source, body):
 	if type(body) is types.StringType:
-		body = body.decode('utf-8', 'backslashreplace')
+		body = body.decode('utf8', 'replace').strip()
 	if ltype == 'public':
 		msg(source[1], source[2] + ': ' + body)
 	elif ltype == 'private':
@@ -586,12 +588,14 @@ def messageHnd(con, msg):
 	call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
 	LAST=time.time()
 	
-	bot_nick = get_bot_nick(fromjid.getStripped()).decode('utf8')
-	if fromjid.getResource() == bot_nick:
+	bot_nick = get_bot_nick(fromjid.getStripped())
+	if bot_nick == fromjid.getResource():
 		return
 	command,parameters,cbody,rcmd = '','','',''
-	if bot_nick and body.split()[0] in [bot_nick+x for x in [':',',','>']]:
-		body=' '.join(body.split()[1:])
+	for x in [bot_nick+x for x in [':',',','>']]:
+		body=body.replace(x,'')
+#	if bot_nick and body.split()[0] in [bot_nick+x for x in [':',',','>']]:
+#		body=' '.join(body.split()[1:])
 	body=body.strip()
 	if not body:
 		return
@@ -607,7 +611,8 @@ def messageHnd(con, msg):
 			return
 		else:
 			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
-			globals()['LAST'] = time.time()
+			globals()['LAST']['t'] = time.time()
+			globals()['LAST']['c'] = command
 
 def presenceHnd(con, prs):
 	ptype = prs.getType()
@@ -692,7 +697,7 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 64) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 65) [antiflood]')
 #		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
@@ -716,10 +721,11 @@ def iqHnd(con, iq):
 		b.PlugIn(JCON)
 		b.setDiscoHandler({'items':items,'info':info})
 	elif iq.getTags('query', {}, xmpp.NS_LAST):
-		last=time.time()-LAST
+		last=time.time()-LAST['t']
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setAttr('seconds',int(last))
+		query.setData(LAST['c'])
 		JCON.send(result)
 		raise xmpp.NodeProcessed
 	elif iq.getTags('query', {}, xmpp.NS_TIME):

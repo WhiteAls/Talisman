@@ -32,11 +32,17 @@ def handler_python_exec(type, source, parameters):
 		exec unicode(parameters) in globals()
 	except:
 		reply(type, source, str(sys.exc_info()[0]) + ' - ' + str(sys.exc_info()[1]))
-	
+
 
 def handler_python_sh(type, source, parameters):
-	pipe = os.popen('sh -c ' + unicode(parameters))
-	return_value = pipe.read(1024)
+	return_value=''
+	if os.name=='posix':
+		pipe = os.popen('sh -c "%s" 2>&1' % (parameters.encode('utf8')))
+		return_value = pipe.read()
+	elif os.name=='nt':
+		pipe = os.popen('%s' % (parameters.encode('utf8')))
+		return_value = pipe.read().decode('cp866')
+	pipe.close
 	reply(type, source, return_value)
 	
 def handler_python_calc(type, source, parameters):
