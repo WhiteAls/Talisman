@@ -777,7 +777,7 @@ def start():
 
 	print 'Waiting For Connection...\n'
 
-	con=JCON.connect(secure=None,use_srv=True)
+	con=JCON.connect(secure=0,use_srv=True)
 	if not con:
 		print 'COULDN\'T CONNECT\nSleep for 30 seconds'
 		time.sleep(30)
