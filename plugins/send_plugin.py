@@ -59,9 +59,8 @@ def handler_send_join(groupchat, nick, aff, role):
 	if groupchat in sendqueue:
 		if sendqueue[groupchat].has_key(tojid) and sendqueue[groupchat][tojid]:
 			for x in sendqueue[groupchat][tojid]:
-				time.sleep(1)
 				msg(tojid, x)
-				sendqueue[groupchat][tojid].remove(x)
+			sendqueue[groupchat][tojid] = []
 			if check_file(groupchat,file='send.txt'):
 				sendfp='dynamic/'+groupchat+'/send.txt'
 				write_file(sendfp,str(sendqueue[groupchat]))

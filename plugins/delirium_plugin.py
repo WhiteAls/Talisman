@@ -18,6 +18,8 @@
 
 stick_nicks={}
 
+afools=[u'что-то я не заморочился',u'леееень...',u'а можно я это потом сделаю?',u'ага',u'кто все эти люди?',u'отвяжись',u'АПВС?',u'шотут?',u'нихачу',u'я не бот']
+
 def handler_stick(type, source, parameters):
 	if type=='private':
 		reply(type,source,u':-P')

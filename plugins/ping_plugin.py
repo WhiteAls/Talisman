@@ -22,7 +22,7 @@ def handler_ping(type, source, parameters):
 	nick=parameters
 	groupchat=source[1]
 	iq = xmpp.Iq('get')
-	id = 'vers'+str(random.randrange(1000, 9999))
+	id = 'p'+str(random.randrange(1, 1000))
 	globals()['ping_pending'].append(id)
 	iq.setID(id)
 	iq.addChild('query', {}, [], 'jabber:iq:version');

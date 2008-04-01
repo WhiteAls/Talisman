@@ -87,6 +87,7 @@ def handler_vote_join(groupchat, nick, aff, role):
 			CURRENT_POLL[groupchat]['jids'][jid]=jid
 			CURRENT_POLL[groupchat]['jids'][jid]={}
 			CURRENT_POLL[groupchat]['jids'][jid]['isnotified']=1
+			CURRENT_POLL[groupchat]['jids'][jid]['isvoted']=0
 			poll_text = u'ТЕКУЩЕЕ ГОЛОСОВАНИЕ\nСоздатель: '+ CURRENT_POLL[groupchat]['creator']+u'\nВопрос: '+CURRENT_POLL[groupchat]['question'] + u'\nВарианты ответов:\n'
 			for option in CURRENT_POLL[groupchat]['options'].keys():
 				poll_text += '   >>> ' + option + '\n'

@@ -76,10 +76,11 @@ def handler_greet(type,source,parameters):
 		
 			
 def atjoin_greetz(groupchat, nick, aff, role):
- jid=get_true_jid(groupchat+'/'+nick)
- if groupchat in GREETZ.keys():
- 	if jid in GREETZ[groupchat]:
- 		msg(groupchat, nick+'> '+GREETZ[groupchat][jid])
+	if time.time()-BOOT>=15:	
+	 jid=get_true_jid(groupchat+'/'+nick)
+	 if groupchat in GREETZ.keys():
+	 	if jid in GREETZ[groupchat]:
+	 		msg(groupchat, nick+'> '+GREETZ[groupchat][jid])
 			
 register_command_handler(handler_greet, 'greet', ['мук','все'], 20, 'Добавляет приветствие для определённого ника или жида.', 'greet <ник/жид>', ['greet guy=something','greet guy@jabber.aq=anything'])
 register_join_handler(atjoin_greetz)

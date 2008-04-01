@@ -37,10 +37,10 @@ def handler_complaint(type, source, parameters):
 					return
 				for x in nicks:
 					jid=groupchat+'/'+x
-					if user_level(jid,groupchat)>=15:
+					if user_level(jid,groupchat)>=15 and GROUPCHATS[groupchat][x]['status'] in ['online','away','chat']:
 						msg(jid, u'юзер <'+source[2]+u'>\nжалуется на <'+nick+u'>\nпо причине <'+body+u'>\n\nВы можете забанить (банан '+nick+u' `ризон`) или кикнуть (кик '+nick+u' `ризон`) этого юзера прямо сейчас из моего привата')
 				reply(type, source, u'жалоба на <'+nick+u'> ушла всем модераторам данной конференции. если вашу жалобу сочтут спамом, то вас забанят!')
 			else:
 				reply(type,source,u'ты уверен, что <'+nick+u'> сейчас тут?')
 				
-register_command_handler(handler_complaint, 'жалоба',  ['мук','все'], 11, 'Пожаловаться на определённый ник по определённой причине. Работает только у меня в привате!', 'жалоба <ник> <причина>', ['жалоба Nick7 спам'])
+register_command_handler(handler_complaint, 'жалоба',  ['мук','все'], 10, 'Пожаловаться на определённый ник по определённой причине. Работает только у меня в привате!', 'жалоба <ник> <причина>', ['жалоба Nick7 спам'])

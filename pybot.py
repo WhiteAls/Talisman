@@ -516,10 +516,9 @@ def leave_groupchat(groupchat,status=''):
 		add_gch(groupchat)
 
 def msg(target, body):
+	body=body.strip()
 	msg = xmpp.Message(target, body)
 	if GROUPCHATS.has_key(target):
-		if len(body)>1000:
-			body=body[:1000]+u' >>>>'
 		msg.setType('groupchat')
 	else:
 		msg.setType('chat')
@@ -528,8 +527,14 @@ def msg(target, body):
 
 def reply(ltype, source, body):
 	if type(body) is types.StringType:
-		body = body.decode('utf8', 'replace').strip()
+		body = body.decode('utf8', 'replace')
+	if time.localtime()[1]==4 and time.localtime()[2]==1:
+		random.seed(int(time.time()))
+		if random.randrange(0,2) == 0:
+			body = random.choice(afools)
 	if ltype == 'public':
+		if len(body)>1000:
+			body=body[:1000]+u' >>>>'			
 		msg(source[1], source[2] + ': ' + body)
 	elif ltype == 'private':
 		msg(source[0], body)
@@ -632,8 +637,8 @@ def presenceHnd(con, prs):
 			reason = prs.getStatus()
 			if scode == '303':
 				newnick = prs.getNick()
-				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': time.time(), 'ishere': 1}
-				for x in ['idle','status','stmsg','joined','status','stmsg']:
+				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': GROUPCHATS[groupchat][nick]['joined'], 'ishere': 1}
+				for x in ['idle','status','stmsg','status','stmsg']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
 						if GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -689,15 +694,21 @@ def presenceHnd(con, prs):
 def iqHnd(con, iq):
 	global JCON
 	if iq.getTags('query', {}, xmpp.NS_VERSION):
-		osname=os.popen("uname -sr", 'r')
-		osver=osname.read().strip()
-		osname.close()
+		osver=''
+		if os.name=='nt':
+			osname=os.popen("ver")
+			osver=osname.read().strip().decode('cp866')+'\n'
+			osname.close()			
+		else:
+			osname=os.popen("uname -sr", 'r')
+			osver=osname.read().strip()+'\n'
+			osname.close()			
 		pyver = sys.version
 		osver = osver + ' ' + pyver
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 65) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 66) [antiflood]')
 #		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
@@ -766,7 +777,7 @@ def start():
 
 	print 'Waiting For Connection...\n'
 
-	con=JCON.connect()
+	con=JCON.connect(secure=None,use_srv=True)
 	if not con:
 		print 'COULDN\'T CONNECT\nSleep for 30 seconds'
 		time.sleep(30)
@@ -806,7 +817,7 @@ def start():
 			MACROS.init(groupchat)
 			get_gch_cfg(groupchat)
 			get_commoff(groupchat)
-			get_greetz(groupchat)
+			
 			get_order_pl_cfg(groupchat)
 			get_sendpl_cache(groupchat)
 	else:
@@ -819,6 +830,13 @@ def start():
 	
 	globals()['BOOT'] = time.time()
 	
+	if check_file(file='chatrooms.list'):
+		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
+		for groupchat in groupchats:
+			get_greetz(groupchat)	
+	else:
+		print 'Error: unable to create chatrooms list file!'
+			
 	while 1:
 		JCON.Process(10)
 
