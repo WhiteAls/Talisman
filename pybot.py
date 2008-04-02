@@ -715,7 +715,7 @@ def presenceHnd(con, prs):
 		call_presence_handlers(prs)
 
 def iqHnd(con, iq):
-	fromjid = prs.getFrom()
+	fromjid = iq.getFrom()
 	if user_level(fromjid,fromjid.getStripped())==-100:
 		return
 	global JCON
@@ -734,7 +734,7 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 68) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 69) [antiflood]')
 #		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
