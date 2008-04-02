@@ -336,6 +336,9 @@ def handler_order_leave(groupchat, nick, reason, code):
 def handler_order_filt(type, source, parameters):
 	if parameters:
 		parameters=parameters.split()
+		if len(parameters)<2:
+			reply(type,source,u'синтакс инвалид')
+			return
 		if GCHCFGS[source[1]].has_key('filt'):
 			if parameters[0]=='smile':
 				if parameters[1]=='0':
@@ -469,7 +472,7 @@ def handler_order_filt(type, source, parameters):
 		smile=GCHCFGS[source[1]]['filt']['smile']
 		time=GCHCFGS[source[1]]['filt']['time']
 		prs=GCHCFGS[source[1]]['filt']['presence']
-		len=GCHCFGS[source[1]]['filt']['len']
+		flen=GCHCFGS[source[1]]['filt']['len']
 		like=GCHCFGS[source[1]]['filt']['like']
 		caps=GCHCFGS[source[1]]['filt']['caps']
 		prsstlen=GCHCFGS[source[1]]['filt']['prsstlen']
@@ -491,7 +494,7 @@ def handler_order_filt(type, source, parameters):
 			fon.append(u'временная фильтрация презенсов')
 		else:
 			foff.append(u'временная фильтрация презенсов')
-		if len:
+		if flen:
 			fon.append(u'фильтрация длинных сообщений')
 		else:
 			foff.append(u'фильтрация длинных сообщений')

@@ -23,12 +23,12 @@ from re import compile as re_compile
 strip_tags = re_compile(r'<[^<>]+>')
 
 
-db={u'\u0432\u043e\u0434\u043e\u043b\u0435\u0439': u'11', u'\u0440\u0430\u043a': u'4', u'\u0432\u0435\u0441\u044b': u'7', u'\u043a\u043e\u0437\u0435\u0440\u043e\u0433': u'10', u'\u0434\u0435\u0432\u0430': u'6', u'\u0431\u043b\u0438\u0437\u043d\u0435\u0446\u044b': u'3', u'\u0441\u0442\u0440\u0435\u043b\u0435\u0446': u'9', u'\u0441\u043a\u043e\u0440\u043f\u0438\u043e\u043d': u'8', u'\u0442\u0435\u043b\u0435\u0446': u'2', u'\u043b\u0435\u0432': u'5', u'\u043e\u0432\u0435\u043d': u'1', u'\u0440\u044b\u0431\u044b': u'12'}
+horodb={u'\u0432\u043e\u0434\u043e\u043b\u0435\u0439': u'11', u'\u0440\u0430\u043a': u'4', u'\u0432\u0435\u0441\u044b': u'7', u'\u043a\u043e\u0437\u0435\u0440\u043e\u0433': u'10', u'\u0434\u0435\u0432\u0430': u'6', u'\u0431\u043b\u0438\u0437\u043d\u0435\u0446\u044b': u'3', u'\u0441\u0442\u0440\u0435\u043b\u0435\u0446': u'9', u'\u0441\u043a\u043e\u0440\u043f\u0438\u043e\u043d': u'8', u'\u0442\u0435\u043b\u0435\u0446': u'2', u'\u043b\u0435\u0432': u'5', u'\u043e\u0432\u0435\u043d': u'1', u'\u0440\u044b\u0431\u044b': u'12'}
 
 def handler_horoscope_globa(type, source, parameters):
 	if parameters:
 		if parameters==u'знаки':
-			reply('private',source,', '.join(db.keys().decode('utf-8')))
+			reply('private',source,', '.join(horodb.keys()))
 			return
 		if db.has_key(string.lower(parameters)):
 			req = urllib2.Request('http://horo.gala.net/?lang=ru&sign='+db[string.lower(parameters)])
@@ -49,6 +49,9 @@ def handler_horoscope_globa(type, source, parameters):
 			od = re.search('<td class=stext>',target)
 			h3 = target[od.end():]
 			h3 = h3[:re.search('</td>',h3).start()]
+			if len(h3)<5:
+				reply(type,source,u'пока что гороскопа нету')
+				return
 			message = h1+h2+h3
 			message = decode(message)
 			message=message.strip()

@@ -125,7 +125,7 @@ def handler_access_set_access_glob(type, source, parameters):
 			return
 		tjidto=get_true_jid(source[1]+'/'+splitdata[0])
 		if len(splitdata)==2:
-			change_access_perm_glob(tjidto, splitdata[1])
+			change_access_perm_glob(tjidto, int(splitdata[1]))
 			reply(type, source, u'дал')
 		else:
 			change_access_perm_glob(tjidto)
