@@ -73,9 +73,8 @@ INITSCRIPT_FILE = GENERAL_CONFIG['INITSCRIPT_FILE']
 ROLES={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
-LAST,BOOT = {},0
-LAST['c']=''
-LAST['t']=0
+LAST = {'c':'', 't':0}
+INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0}
 ################################################################################
 
 COMMANDS = {}
@@ -181,32 +180,32 @@ def register_command_handler(instance, command, category=[], access=0, desc='', 
 def call_message_handlers(type, source, body):
 	for handler in MESSAGE_HANDLERS:
 		with smph:
-			threading.Thread(None,handler,args=(type, source, body,)).start()
+			threading.Thread(None,handler,'inmsg'+str(random.randrange(0,9999)),(type, source, body,)).start()
 #		thread.start_new_thread(handler, (type, source, body,))
 def call_outgoing_message_handlers(target, body):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
 		with smph:
-			threading.Thread(None,handler,args=(target, body,)).start()
+			threading.Thread(None,handler,'outmsg'+str(random.randrange(0,9999)),(target, body,)).start()
 #		thread.start_new_thread(handler, (target, body,))
 def call_join_handlers(groupchat, nick, afl, role):
 	for handler in JOIN_HANDLERS:
 		with smph:
-			threading.Thread(None,handler,args=(groupchat, nick, afl, role,)).start()
+			threading.Thread(None,handler,'join'+str(random.randrange(0,9999)),(groupchat, nick, afl, role,)).start()
 #		thread.start_new_thread(handler, (groupchat, nick, afl, role,))
 def call_leave_handlers(groupchat, nick, reason, code):
 	for handler in LEAVE_HANDLERS:
 		with smph:
-			threading.Thread(None,handler,args=(groupchat, nick, reason, code,)).start()
+			threading.Thread(None,handler,'leave'+str(random.randrange(0,9999)),(groupchat, nick, reason, code,)).start()
 #		thread.start_new_thread(handler, (groupchat, nick, reason, code,))
 def call_iq_handlers(iq):
 	for handler in IQ_HANDLERS:
 		with smph:
-			threading.Thread(None,handler,args=(iq,)).start()		
+			threading.Thread(None,handler,'iq'+str(random.randrange(0,9999)),(iq,)).start()		
 #		thread.start_new_thread(handler, (iq,))
 def call_presence_handlers(prs):
 	for handler in PRESENCE_HANDLERS:
 		with smph:
-			threading.Thread(None,handler,args=(prs,)).start()				
+			threading.Thread(None,handler,'prs'+str(random.randrange(0,9999)),(prs,)).start()				
 #		thread.start_new_thread(handler, (prs,))
 
 def call_command_handlers(command, type, source, parameters, callee):
@@ -216,7 +215,7 @@ def call_command_handlers(command, type, source, parameters, callee):
 	if COMMAND_HANDLERS.has_key(command):
 		if has_access(source, real_access, source[1]):
 			with smph:
-				threading.Thread(None,COMMAND_HANDLERS[command],args=(type, source, parameters,)).start()		
+				threading.Thread(None,COMMAND_HANDLERS[command],'command'+str(random.randrange(0,9999)),(type, source, parameters,)).start()		
 #			thread.start_new_thread(COMMAND_HANDLERS[command], (type, source, parameters))
 		else:
 			reply(type, source, 'ага, щаззз')
@@ -599,6 +598,7 @@ def messageHnd(con, msg):
 	if len(body)>1000:
 		body=body[:1000]+u' >>>>'	
 	if msgtype == 'groupchat':
+		globals()['INFO']['msg'] += 1
 		mtype='public'
 		if GROUPCHATS.has_key(fromjid.getStripped()) and GROUPCHATS[fromjid.getStripped()].has_key(fromjid.getResource()):
 			GROUPCHATS[fromjid.getStripped()][fromjid.getResource()]['idle'] = time.time()	
@@ -609,9 +609,9 @@ def messageHnd(con, msg):
 			return
 		return
 	else:
+		globals()['INFO']['msg'] += 1
 		mtype='private'
 	call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
-	LAST=time.time()
 	
 	bot_nick = get_bot_nick(fromjid.getStripped())
 	if bot_nick == fromjid.getResource():
@@ -636,6 +636,7 @@ def messageHnd(con, msg):
 			return
 		else:
 			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
+			globals()['INFO']['cmd'] += 1
 			globals()['LAST']['t'] = time.time()
 			globals()['LAST']['c'] = command
 
@@ -647,6 +648,7 @@ def presenceHnd(con, prs):
 	groupchat = fromjid.getStripped()
 	nick = fromjid.getResource()
 	item = findPresenceItem(prs)
+	globals()['INFO']['prs'] += 1
 	
 	if ptype == 'subscribe':
 		JCON.send(xmpp.protocol.Presence(to=fromjid, typ='subscribed'))
@@ -734,8 +736,8 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 69) [antiflood]')
-#		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
+#		query.setTagData('version', 'ver.1 (svn rev 69) [antiflood]')
+		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
@@ -768,13 +770,14 @@ def iqHnd(con, iq):
 	elif iq.getTags('query', {}, xmpp.NS_TIME):
 		timedisp=time.strftime("%a, %d %b %Y %H:%M:%S UTC", time.localtime())
 		timetz=time.strftime("%Z", time.localtime())
-		print timetz
 		timeutc=time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
-		result = iq.buildReply('result')
-		result.setTagData('utc', timeutc)
-		result.setTagData('tz', timetz)
-		result.setTagData('display', timedisp)
-		print result
+		result = xmpp.Iq('result')
+		result.setTo(fromjid)
+		result.setID(iq.getID())
+		query = result.addChild('query', {}, [], 'jabber:iq:time')
+		query.setTagData('utc', timeutc)
+		query.setTagData('tz', timetz)
+		query.setTagData('display', timedisp)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
 	elif iq.getTags('query', {}, 'urn:xmpp:ping'):
@@ -782,6 +785,7 @@ def iqHnd(con, iq):
 		raise xmpp.NodeProcessed
 	else:
 		call_iq_handlers(iq)
+	globals()['INFO']['iq'] += 1
 
 def dcHnd():
 	print 'DISCONNECTED'
@@ -842,7 +846,7 @@ def start():
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
 			with smph:
-				threading.Thread(None,join_groupchat,args=(groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw'])).start()			
+				threading.Thread(None,join_groupchat,'gch'+str(random.randrange(0,9999)),(groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw'])).start()			
 #			thread.start_new_thread(join_groupchat, (groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw']))
 			MACROS.init(groupchat)
 			get_gch_cfg(groupchat)
@@ -866,6 +870,8 @@ def start():
 			get_greetz(groupchat)	
 	else:
 		print 'Error: unable to create chatrooms list file!'
+		
+	globals()['INFO']['start'] = time.time()
 			
 	while 1:
 		JCON.Process(10)

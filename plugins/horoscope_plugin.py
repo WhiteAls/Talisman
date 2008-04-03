@@ -30,8 +30,8 @@ def handler_horoscope_globa(type, source, parameters):
 		if parameters==u'знаки':
 			reply('private',source,', '.join(horodb.keys()))
 			return
-		if db.has_key(string.lower(parameters)):
-			req = urllib2.Request('http://horo.gala.net/?lang=ru&sign='+db[string.lower(parameters)])
+		if horodb.has_key(string.lower(parameters)):
+			req = urllib2.Request('http://horo.gala.net/?lang=ru&sign='+horodb[string.lower(parameters)])
 			req.add_header = ('User-agent', 'Mozilla/5.0')
 			r = urllib2.urlopen(req)
 			target = r.read()

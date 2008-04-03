@@ -49,17 +49,18 @@ def handler_total_in_muc(type, source, parameters):
 		
 		
 def handler_bot_uptime(type, source, parameters):
-	if BOOT:
-		idletime = int(time.time() - BOOT)
-		rep = 'я работаю без падений уже '
+	if INFO['start']:
+		idletime = int(time.time() - INFO['start'])
+		rep = u'я работаю без падений уже '
 		seconds = idletime % 60
 		minutes = (idletime / 60) % 60
 		hours = (idletime / 3600) % 60
 		days = idletime / 216000
-		if days: rep += str(days) + ' дн '
-		if hours: rep += str(hours) + ' час '
-		if minutes: rep += str(minutes) + ' мин '
-		rep += str(seconds) + ' сек'
+		if days: rep += str(days) + u' дн '
+		if hours: rep += str(hours) + u' час '
+		if minutes: rep += str(minutes) + u' мин '
+		rep += str(seconds) + u' сек\n'
+		rep += u'я получил уже %s сообщений, обработал %s презенсов и %s iq-запросов, а также выполнил %s команд'%(str(INFO['msg']),str(INFO['prs']),str(INFO['iq']),str(INFO['cmd']))
 	else:
 		rep = 'аблом...'
 	reply(type, source, rep)

@@ -77,6 +77,8 @@ def order_unban(groupchat, jid):
 def handler_order_message(type, source, body):
 	nick=source[2]
 	groupchat=source[1]
+	if type=='private':
+		return
 	if nick in GROUPCHATS[groupchat] and user_level(source,groupchat)<11:
 		if get_bot_nick(groupchat)!=nick and nick!='':
 			jid=get_true_jid(groupchat+'/'+nick)
@@ -245,6 +247,23 @@ def handler_order_presence(prs):
 		if item['affiliation']=='member':
 			del order_stats[groupchat][jid]
 			return
+		if item['affiliation']=='none':
+			order_stats[groupchat][jid]={}
+			order_stats[groupchat][jid]['kicks']=0
+#			order_stats[groupchat][jid]['obscene']=0
+#			order_stats[groupchat][jid]['flood']=0
+			order_stats[groupchat][jid]['devoice']={}
+			order_stats[groupchat][jid]['devoice']['cnd']=0
+			order_stats[groupchat][jid]['devoice']['time']=0
+			order_stats[groupchat][jid]['msgbody']=None
+			order_stats[groupchat][jid]['msgtime']=0
+			order_stats[groupchat][jid]['prstime']={}
+			order_stats[groupchat][jid]['prstime']['fly']=0
+			order_stats[groupchat][jid]['prstime']['status']=0			
+			order_stats[groupchat][jid]['prs']={}
+			order_stats[groupchat][jid]['prs']['fly']=0
+			order_stats[groupchat][jid]['prs']['status']=0
+			order_stats[groupchat][jid]['msg']=0			
 
 	if nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
 		now = time.time()
