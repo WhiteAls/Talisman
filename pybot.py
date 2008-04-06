@@ -332,6 +332,19 @@ def get_sendpl_cache(gch):
 		sendqueue[gch]=cache
 	except:
 		pass	
+		
+def upkeep():
+	tmr=threading.Timer(60, upkeep)
+	tmr.start()
+	sys.exc_clear()
+	if os.name == 'nt':
+		try:
+			import msvcrt
+			msvcrt.heapmin()
+		except:
+			pass
+	import gc
+	gc.collect()
 
 ################################################################################
 
@@ -595,8 +608,8 @@ def messageHnd(con, msg):
 		body=body.strip()
 	if not body:
 		return
-	if len(body)>1000:
-		body=body[:1000]+u' >>>>'	
+	if len(body)>5000:
+		body=body[:5000]+u' >>>>'	
 	if msgtype == 'groupchat':
 		globals()['INFO']['msg'] += 1
 		mtype='public'
@@ -736,8 +749,8 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-#		query.setTagData('version', 'ver.1 (svn rev 69) [antiflood]')
-		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
+		query.setTagData('version', 'ver.1 (svn rev 71) [antiflood]')
+#		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
@@ -872,6 +885,7 @@ def start():
 		print 'Error: unable to create chatrooms list file!'
 		
 	globals()['INFO']['start'] = time.time()
+	upkeep()
 			
 	while 1:
 		JCON.Process(10)
