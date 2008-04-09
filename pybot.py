@@ -74,7 +74,7 @@ ROLES={'none':0, 'visitor':0, 'participant':10, 'moderator':15}
 AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0}
-INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0}
+INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
 ################################################################################
 
 COMMANDS = {}
@@ -180,33 +180,33 @@ def register_command_handler(instance, command, category=[], access=0, desc='', 
 def call_message_handlers(type, source, body):
 	for handler in MESSAGE_HANDLERS:
 		with smph:
+			globals()['INFO']['thr'] += 1
 			threading.Thread(None,handler,'inmsg'+str(random.randrange(0,9999)),(type, source, body,)).start()
-#		thread.start_new_thread(handler, (type, source, body,))
 def call_outgoing_message_handlers(target, body):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
 		with smph:
+			globals()['INFO']['thr'] += 1
 			threading.Thread(None,handler,'outmsg'+str(random.randrange(0,9999)),(target, body,)).start()
-#		thread.start_new_thread(handler, (target, body,))
 def call_join_handlers(groupchat, nick, afl, role):
 	for handler in JOIN_HANDLERS:
 		with smph:
+			globals()['INFO']['thr'] += 1
 			threading.Thread(None,handler,'join'+str(random.randrange(0,9999)),(groupchat, nick, afl, role,)).start()
-#		thread.start_new_thread(handler, (groupchat, nick, afl, role,))
 def call_leave_handlers(groupchat, nick, reason, code):
 	for handler in LEAVE_HANDLERS:
 		with smph:
+			globals()['INFO']['thr'] += 1
 			threading.Thread(None,handler,'leave'+str(random.randrange(0,9999)),(groupchat, nick, reason, code,)).start()
-#		thread.start_new_thread(handler, (groupchat, nick, reason, code,))
 def call_iq_handlers(iq):
 	for handler in IQ_HANDLERS:
 		with smph:
+			globals()['INFO']['thr'] += 1
 			threading.Thread(None,handler,'iq'+str(random.randrange(0,9999)),(iq,)).start()		
-#		thread.start_new_thread(handler, (iq,))
 def call_presence_handlers(prs):
 	for handler in PRESENCE_HANDLERS:
 		with smph:
+			globals()['INFO']['thr'] += 1
 			threading.Thread(None,handler,'prs'+str(random.randrange(0,9999)),(prs,)).start()				
-#		thread.start_new_thread(handler, (prs,))
 
 def call_command_handlers(command, type, source, parameters, callee):
 	real_access = MACROS.get_access(callee, source[1])
@@ -215,8 +215,8 @@ def call_command_handlers(command, type, source, parameters, callee):
 	if COMMAND_HANDLERS.has_key(command):
 		if has_access(source, real_access, source[1]):
 			with smph:
+				globals()['INFO']['thr'] += 1
 				threading.Thread(None,COMMAND_HANDLERS[command],'command'+str(random.randrange(0,9999)),(type, source, parameters,)).start()		
-#			thread.start_new_thread(COMMAND_HANDLERS[command], (type, source, parameters))
 		else:
 			reply(type, source, 'ага, щаззз')
 
@@ -424,6 +424,17 @@ def add_gch(groupchat=None, nick=None, passw=None):
 	else:
 		print 'Error adding groupchat to groupchats list file!'
 
+def timeElapsed(time):
+	minutes, seconds = divmod(time, 60)
+	hours, minutes = divmod(minutes, 60)
+	days, hours = divmod(hours, 24)
+	months, days = divmod(days, 30)
+	rep = u'%d сек' % (round(seconds))
+	if time>60: rep = u'%d мин %s' % (minutes, rep)
+	if time>3600: rep = u'%d час %s' % (hours, rep)
+	if time>86400: rep = u'%d дн %s' % (days, rep)
+	if time>2592000: rep = u'%d мес %s' % (months, rep)
+	return rep
 ################################################################################
 
 def get_access_levels():
@@ -562,7 +573,7 @@ def reply(ltype, source, body):
 		if random.randrange(0,2) == 0:
 			body = random.choice(afools)
 	else:
-		if random.randrange(0,10) == 0:
+		if random.randrange(0,10) == random.randrange(0,10):
 			body = random.choice(afools)		
 	if ltype == 'public':
 		if len(body)>1000:
@@ -749,8 +760,8 @@ def iqHnd(con, iq):
 		result = iq.buildReply('result')
 		query = result.getTag('query')
 		query.setTagData('name', 'ταλιςμαη')
-		query.setTagData('version', 'ver.1 (svn rev 71) [antiflood]')
-#		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
+#		query.setTagData('version', 'ver.1 (svn rev 72) [antiflood]')
+		query.setTagData('version', 'ver.1 (author ver) [antiflood]')
 		query.setTagData('os', osver)
 		JCON.send(result)
 		raise xmpp.NodeProcessed
@@ -859,8 +870,8 @@ def start():
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
 			with smph:
+				globals()['INFO']['thr'] += 1
 				threading.Thread(None,join_groupchat,'gch'+str(random.randrange(0,9999)),(groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw'])).start()			
-#			thread.start_new_thread(join_groupchat, (groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw']))
 			MACROS.init(groupchat)
 			get_gch_cfg(groupchat)
 			get_commoff(groupchat)

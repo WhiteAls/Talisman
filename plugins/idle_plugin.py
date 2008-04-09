@@ -53,21 +53,7 @@ def handler_idle_answ(coze, res, type, source, param):
 			for p in props:
 				sec=p.getAttrs()['seconds']
 				if not sec == '0':
-					seconds = int(sec) % 60
-					minutes = int(sec) / 60
-					hours = minutes / 60
-					minutes %= 60
-					days = hours / 24
-					mounth = days /30
-					hours %= 24
-					if mounth:
-						rep += str(mounth) + u' мес '
-					else:
-						if days: rep += str(days) + u' дн '
-					if hours: rep += str(hours) + u' час '
-					if minutes: rep += str(minutes) + u' мин '
-					rep += str(seconds) + u' сек'
-					rep = param+u' работает уже '+rep
+					rep = param+u' работает уже '+timeElapsed(int(sec))
 	else:
 		rep = u'глюк'
 	reply(type, source, rep)
@@ -84,26 +70,10 @@ def handler_userinfo_idle(type, source, parameters):
 		if GROUPCHATS[source[1]].has_key(nick) and GROUPCHATS[source[1]][nick]['ishere']==1:
 			groupchat = source[1]
 			idletime = int(time.time() - GROUPCHATS[groupchat][nick]['idle'])
-			rep = ''
-			seconds = int(idletime) % 60
-			minutes = int(idletime) / 60
-			hours = minutes / 60
-			minutes %= 60
-			days = hours / 24
-			mounth = days /30
-			hours %= 24
-			if mounth:
-				rep += str(mounth) + u' мес '
-			else:
-				if days: rep += str(days) + u' дн '
-			if hours: rep += str(hours) + u' час '
-			if minutes: rep += str(minutes) + u' мин '
-			rep += str(seconds) + u' сек'
-			reply(type, source, nick+u' заснул '+rep+u' назад')
+			reply(type, source, nick+u' заснул '+timeElapsed(idletime)+u' назад')
 		else:
 			reply(type,source,u'а он тут? :-O')
-
-
+			
 
 register_command_handler(handler_idle, 'аптайм', ['инфо','мук','все'], 10, 'Показывает аптайм определённого сервера.', 'аптайм <сервер>', ['аптайм jabber.aq'])
 register_command_handler(handler_userinfo_idle, 'жив', ['инфо','мук','все'], 10, 'Показывает сколько времени неактивен юзер.', 'жив <ник>', ['жив guy'])

@@ -50,21 +50,23 @@ def handler_total_in_muc(type, source, parameters):
 		
 def handler_bot_uptime(type, source, parameters):
 	if INFO['start']:
-		idletime = int(time.time() - INFO['start'])
-		rep = u'я работаю без падений уже '
-		seconds = idletime % 60
-		minutes = (idletime / 60) % 60
-		hours = (idletime / 3600) % 60
-		days = idletime / 216000
-		if days: rep += str(days) + u' дн '
-		if hours: rep += str(hours) + u' час '
-		if minutes: rep += str(minutes) + u' мин '
-		rep += str(seconds) + u' сек\n'
-		rep += u'я получил уже %s сообщений, обработал %s презенсов и %s iq-запросов, а также выполнил %s команд'%(str(INFO['msg']),str(INFO['prs']),str(INFO['iq']),str(INFO['cmd']))
+		uptime=int(time.time() - INFO['start'])
+		rep = u'я работаю без падений уже '+timeElapsed(uptime)
+		rep += u'\nбыло получено %s сообщений, обработано %s презенсов и %s iq-запросов, а также выполнено %s команд\n'%(str(INFO['msg']),str(INFO['prs']),str(INFO['iq']),str(INFO['cmd']))
+		if os.name=='posix':
+			try:
+				pr = os.popen('ps -o rss -p %s' % os.getpid())
+				pr.readline()
+				mem = pr.readline().strip()
+			finally:
+				pr.close()
+			if mem: rep += u'также мной съедено %s кб памяти, ' % mem
+		(user, system,qqq,www,eee,) = os.times()
+		rep += u'потрачено %.2f секунд процессора, %.2f секунд системного времени и в итоге %.2f секунд общесистемного времени\n' % (user, system, user + system)
+		rep += u'я породил всего %s потоков, в данный момент активно %s потоков' % (INFO['thr'], threading.activeCount())
 	else:
-		rep = 'аблом...'
+		rep = u'аблом...'
 	reply(type, source, rep)
-
 
 register_command_handler(handler_getrealjid, 'тружид', ['инфо','админ','мук','все'], 20, 'Показывает реальный жид указанного ника. Работает только если бот модер ессно', 'тружид <ник>', ['тружид guy'])
 register_command_handler(handler_total_in_muc, 'инмук', ['инфо','мук','все'], 10, 'Показывает количество юзеров находящихся в конференции.', 'инмук', ['инмук'])
