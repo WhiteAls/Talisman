@@ -1,0 +1,29 @@
+﻿# Talisman configuration
+
+{
+# Jabber account where Talisman will login
+'CONNECT_SERVER': 'server.tld', #aka host. fe, xmpp.ya.ru and jid node@ya.ru
+'PORT': 5222,
+'JID': 'node@server.tld',
+'PASSWORD': 'secret',
+'RESOURCE': 'pybot',
+
+# Chatroom nick
+'DEFAULT_NICK': 'Talisman',
+
+# Jabber accounts that will administrate Talisman
+'ADMINS': ['jid@server.tld','jid1@server.tld'],
+'ADMIN_PASSWORD': 'supersecret',
+
+# Talisman will try to reconnect on disconnections
+'AUTO_RESTART': 1,
+
+# Where to store HTML files from chatrooms logs
+# To disable logging, set to empty string: '',
+'PUBLIC_LOG_DIR': '',
+
+# Where to store logs of private chats
+# To disable logging, set to empty string: '',
+'PRIVATE_LOG_DIR': ''
+
+} 
