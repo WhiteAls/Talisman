@@ -699,7 +699,7 @@ def iqHnd(con, iq):
 			result = iq.buildReply('result')
 			query = result.getTag('query')
 			query.setTagData('name', 'ταλιςμαη')
-			query.setTagData('version', 'ver.1.pre_xp1 (svn rev 77) [antiflood]')
+			query.setTagData('version', 'ver.1.pre_xp1 (svn rev 78) [antiflood]')
 			query.setTagData('os', BOT_VER)
 			JCON.send(result)
 			raise xmpp.NodeProcessed
@@ -825,8 +825,10 @@ def start():
 			with smph:
 				INFO['thr'] += 1
 				threading.Thread(None,join_groupchat,'gch'+str(INFO['thr']),(groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw'])).start()
-				LAST['gch'][groupchat]['thr']=threading.Timer(600,change_bot_status,(groupchat, u'я ничего здесь не делаю с '+time.strftime('%d.%m.%Y@%H:%M:%S GMT', time.gmtime()), 'away',1))
-				LAST['gch'][groupchat]['thr'].start()
+				if groupchat in LAST['gch'].keys():
+					if GCHCFGS[groupchat]['autoaway']==1:
+						LAST['gch'][groupchat]['thr']=threading.Timer(600,change_bot_status,(groupchat, u'я ничего здесь не делаю с '+time.strftime('%d.%m.%Y@%H:%M:%S GMT', time.gmtime()), 'away',1))
+						LAST['gch'][groupchat]['thr'].start()
 	else:
 		print 'Error: unable to create chatrooms list file!'
 

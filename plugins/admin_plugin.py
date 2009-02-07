@@ -47,6 +47,10 @@ def handler_admin_join(type, source, parameters):
 		get_order_cfg(groupchat)		
 		get_commoff(groupchat)
 		set_default_gch_status(groupchat)
+		get_afools_state(groupchat)
+		get_autoaway_state(groupchat)
+		DBPATH='dynamic/'+groupchat+'/config.cfg'
+		write_file(DBPATH, str(GCHCFGS[groupchat]))
 		if passw:
 			add_gch(groupchat, DEFAULT_NICK)
 			join_groupchat(groupchat, DEFAULT_NICK)
