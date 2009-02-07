@@ -290,7 +290,7 @@ def handler_order_presence(prs):
 						return
 			if GCHCFGS[groupchat]['filt']['prsstlen']==1 and stmsg:
 				if len(stmsg)>=200:
-					order_stats[groupchat][jid]['flood']+=1
+					order_stats[groupchat][jid]['prs']['status']+=1
 					order_kick(groupchat, nick, u'статусная мессага слишком большая')						
 				order_stats[groupchat][jid]['prstime']['status']=time.time()
 				
@@ -302,31 +302,27 @@ def handler_order_presence(prs):
 def handler_order_leave(groupchat, nick, reason, code):
 	jid=get_true_jid(groupchat+'/'+nick)
 	if nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
-		if GCHCFGS[groupchat]['filt']['presence']==1:
-			if reason=='Replaced by new connection':
-				return
-			if code:
-				if code=='307': # kick
-					order_stats[groupchat][jid]['kicks']+=1
+		if groupchat in order_stats and jid in order_stats[groupchat]:
+			if GCHCFGS[groupchat]['filt']['presence']==1:
+				if reason=='Replaced by new connection':
 					return
-				elif code=='301': # ban
-					del order_stats[groupchat][jid]
-					return
-				elif code=='407': # members-only
-					return
-		if GCHCFGS[groupchat]['filt']['fly']['cond']==1:
-			now = time.time()
-			lastprs=order_stats[groupchat][jid]['prstime']['fly']
-			order_stats[groupchat][jid]['prstime']['fly']=time.time()
-			if now-lastprs<=70:
-				order_stats[groupchat][jid]['prs']['fly']+=1
-			else:
-				order_stats[groupchat][jid]['prs']['fly']=0
-	elif groupchat in order_stats and jid in order_stats[groupchat]:
-		del order_stats[groupchat][jid]
-	else:
-		pass		
-
+				if code:
+					if code=='307': # kick
+						order_stats[groupchat][jid]['kicks']+=1
+						return
+					elif code=='301': # ban
+						del order_stats[groupchat][jid]
+						return
+					elif code=='407': # members-only
+						return
+			if GCHCFGS[groupchat]['filt']['fly']['cond']==1:
+				now = time.time()
+				lastprs=order_stats[groupchat][jid]['prstime']['fly']
+				order_stats[groupchat][jid]['prstime']['fly']=time.time()
+				if now-lastprs<=70:
+					order_stats[groupchat][jid]['prs']['fly']+=1
+				else:
+					order_stats[groupchat][jid]['prs']['fly']=0
 
 ######################################################################################################################
 
@@ -548,8 +544,43 @@ def handler_order_filt(type, source, parameters):
 		reply(type,source,rep.strip())
 
 
+def get_order_cfg(gch):
+	if not 'filt' in GCHCFGS[gch]:
+		GCHCFGS[gch]['filt']={}		
+	for x in ['smile','time','presence','len','like','caps','prsstlen','obscene','kicks','fly','excess','idle']:
+		if x == 'excess':
+			if not x in GCHCFGS[gch]['filt']:
+				GCHCFGS[gch]['filt'][x]={}
+				GCHCFGS[gch]['filt'][x]['cond']=0
+				GCHCFGS[gch]['filt'][x]['mode']='kick'
+			continue		
+		if x == 'kicks':
+			if not x in GCHCFGS[gch]['filt']:
+				GCHCFGS[gch]['filt'][x]={}
+				GCHCFGS[gch]['filt'][x]['cond']=1
+				GCHCFGS[gch]['filt'][x]['cnt']=2
+			continue
+		if x == 'fly':
+			if not x in GCHCFGS[gch]['filt']:
+				GCHCFGS[gch]['filt'][x]={}
+				GCHCFGS[gch]['filt'][x]['cond']=1
+				GCHCFGS[gch]['filt'][x]['mode']='ban'
+				GCHCFGS[gch]['filt'][x]['time']=60
+			continue
+		if x == 'idle':
+			if not x in GCHCFGS[gch]['filt']:
+				GCHCFGS[gch]['filt'][x]={}
+				GCHCFGS[gch]['filt'][x]['cond']=0
+				GCHCFGS[gch]['filt'][x]['time']=3600
+			continue
+		if not x in GCHCFGS[gch]['filt']:
+			GCHCFGS[gch]['filt'][x]=1
+
 register_message_handler(handler_order_message)
 register_join_handler(handler_order_join)
 register_leave_handler(handler_order_leave)
 register_presence_handler(handler_order_presence)
 register_command_handler(handler_order_filt, 'filt', ['админ','мук','все'], 20, 'Включает или отключает определённые фильтры для конференции.\nsmile - фильтр смайлов\ntime - временной фильтр\nlen - количественный фильтр\npresence - фильтр презенсов\nlike - фильтр одинаковых сообщений\ncaps - фильтр капса (ЗАГЛАВНЫХ букв)\nprsstlen - фильтр длинных статусных сообщений\nobscene - фильтр матов\nfly - фильтр полётов (частых входов/выходов в конмату), имеет два режима ban и kick, таймер от 0 до 120 секунд\nkicks - автобан после N киков, параметр cnt - количество киков от 1 до 10\nidle - кик за молчание в общем чате после N секунд, параметр time - кол-во секунд для срабатывания', 'filt [фильтр] [режим] [состояние]', ['filt smile 1', 'filt len 0','filt fly mode ban'])
+
+register_stage1_init(get_order_cfg)
+register_stage2_init(order_check_idle)

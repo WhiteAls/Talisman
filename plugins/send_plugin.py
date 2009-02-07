@@ -69,6 +69,20 @@ def handler_send_join(groupchat, nick, aff, role):
 				pass
 	else:
 		pass
+		
+def get_send_cache(gch):
+	sfc='dynamic/'+gch+'/send.txt'
+	if not check_file(gch,'send.txt'):
+		print 'error with caches in send_plugin.py'
+		raise
+	try:
+		cache = eval(read_file(sfc))
+		sendqueue[gch]={}
+		sendqueue[gch]=cache
+	except:
+		pass	
 
 register_join_handler(handler_send_join)
 register_command_handler(handler_send_save, 'передать', ['мук','все'], 10, 'Запоминает сообщение в базе и передаёт его указанному нику как только он зайдёт в конференцию.', 'передать <кому> <что>', ['передать Nick привет! забань Nick666'])
+
+register_stage1_init(get_send_cache)

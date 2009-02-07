@@ -87,6 +87,9 @@ JOIN_HANDLERS = []
 LEAVE_HANDLERS = []
 IQ_HANDLERS = []
 PRESENCE_HANDLERS = []
+STAGE0_INIT =[]
+STAGE1_INIT =[]
+STAGE2_INIT =[]
 ########################
 
 COMMAND_HANDLERS = {}
@@ -169,6 +172,12 @@ def register_iq_handler(instance):
 	IQ_HANDLERS.append(instance)
 def register_presence_handler(instance):
 	PRESENCE_HANDLERS.append(instance)
+def register_stage0_init(instance):
+	STAGE0_INIT.append(instance)
+def register_stage1_init(instance):
+	STAGE1_INIT.append(instance)
+def register_stage2_init(instance):
+	STAGE2_INIT.append(instance)
 
 def register_command_handler(instance, command, category=[], access=0, desc='', syntax='', examples=[]):
 	command = command.decode('utf-8')
@@ -261,34 +270,7 @@ def load_plugins():
 	print '\nloaded',len(plugins),'plug-ins:'
 	loaded=', '.join(plugins)
 	print loaded,'\n'
-
-def get_commoff(gch):
-	try:
-		if GCHCFGS[gch].has_key('commoff'):
-			commoff=GCHCFGS[gch]['commoff']
-#			COMMOFF[gch]=gch
-			COMMOFF[gch]=commoff
-		else:
-			COMMOFF[gch]=gch
-			COMMOFF[gch]=[]
-	except:
-		pass
-			
-def get_greetz(gch):
-	grtfile='dynamic/'+gch+'/greetz.txt'
-	try:
-		grt = eval(read_file(grtfile))
-		GREETZ[gch]=grt
-		"""
-		if gch in GREETZ.keys():
-			GREETZ[gch]=grt
-		else:
-			GREETZ[gch]=gch
-			GREETZ[gch]=grt				
-		"""
-	except:
-		pass
-			
+				
 def get_gch_cfg(gch):
 	cfgfile='dynamic/'+gch+'/config.cfg'
 	if not check_file(gch,'config.cfg'):
@@ -299,54 +281,7 @@ def get_gch_cfg(gch):
 		GCHCFGS[gch]=cfg
 	except:
 		pass
-
-def get_order_pl_cfg(gch):
-	if not 'filt' in GCHCFGS[gch]:
-		GCHCFGS[gch]['filt']={}		
-	for x in ['smile','time','presence','len','like','caps','prsstlen','obscene','kicks','fly','excess','idle']:
-		if x == 'excess':
-			if not x in GCHCFGS[gch]['filt']:
-				GCHCFGS[gch]['filt'][x]={}
-				GCHCFGS[gch]['filt'][x]['cond']=0
-				GCHCFGS[gch]['filt'][x]['mode']='kick'
-			continue		
-		if x == 'kicks':
-			if not x in GCHCFGS[gch]['filt']:
-				GCHCFGS[gch]['filt'][x]={}
-				GCHCFGS[gch]['filt'][x]['cond']=1
-				GCHCFGS[gch]['filt'][x]['cnt']=2
-			continue
-		if x == 'fly':
-			if not x in GCHCFGS[gch]['filt']:
-				GCHCFGS[gch]['filt'][x]={}
-				GCHCFGS[gch]['filt'][x]['cond']=1
-				GCHCFGS[gch]['filt'][x]['mode']='ban'
-				GCHCFGS[gch]['filt'][x]['time']=60
-			continue
-		if x == 'idle':
-			if not x in GCHCFGS[gch]['filt']:
-				GCHCFGS[gch]['filt'][x]={}
-				GCHCFGS[gch]['filt'][x]['cond']=0
-				GCHCFGS[gch]['filt'][x]['time']=3600
-			continue
-		if not x in GCHCFGS[gch]['filt']:
-			GCHCFGS[gch]['filt'][x]=1
-	DBPATH='dynamic/'+gch+'/config.cfg'
-	write_file(DBPATH, str(GCHCFGS[gch]))
 	
-def get_sendpl_cache(gch):
-	sfc='dynamic/'+gch+'/send.txt'
-	if not check_file(gch,'send.txt'):
-		print 'error with caches in send_plugin.py'
-		raise
-	try:
-		cache = eval(read_file(sfc))
-#		sendqueue[gch]=gch
-		sendqueue[gch]={}
-		sendqueue[gch]=cache
-	except:
-		pass	
-		
 def upkeep():
 	tmr=threading.Timer(60, upkeep)
 	tmr.start()
@@ -359,21 +294,6 @@ def upkeep():
 			pass
 	import gc
 	gc.collect()
-
-def get_autoaway_state(gch):
-	if not 'gch' in LAST:
-		LAST['gch']={}
-	if not gch in LAST['gch']:
-		LAST['gch'][gch]={}
-	if not 'autoaway' in GCHCFGS[gch]:
-		GCHCFGS[gch]['autoaway']=1
-	if GCHCFGS[gch]['autoaway']==1:
-		LAST['gch'][gch]['autoaway']=0
-		LAST['gch'][gch]['thr']=None
-
-def set_default_gch_status(gch):		
-	if not 'status' in GCHCFGS[gch]:
-		GCHCFGS[gch]['status']=u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать'
 		
 ################################################################################
 
@@ -456,16 +376,6 @@ def change_bot_status(gch,status,show,auto=0):
 		LAST['gch'][gch]['autoaway']=0
 
 ################################################################################
-
-def get_access_levels():
-	global GLOBACCESS
-	global ACCBYCONFFILE
-	GLOBACCESS = eval(read_file(GLOBACCESS_FILE))
-	for jid in ADMINS:
-		GLOBACCESS[jid] = 100
-		write_file(GLOBACCESS_FILE, str(GLOBACCESS))
-	ACCBYCONFFILE = eval(read_file(ACCBYCONF_FILE))
-
 
 def change_access_temp(gch, source, level=0):
 	global ACCBYCONF
@@ -576,6 +486,7 @@ def leave_groupchat(groupchat,status=''):
 	if GROUPCHATS.has_key(groupchat):
 		del GROUPCHATS[groupchat]
 		add_gch(groupchat)
+		LAST['gch'][groupchat]['thr'].cancel()
 
 def msg(target, body):
 	body=body.strip()
@@ -590,12 +501,9 @@ def msg(target, body):
 def reply(ltype, source, body):
 	if type(body) is types.StringType:
 		body = body.decode('utf8', 'replace')
-	if time.localtime()[1]==4 and time.localtime()[2]==1:
-		if random.randrange(0,2) == 0:
-			body = random.choice(afools)
-	else:
+	if source[1] in GCHCFGS.keys() and GCHCFGS[source[1]]['afools']==1:
 		if random.randrange(0,20) == random.randrange(0,20):
-			body = random.choice(afools)		
+			body = random.choice(eval(read_file('static/delirium.txt'))['afools'])
 	if ltype == 'public':
 		if len(body)>1000:
 			body=body[:1000]+u' >>>>'			
@@ -791,7 +699,7 @@ def iqHnd(con, iq):
 			result = iq.buildReply('result')
 			query = result.getTag('query')
 			query.setTagData('name', 'ταλιςμαη')
-			query.setTagData('version', 'ver.1.pre_xp1 (author ver) [antiflood]')
+			query.setTagData('version', 'ver.1.pre_xp1 (svn rev 77) [antiflood]')
 			query.setTagData('os', BOT_VER)
 			JCON.send(result)
 			raise xmpp.NodeProcessed
@@ -861,8 +769,7 @@ def start():
 	print '\n...---===STARTING BOT===---...\n'
 	global JCON
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
-
-	get_access_levels()
+	
 	load_plugins()
 
 	print 'Waiting For Connection...\n'
@@ -887,6 +794,11 @@ def start():
 		print 'Logged In'
 	if auth!='sasl':
 		print 'Warning: unable to perform SASL auth. Old authentication method used!'
+		
+	for process in STAGE0_INIT:
+		with smph:
+			INFO['thr'] += 1
+			threading.Thread(None,process,'stage0_init'+str(INFO['thr'])).start()
 
 	JCON.RegisterHandler('message', messageHnd)
 	JCON.RegisterHandler('presence', presenceHnd)
@@ -894,6 +806,7 @@ def start():
 	JCON.RegisterDisconnectHandler(dcHnd)
 	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
+	
 #	JCON.getRoster()
 	JCON.sendInitPresence()
 	print 'Entering Rooms'
@@ -902,13 +815,13 @@ def start():
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
 		for groupchat in groupchats:
 			get_gch_cfg(groupchat)
-			set_default_gch_status(groupchat)
 			MACROS.init(groupchat)
-			get_commoff(groupchat)
-			get_autoaway_state(groupchat)
-			get_order_pl_cfg(groupchat)
-			get_sendpl_cache(groupchat)
-			get_greetz(groupchat)	
+			for process in STAGE1_INIT:
+				with smph:
+					INFO['thr'] += 1
+					threading.Thread(None,process,'stage1_init'+str(INFO['thr']),(groupchat,)).start()
+			DBPATH='dynamic/'+groupchat+'/config.cfg'
+			write_file(DBPATH, str(GCHCFGS[groupchat]))
 			with smph:
 				INFO['thr'] += 1
 				threading.Thread(None,join_groupchat,'gch'+str(INFO['thr']),(groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw'])).start()
@@ -924,8 +837,10 @@ def start():
 		
 	INFO['start'] = time.time()
 	upkeep()
-	iqkeepalive_and_s2scheck()
-	order_check_idle()
+	for process in STAGE2_INIT:
+		with smph:
+			INFO['thr'] += 1
+			threading.Thread(None,process,'stage2_init'+str(INFO['thr'])).start()
 			
 	while 1:
 		JCON.Process(10)

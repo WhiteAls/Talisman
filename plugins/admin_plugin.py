@@ -44,7 +44,7 @@ def handler_admin_join(type, source, parameters):
 			groupchat = parameters
 			reason = ''
 		get_gch_cfg(groupchat)
-		get_order_pl_cfg(groupchat)		
+		get_order_cfg(groupchat)		
 		get_commoff(groupchat)
 		set_default_gch_status(groupchat)
 		if passw:
@@ -254,10 +254,26 @@ def handler_changebotstatus(type, source, parameters):
 			reply(type,source, u'я сейчас '+status+u' ('+stmsg+u')')
 		else:
 			reply(type,source, u'я сейчас '+status)
+			
+def get_autoaway_state(gch):
+	if not 'gch' in LAST:
+		LAST['gch']={}
+	if not gch in LAST['gch']:
+		LAST['gch'][gch]={}
+	if not 'autoaway' in GCHCFGS[gch]:
+		GCHCFGS[gch]['autoaway']=1
+	if GCHCFGS[gch]['autoaway']==1:
+		LAST['gch'][gch]['autoaway']=0
+		LAST['gch'][gch]['thr']=None
+		
+def set_default_gch_status(gch):		
+	if not 'status' in GCHCFGS[gch]:
+		GCHCFGS[gch]['status']=u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать'
+
 
 register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу. Если она запаролена то пишите пароль сразу после названия конфы.', 'зайти <конфа> [pass=пароль] [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря', 'зайти ы@conference.jabber.aq pass=1234 уря'])
 register_command_handler(handler_admin_leave, 'свал', ['админ','мук','все'], 20, 'Заставляет выйти из текущей или определённой конфы.', 'свал <конфа> [причина]', ['свал ы@conference.jabber.aq спать', 'свал спать','свал'])
-register_command_handler(handler_admin_msg, 'мессага', ['админ','мук','все'], 30, 'Отправляет мессагу от имени бота определённому JID-у.', 'мессага <jid> <мессага>', ['мессага guy@jabber.aq здорово чувак!'])
+register_command_handler(handler_admin_msg, 'мессага', ['админ','мук','все'], 40, 'Отправляет мессагу от имени бота определённому JID-у.', 'мессага <jid> <мессага>', ['мессага guy@jabber.aq здорово чувак!'])
 register_command_handler(handler_admin_say, 'сказать', ['админ','мук','все'], 20, 'Говорить через бота.', 'сказать <мессага>', ['сказать салют пиплы'])
 register_command_handler(handler_admin_restart, 'рестарт', ['суперадмин','все'], 100, 'Рестартит бота.', 'рестарт [причина]', ['рестарт','рестарт гы'])
 register_command_handler(handler_admin_exit, 'пшёл', ['суперадмин','все'], 100, 'Полный выход.', 'пшёл [причина]', ['пшёл','пшёл глюки'])
@@ -266,3 +282,6 @@ register_command_handler(handler_glob_msg_help, 'hglobmsg', ['суперадми
 register_command_handler(handler_popups_onoff, 'popups', ['админ','мук','все'], 30, 'Отключает (0) или включает (1) сообщения о входах/выходах, рестартах/выключениях, а также глобальные новости. Без параметра покажет текущее состояние.', 'popups [1|0]', ['popups 1','popups'])
 register_command_handler(handler_botautoaway_onoff, 'autoaway', ['админ','мук','все'], 30, 'Отключает (0) или включает (1) автосмену статуса бота на away при отсутствии команд в течении 10 минут. Без параметра покажет текущее состояние.', 'autoaway [1|0]', ['autoaway 1','autoaway'])
 register_command_handler(handler_changebotstatus, 'stch', ['админ','мук','все'], 20, 'Меняет статус бота на указанный из списка:\naway - отсутствую,\nxa - давно отсутствую,\ndnd - не беспокоить,\nchat - хочу чатиться,\nа также статусное сообщение (если оно даётся).', 'stch [статус] [сообщение]', ['stch away','stch away я сдох'])
+
+register_stage1_init(get_autoaway_state)
+register_stage1_init(set_default_gch_status)

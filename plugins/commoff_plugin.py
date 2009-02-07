@@ -111,6 +111,19 @@ def handler_common(type,source,parameters):
 		
 	reply(type,source,rep.strip())
 	
+def get_commoff(gch):
+	try:
+		if GCHCFGS[gch].has_key('commoff'):
+			commoff=GCHCFGS[gch]['commoff']
+			COMMOFF[gch]=commoff
+		else:
+			COMMOFF[gch]=gch
+			COMMOFF[gch]=[]
+	except:
+		pass
+	
 	
 register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 20, 'Отключает определённые команды для текущей конфы, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])
 register_command_handler(handler_common, 'common', ['админ','мук','все'], 20, 'Включает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
+
+register_stage1_init(get_commoff)

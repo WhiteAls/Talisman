@@ -18,7 +18,6 @@
 #  GNU General Public License for more details.
 
 global_en2ru_table = dict(zip(u"qwertyuiop[]asdfghjkl;'zxcvbnm,./`йцукенгшщзхъфывапролджэячсмитьбю.ёQWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?~ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё", u"йцукенгшщзхъфывапролджэячсмитьбю.ёqwertyuiop[]asdfghjkl;'zxcvbnm,./`ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,ЁQWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?~"))
-#global_ru2en_table = dict(zip("йцукенгшщзхъфывапролджэячсмитьбю.ё", "qwertyuiop[]asdfghjkl;'zxcvbnm,./`"))
 
 turn_msgs={}
 
@@ -37,15 +36,15 @@ def handler_turn_last(type, source, parameters):
 			return		
 		tmsg=turn_msgs[groupchat][jid]
 		reply(type,source,reduce(lambda x,y:global_en2ru_table.get(x,x)+global_en2ru_table.get(y,y),tmsg))
-#	msg(groupchat,reduce(lambda x,y:global_en2ru_table.get(x,x)+global_en2ru_table.get(y,y),tmsg))
 
 def handler_turn_save_msg(type, source, body):
 	time.sleep(1)
 	nick=source[2]
 	groupchat=source[1]
 	jid=get_true_jid(groupchat+'/'+nick)
-	if jid in turn_msgs[groupchat].keys() and jid != groupchat:
-		turn_msgs[groupchat][jid]=body
+	if jid in turn_msgs.keys():
+		if jid in turn_msgs[groupchat].keys() and jid != groupchat:
+			turn_msgs[groupchat][jid]=body
 	
 def handler_turn_join(groupchat, nick, aff, role):
 	jid=get_true_jid(groupchat+'/'+nick)

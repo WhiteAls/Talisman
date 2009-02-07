@@ -16,11 +16,9 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 
-stick_nicks={}
+poke_nicks={}
 
-afools=[u'что-то я не заморочился',u'леееень...',u'а можно я это потом сделаю?',u'что-то я устал',u'отвяжись',u'нихачу',u'я не бот',u'ещё разик :)']
-
-def handler_stick(type, source, parameters):
+def handler_poke(type, source, parameters):
 	if type=='private':
 		reply(type,source,u':-P')
 		return
@@ -30,53 +28,71 @@ def handler_stick(type, source, parameters):
 			cnt=0
 			rep=''
 			nicks = set()
-			for x in [stick_nicks[source[1]] for x in stick_nicks]:
+			for x in [poke_nicks[source[1]] for x in poke_nicks]:
 				nicks = nicks | set(x)
 			for x in nicks:
 				cnt=cnt+1
 				rep += str(cnt)+u') '+x+u'\n'
 			reply('private',source,rep[:-1])
 			return
-		if not stick_nicks.has_key(source[1]):
-			stick_nicks[source[1]]=source[1]
-			stick_nicks[source[1]]=[]
-		if len(stick_nicks[source[1]])==10:
-			stick_nicks[source[1]]=[]
+		if not poke_nicks.has_key(source[1]):
+			poke_nicks[source[1]]=source[1]
+			poke_nicks[source[1]]=[]
+		if len(poke_nicks[source[1]])==10:
+			poke_nicks[source[1]]=[]
 		else:
-			stick_nicks[source[1]].append(source[2])
+			poke_nicks[source[1]].append(source[2])
 		if not parameters == get_bot_nick(source[1]):
 			if parameters in GROUPCHATS[source[1]]:
-				nick = parameters
-				rep=u'/me '
-				replies = [u'облил ' +nick+ u' ледяной водой',
-									u'закидал ' +nick+ u' тухлыми помидорами',
-									u'шарахнул ' +nick+ u' веслом по голове',
-									u'ткнул ' +nick+ u' в глаз',
-									u'поставил ' +nick+ u' подножку',
-									u'постукал ' +nick+ u' головой апстенку',
-									u'дал ' +nick+ u' йаду',
-									u'slaps ' +nick+ u' around a bit with a large trout',
-									u'приковал наручниками к кровати '+nick+u' и заставил слушать Децла. МНОГО ДЕЦЛА!',
-									u'шарахнул '+nick+u' веслом по голове',
-									u'потыкал '+nick+u' палочкой',
-									u'целится плюсомётом в '+nick,
-									u'тыкает '+nick+u' со словами "нуу, пратииивный"',
-									u'неожиданно проорал "БУУУУ!" в ухо '+nick,
-									u'случайно уронил кирпич на голову '+nick,
-									u'попрыгал с бубном вокруг '+nick,
-									u'размахивает руками перед лицом '+nick,
-									u'воззвал к '+nick,
-									u'тресёт '+nick+u' за плечи',
-									u'кинул нож в сторону '+nick]
-				rep += random.choice(replies)
-				msg(source[1],rep)
+				pokes=[]
+				pokes.extend(poke_work(source[1]))
+				pokes.extend(eval(read_file('static/delirium.txt'))['poke'])
+				rep = random.choice(pokes)
+				msg(source[1],u'/me '+rep % parameters)
 			else:
 				reply(type, source, u'а он тут? :-O')
 		else:
 			reply(type, source, u'шибко умный, да? ]:->')	
 	else:
 		reply(type, source, u'мазохист? :D')
-
+		
+def handler_poke_add(type, source, parameters):
+	if not parameters:
+		reply(type, source, u'ииии?')
+	if not parameters.count('%s'):
+		reply(type, source, u'не вижу %s')
+		return
+	res=poke_work(source[1],1,parameters)
+	if res:
+		reply(type, source, u'добавлено')
+	else:
+		reply(type, source, u'больше нельзя')
+		
+def handler_poke_del(type, source, parameters):
+	if not parameters:
+		reply(type, source, u'ииии?')
+	if parameters=='*':
+		parameters='0'
+	else:
+		try:
+			int(parameters)
+		except:
+			reply(type,source,u'синтакс инвалид')
+	res=poke_work(source[1],2,parameters)
+	if res:
+		reply(type, source, u'удалено')
+	else:
+		reply(type, source, u'такой нет')
+		
+def handler_poke_list(type, source, parameters):
+	rep,res=u'',poke_work(source[1],3)
+	if res:
+		res=sorted(res.items(),lambda x,y: int(x[0]) - int(y[0]))
+		for num,phrase in res:
+			rep+=num+u') '+phrase+u'\n'
+		reply(type,source,rep.strip())
+	else:
+		reply(type,source,u'нет пользовательских фраз')
 		
 def handler_test(type, source, parameters):
 	reply(type,source,u'пассед')
@@ -84,47 +100,77 @@ def handler_test(type, source, parameters):
 def handler_clean_conf(type, source, parameters):
 	if GROUPCHATS.has_key(source[1]):
 		for x in range(1, 20):
-			msg(source[1], str(x))
+			msg(source[1], '')
 #			time.sleep(1.3)
 		reply(type,source,u'done')
-
-			
-def handler_kick_ass(type, source, parameters):
-	if GROUPCHATS.has_key(source[1]):
-		if len(parameters.split()) == 3:
-			splitdata = string.split(parameters)
-			rep,jid,msgnum,smlnum = '','',int(splitdata[1]),int(splitdata[2])
-			if msgnum>500 or smlnum>500:
-				reply(type,source,u'мне жалко')
-				return
-			reply(type,source,u'ПТЫДЫЩЬ!!!')
-			if splitdata[0]==u':)':
-				for x in range(0, msgnum):
-					for y in range(0, smlnum):
-						rep += u':) '
-					msg(source[1], rep)
-					rep = ''
-#					time.sleep(0.5)
-			else:
-				if splitdata[0].count('@'):
-					jid=splitdata[0]
-				else:
-					jid=source[1]+'/'+splitdata[0]
-				print jid
-				for x in range(0, msgnum):
-					for y in range(0, smlnum):
-						rep += u':) '
-					msg(jid, rep)
-					rep=''
-#					time.sleep(0.5)
-			reply(type,source,u'миссия выполнена!')
+		
+def handler_afools_control(type, source, parameters):
+	if parameters:
+		try:
+			int(parameters)
+		except:
+			reply(type,source,u'синтакс инвалид')
+		if int(parameters)>1:
+			reply(type,source,u'синтакс инвалид')
+		if parameters=="1":
+			GCHCFGS[source[1]]['afools']=1
+			reply(type,source,u'шуточки включены')
 		else:
-			reply(type,source,u'пришло время читать хелпы')
+			GCHCFGS[source[1]]['afools']=0
+			reply(type,source,u'шуточки отключены')			
+	else:
+		if GCHCFGS[source[1]]['afools']==1:
+			reply(type,source,u'здесь шуточки включены')
+		else:
+			reply(type,source,u'здесь шуточки отключены')
 	
-register_command_handler(handler_stick, 'тык', ['фан','все'], 10, 'Тыкает юзера. Заставляет его обратить внимание на вас/на чат.', 'тык <ник>', ['тык qwerty'])
+			
+def get_afools_state(gch):
+	if not 'afools' in GCHCFGS[gch]:
+		GCHCFGS[gch]['afools']=1
+		
+def poke_work(gch,action=None,phrase=None):
+	DBPATH='dynamic/'+gch+'/delirium.txt'
+	if check_file(gch,'delirium.txt'):
+		pokedb = eval(read_file(DBPATH))
+		if action==1:
+			for x in range(1, 21):
+				if str(x) in pokedb.keys():
+					continue
+				else:
+					pokedb[str(x)]=phrase
+					write_file(DBPATH, str(pokedb))
+					return True
+			return False
+		elif action==2:
+			if phrase=='0':
+				pokedb.clear()
+				write_file(DBPATH, str(pokedb))
+				return True
+			else:
+				try:
+					del pokedb[phrase]
+					write_file(DBPATH, str(pokedb))
+					return True
+				except:
+					return False
+		elif action==3:
+			return pokedb
+		else:
+			pokes=[]
+			for poke in pokedb.itervalues():
+				pokes.append(poke)
+			return pokes
+	else:
+		return None
+	
+register_command_handler(handler_poke, 'тык', ['фан','все','тык'], 10, 'Тыкает юзера. Заставляет его обратить внимание на вас/на чат.\nlast10 вместо ника покажет список ников, которые тыкали последними.', 'тык <ник>|<параметр>', ['тык qwerty','тык + пришиб %s','тык - 2','тык *'])
+register_command_handler(handler_poke_add, 'тык+', ['фан','все','тык'], 20, 'Добавить пользовательскую фразу. Переменная %s во фразе обозначает место для вставки ника (обязательный параметр). Фраза должна быть написана от третьего лица, т.к. будет использоваться в виде "/me ваша фраза". max кол-во пользовательских фраз - 20.', 'тык+ <фраза>', ['тык+ побил %s'])
+register_command_handler(handler_poke_del, 'тык-', ['фан','все','тык'], 20, 'Удалить пользовательскую фразу. Пишем номер удаляемой фразы и она удаляется навсегда. Пронумерованный список выдаёт команда "тык*". Удалить все фразы можно с помощью символа "*" вместо номера фразы.', 'тык- <номер>', ['тык- 5','тык- *'])
+register_command_handler(handler_poke_list, 'тык*', ['фан','все','тык'], 20, 'Показывает пронумерованный список всех пользовательских фраз.', 'тык*', ['тык*'])
 register_command_handler(handler_test, 'тест', ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'тест', ['тест'])
 register_command_handler(handler_test, 'test', ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'test', ['test'])
 register_command_handler(handler_clean_conf, 'фконфу', ['фан','мук','все'], 15, 'Очищает конференцию (считает до 20).', 'фконфу', ['фконфу'])
+register_command_handler(handler_afools_control, 'afools', ['фан','мук','все'], 30, 'Включает и выключает шуточки бота, которыми он порою подменяет (саму команду он всегда исполняет!) стандартный ответ команды.', 'afools <1|0>', ['afools 1','afools 0'])
 
-#  listed below command handler are not recommended
-register_command_handler(handler_kick_ass, 'засрать', ['фан','суперадмин','мук','все'], 20, 'Засирает конфожид указанным количеством мессаг со смайликом, кол-во  которых определяется третьим параметром.. Если первый параметр смайлик ( :) ), то засирает кол-вом мессаг из второго параметра, засовывая в каждую мессагу кол-во смайлов из третьего параметра.', 'засрать [ник] [кол-во] [кол-во]', ['засрать Als 100 200','засрать :) 50 200'])
+register_stage1_init(get_afools_state)

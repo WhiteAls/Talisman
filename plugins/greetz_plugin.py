@@ -81,6 +81,17 @@ def atjoin_greetz(groupchat, nick, aff, role):
 	 if groupchat in GREETZ.keys():
 	 	if jid in GREETZ[groupchat]:
 	 		msg(groupchat, nick+'> '+GREETZ[groupchat][jid])
+	 		
+	 		
+def get_greetz(gch):
+	grtfile='dynamic/'+gch+'/greetz.txt'
+	try:
+		grt = eval(read_file(grtfile))
+		GREETZ[gch]=grt
+	except:
+		pass
 			
 register_command_handler(handler_greet, 'greet', ['мук','все'], 20, 'Добавляет приветствие для определённого ника или жида.', 'greet <ник/жид>', ['greet guy=something','greet guy@jabber.aq=anything'])
 register_join_handler(atjoin_greetz)
+
+register_stage1_init(get_greetz)

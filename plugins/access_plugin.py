@@ -130,9 +130,20 @@ def handler_access_set_access_glob(type, source, parameters):
 		else:
 			change_access_perm_glob(tjidto)
 			reply(type, source, u'снял')
+			
+def get_access_levels():
+	global GLOBACCESS
+	global ACCBYCONFFILE
+	GLOBACCESS = eval(read_file(GLOBACCESS_FILE))
+	for jid in ADMINS:
+		GLOBACCESS[jid] = 100
+		write_file(GLOBACCESS_FILE, str(GLOBACCESS))
+	ACCBYCONFFILE = eval(read_file(ACCBYCONF_FILE))
 
 register_command_handler(handler_access_login, 'логин', ['доступ','админ','все'], 0, 'Залогиниться как админ.', 'логин <пароль>', ['логин мой_пароль'])
 register_command_handler(handler_access_login, 'логаут', ['доступ','админ','все'], 0, 'Разлогиниться.', 'логаут', ['логаут'])
 register_command_handler(handler_access_view_access, 'доступ', ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.\nПодробнее о стандартных уровнях доступа - напиишите "доступ !desc".', 'доступ [ник]', ['доступ', 'доступ guy'])
 register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота из конфы.\nПодробнее о стандартных уровнях доступа - напиишите "доступ !desc".', 'дать_доступ <ник> <уровень> [навсегда]', ['дать_доступ guy 100', 'дать_доступ guy 100 что-нить там'])
 register_command_handler(handler_access_set_access_glob, 'globacc', ['доступ','суперадмин','все'], 100, 'Устанавливает или снимает (если ник писать без уровня) уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО.', 'globacc <ник> <уровень>', ['globacc guy 100','globacc guy'])
+
+register_stage0_init(get_access_levels)
