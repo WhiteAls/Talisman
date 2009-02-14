@@ -26,6 +26,9 @@ def handler_vote_vote(type, source, parameters):
 	global POLLINGS
 	jid=get_true_jid(source)
 	if POLLINGS.has_key(source[1]):
+		if POLLINGS[source[1]]['finished']:
+			reply(type, source, u'голосование было завершено')
+			return
 		if not POLLINGS[source[1]]['started']:
 			reply(type, source, u'голосование ещё не запущено')
 			return
@@ -36,12 +39,8 @@ def handler_vote_vote(type, source, parameters):
 			reply(type, source, u'голосование открытое, нужно голосовать в общем чате')
 			return				
 		if not jid in POLLINGS[source[1]]['jids']:
-			POLLINGS[source[1]]['jids'][jid]=jid
-			POLLINGS[source[1]]['jids'][jid]={}
-			POLLINGS[source[1]]['jids'][jid]['isnotified']=1
-			POLLINGS[source[1]]['jids'][jid]['isvoted']=0
+			POLLINGS[source[1]]['jids'][jid]={'isnotified': 1, 'isvoted': 0}
 		if isadmin(jid) or POLLINGS[source[1]]['jids'][jid]['isvoted']==0:
-			parameters=parameters.strip().lower()
 			if POLLINGS[source[1]]['opinions'].has_key(parameters):
 				POLLINGS[source[1]]['opinions'][parameters]['cnt'] += 1
 				if POLLINGS[source[1]]['options']['nicks']:
@@ -62,17 +61,17 @@ def handler_vote_newpoll(type, source, parameters):
 	if POLLINGS.has_key(source[1]):
 		if not POLLINGS[source[1]]['finished']:
 			poll_text = u'ТЕКУЩЕЕ ГОЛОСОВАНИЕ\nСоздатель: '+ POLLINGS[source[1]]['creator']['nick']+u'\nВопрос: '+POLLINGS[source[1]]['question'] + u'\nВарианты ответов:\n'
-			for opinion in POLLINGS[source[1]]['opinions'].keys():
-				poll_text += '   >>> ' + opinion + '\n'
-			poll_text += u'Чтобы проголосовать, напиши "мнение твоё_мнение"'
-			msg(source[1], poll_text)
+			for opinion in sorted(POLLINGS[source[1]]['opinions'].keys()):
+				poll_text += '\t' + opinion + '. ' + POLLINGS[source[1]]['opinions'][opinion]['opinion'] + '\n'
+			poll_text += u'Чтобы проголосовать, напиши номер мнения, например "мнение 1"'
+			reply(type, source, poll_text)
 			return
 	jid=get_true_jid(source[1]+'/'+source[2])
 	if POLLINGS.has_key(source[1]):
 		del POLLINGS[source[1]]
 	if parameters:
 		POLLINGS = {source[1]: {'started': False, 'finished': False, 'creator': {'jid': jid, 'nick': source[2]}, 'opinions': {}, 'question': parameters, 'options': {'closed': False, 'nicks': False, 'admedit': False, 'time': {'time': 0, 'start': 0}}, 'tick': None, 'jids':{}}}			
-		reply(type, source, u'Голосование создано!\nЧтобы добавить пункты напиши "пункт твой_пункт".\nОпции голосования - команда "vote_opt". Начать голосование - команда "vote_start". Посмотреть текущие результаты - команда "мнения". Окончить голосование - команда "итоги".\nЕсли что-то непонятно, то прочитай хелп по командам из категории "голосование"!')
+		reply(type, source, u'Голосование создано!\nЧтобы добавить пункты напиши "пункт+ твой_пункт". Удалить - "пункт- номер пункта".\nОпции голосования - команда "голосование*". Начать голосование - команда "голосование+". Посмотреть текущие результаты - команда "мнения". Окончить голосование - команда "итоги".\nЕсли что-то непонятно, то прочитай хелп по командам из категории "голосование"!')
 		vote_save(source[1])
 	else:
 		reply(type,source,u'не вижу вопроса голосования')
@@ -95,9 +94,9 @@ def handler_vote_pollstart(type, source, parameters):
 	if POLLINGS[source[1]]['creator']['jid']==jid or POLLINGS[source[1]]['options']['admedit']==1 and has_access(jid,20,source[1]):
 		POLLINGS[source[1]]['started']=True
 		poll_text = u'НОВОЕ ГОЛОСОВАНИЕ\nСоздатель: '+ POLLINGS[source[1]]['creator']['nick']+u'\nВопрос: '+POLLINGS[source[1]]['question'] + u'\nВарианты ответов:\n'
-		for opinion in POLLINGS[source[1]]['opinions'].keys():
-			poll_text += '   >>> ' + opinion + '\n'
-		poll_text += u'Чтобы проголосовать, напиши "мнение твоё_мнение"'
+		for opinion in sorted(POLLINGS[source[1]]['opinions'].keys()):
+			poll_text += '\t' + opinion + '. ' + POLLINGS[source[1]]['opinions'][opinion]['opinion'] + '\n'
+		poll_text += u'Чтобы проголосовать, напиши номер мнения, например "мнение 1"'
 		msg(source[1], poll_text)
 		if POLLINGS[source[1]]['options']['time']['time']:
 			if POLLINGS[source[1]]['tick']:
@@ -108,7 +107,7 @@ def handler_vote_pollstart(type, source, parameters):
 	else:
 		reply(type, source, u'ага, щаззз')
 
-def handler_vote_pollopinion(type, source, parameters):
+def handler_vote_pollopinion_add(type, source, parameters):
 	if not parameters:
 		reply(type, source, u'ииии?')
 		return		
@@ -121,17 +120,40 @@ def handler_vote_pollopinion(type, source, parameters):
 		if POLLINGS[source[1]]['finished']:
 			reply(type, source, u'неприменимо к оконченному голосованию')
 			return					
-		parameters=parameters.lower()
 		if POLLINGS[source[1]]['creator']['jid']==jid or POLLINGS[source[1]]['options']['admedit']==1 and has_access(jid,20,source[1]):
-			for opinion in POLLINGS[source[1]]['opinions'].keys():
-				if opinion==parameters:
-					del POLLINGS[source[1]]['opinions'][parameters]
-					reply(type, source, u'пункт удалён')
-					return
-			POLLINGS[source[1]]['opinions'][parameters] = parameters
-			POLLINGS[source[1]]['opinions'][parameters] = {'cnt': 0, 'nicks': set()}
-			reply(type, source, u'добавил')
-			vote_save(source[1])
+			kcnt=len(POLLINGS[source[1]]['opinions'].keys())+2
+			for x in range(1, kcnt):
+				if str(x) in POLLINGS[source[1]]['opinions'].keys():
+					continue
+				else:
+					POLLINGS[source[1]]['opinions'][str(x)]={'opinion': parameters, 'cnt': 0, 'nicks': set()}
+					reply(type, source, u'добавил')
+					vote_save(source[1])
+		else:
+			reply(type, source, u'ага, щаззз')
+	else:
+		reply(type, source, u'сейчас нет никаких голосований')
+		
+def handler_vote_pollopinion_del(type, source, parameters):
+	if not parameters:
+		reply(type, source, u'ииии?')
+		return		
+	global POLLINGS
+	jid=get_true_jid(source[1]+'/'+source[2])
+	if POLLINGS.has_key(source[1]):
+		if POLLINGS[source[1]]['started']:
+			reply(type, source, u'неприменимо к запущеному голосованию, сначала останови/пересоздай')
+			return		
+		if POLLINGS[source[1]]['finished']:
+			reply(type, source, u'неприменимо к оконченному голосованию')
+			return					
+		if POLLINGS[source[1]]['creator']['jid']==jid or POLLINGS[source[1]]['options']['admedit']==1 and has_access(jid,20,source[1]):
+			try:
+				del POLLINGS[source[1]]['opinions'][parameters]
+				vote_save(source[1])
+				reply(type, source, u'удалил')
+			except:
+				reply(type, source, u'нет такого пункта')
 		else:
 			reply(type, source, u'ага, щаззз')
 	else:
@@ -242,7 +264,7 @@ def handler_vote_endpoll(type, source, parameters):
 		if POLLINGS[source[1]]['creator']['jid']==jid or POLLINGS[source[1]]['options']['admedit']==1 and has_access(jid,20,source[1]):
 			POLLINGS[source[1]]['finished']=True
 			POLLINGS[source[1]]['started']=False
-			msg(source[1], u'РЕЗУЛЬТАТЫ ГОЛОСОВАНИЯ'+vote_results(source[1]))
+			reply(type, source, u'РЕЗУЛЬТАТЫ ГОЛОСОВАНИЯ'+vote_results(source[1]))
 			vote_save(source[1])
 		else:
 			reply(type, source, u'ага, щаззз')
@@ -264,14 +286,11 @@ def handler_vote_join(groupchat, nick, aff, role):
 			return	
 		if POLLINGS[groupchat]['started']:
 			if not jid in POLLINGS[groupchat]['jids'].keys():
-				POLLINGS[groupchat]['jids'][jid]=jid
-				POLLINGS[groupchat]['jids'][jid]={}
-				POLLINGS[groupchat]['jids'][jid]['isnotified']=1
-				POLLINGS[groupchat]['jids'][jid]['isvoted']=0
+				POLLINGS[groupchat]['jids'][jid]={'isnotified': 1, 'isvoted': 0}
 				poll_text = u'ТЕКУЩЕЕ ГОЛОСОВАНИЕ\nСоздатель: '+ POLLINGS[groupchat]['creator']['nick']+u'\nВопрос: '+POLLINGS[groupchat]['question'] + u'\nВарианты ответов:\n'
-				for opinion in POLLINGS[groupchat]['opinions'].keys():
-					poll_text += '   >>> ' + opinion + '\n'
-				poll_text += u'Чтобы проголосовать, напиши в общий чат "мнение твоё_мнение"'
+				for opinion in sorted(POLLINGS[groupchat]['opinions'].keys()):
+					poll_text += '\t' + opinion + '. ' + POLLINGS[groupchat]['opinions'][opinion]['opinion'] + '\n'
+				poll_text += u'Чтобы проголосовать, напиши номер мнения, например "мнение 1"'
 				msg(groupchat+'/'+nick, poll_text)
 				vote_save(groupchat)
 			
@@ -325,20 +344,31 @@ def vote_save(gch):
 		
 def vote_results(gch):
 	global POLLINGS
+	answ,cnt,allv=[],0,0
 	poll_text = u'\nСоздатель: '+ POLLINGS[gch]['creator']['nick']+u'\nВопрос: '+POLLINGS[gch]['question'] + u'\nИтоги:\n'
 	for opinion in POLLINGS[gch]['opinions'].keys():
 		if POLLINGS[gch]['options']['nicks']:
-			poll_text += opinion+u' - '+str(POLLINGS[gch]['opinions'][opinion]['cnt'])+u' голосов ('+u', '.join(POLLINGS[gch]['opinions'][opinion]['nicks']) + ')\n'
+			answ.append([POLLINGS[gch]['opinions'][opinion]['cnt'], opinion+'. '+POLLINGS[gch]['opinions'][opinion]['opinion'], u', '.join(sorted(POLLINGS[gch]['opinions'][opinion]['nicks']))])
 		else:
-			poll_text += opinion+u' - '+str(POLLINGS[gch]['opinions'][opinion]['cnt'])+u' голосов\n'
+			answ.append([POLLINGS[gch]['opinions'][opinion]['cnt'], opinion+'. '+POLLINGS[gch]['opinions'][opinion]['opinion']])
+	for opinion in sorted(answ,lambda x,y: int(x[0]) - int(y[0]),reverse=True):
+		cnt+=1
+		if len(opinion)==3:
+			poll_text += u'•\t'+str(cnt)+u' место и '+str(opinion[0])+u' голосов\n\tВопрос: '+opinion[1]+u'\n\tТак решили: '+opinion[2]+u'\n'
+			allv+=opinion[0]
+		else:
+			poll_text += u'•\t'+str(cnt)+u' место и '+str(opinion[0])+u' голосов\n\tВопрос: '+opinion[1]+u'\n'
+			allv+=opinion[0]
+	poll_text += u'Всего '+str(allv)+u' голосов'
 	return poll_text
 
-register_command_handler(handler_vote_polloptions, 'vote_opt', ['голосование','мук','все'], 10, 'Управление опциями голосования. Всего 4 опции:\n1) closed - определяет, будет ли голосование открытым (только в общем чате) или закрытым (только приват)\n2) nicks - определяет, будут ли записывать ники голосующих, для последующей их выдачи вместе с результатами голосования\n3) admedit - определяет, будет ли администрация конференции иметь возможность редактировать голосование\n4) time - для определения времени (в секундах) в течении которого будет длиться голосование. 0 - ручная остановка', 'опции <опция> <состояние>', ['опции nicks 1','опции time 600'])
-register_command_handler(handler_vote_stoppoll, 'vote_stop', ['голосование','мук','все'], 11, 'Останавливает голосование, все данные сохраняются до продолжения голосования.', 'опции <опция> <состояние>', ['опции nicks 1','опции time 600'])
-register_command_handler(handler_vote_pollstart, 'vote_start', ['голосование','мук','все'], 11, 'Для подачи мнения в текущем голосовании.', 'мнение <мнение>', ['мнение да'])
+register_command_handler(handler_vote_polloptions, 'голосование*', ['голосование','мук','все'], 10, 'Управление опциями голосования. Всего 4 опции:\n1) closed - определяет, будет ли голосование открытым (только в общем чате) или закрытым (только приват)\n2) nicks - определяет, будут ли записывать ники голосующих, для последующей их выдачи вместе с результатами голосования\n3) admedit - определяет, будет ли администрация конференции иметь возможность редактировать голосование\n4) time - для определения времени (в секундах) в течении которого будет длиться голосование. 0 - ручная остановка', 'опции <опция> <состояние>', ['опции nicks 1','опции time 600'])
+register_command_handler(handler_vote_stoppoll, 'голосование-', ['голосование','мук','все'], 11, 'Останавливает голосование, все данные сохраняются до продолжения голосования.', 'опции <опция> <состояние>', ['опции nicks 1','опции time 600'])
+register_command_handler(handler_vote_pollstart, 'голосование+', ['голосование','мук','все'], 11, 'Для подачи мнения в текущем голосовании.', 'мнение <мнение>', ['мнение да'])
 register_command_handler(handler_vote_vote, 'мнение', ['голосование','мук','все'], 10, 'Для подачи мнения в текущем голосовании.', 'мнение <мнение>', ['мнение да'])
 register_command_handler(handler_vote_pollopinions, 'мнения', ['голосование','мук','все'], 11, 'Отдаёт текущие результаты голосования в приват, не завершая голосования при этом.', 'мнения', ['мнения'])
 register_command_handler(handler_vote_newpoll, 'голосование', ['голосование','мук','все'], 11, 'Создаёт новое голосование или отправляет готовое голосование в текущий чат, если даны мнения.', 'голосование [вопрос]', ['голосование винды - сакс!', 'голосование'])
-register_command_handler(handler_vote_pollopinion, 'пункт', ['голосование','мук','все'], 11, 'Добавляет пункт (1!) к текущему голосованию.', 'пункт <твой_пункт>', ['пункт да'])
-register_command_handler(handler_vote_endpoll, 'итоги', ['голосование','мук','админ','все'], 11, 'Завершает голование и показывает его результаты.', 'итоги', ['итоги'])
+register_command_handler(handler_vote_pollopinion_add, 'пункт+', ['голосование','мук','все'], 11, 'Добавляет пункт (1!) к текущему голосованию.', 'пункт+ <твой_пункт>', ['пункт+ да'])
+register_command_handler(handler_vote_pollopinion_del, 'пункт-', ['голосование','мук','все'], 11, 'Удаляет пункт из голосования. Пункт указывается его номером.', 'пункт- <номер_пункта>', ['пункт- 5'])
+register_command_handler(handler_vote_endpoll, 'итоги', ['голосование','мук','все'], 11, 'Завершает голование и показывает его результаты.', 'итоги', ['итоги'])
 register_join_handler(handler_vote_join)
