@@ -88,7 +88,7 @@ def iqkeepalive_and_s2scheck_answ(coze, res):
 			pass
 		else:
 			leave_groupchat(gch,u's2s lost?')
-			threading.Timer(60, join_groupchat,(gch)).start()
+			threading.Timer(60, join_groupchat,(gch,get_gch_info(gch, 'nick'),get_gch_info(gch, 'passw'))).start()
 		
 
 

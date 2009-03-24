@@ -20,7 +20,6 @@
 import urllib
 import httplib
 import re
-from string import replace
 
 def google_translate(from_lang, to_lang, text):
 	params = urllib.urlencode({"langpair":"%s|%s" %(from_lang, to_lang), "text":text,"ie":"UTF8", "oe":"UTF8"})

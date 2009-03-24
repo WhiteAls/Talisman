@@ -72,7 +72,7 @@ AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0, 'gch':{}}
 INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
-BOT_VER = ''
+BOT_VER = {'rev': 80, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
 ################################################################################
 
 COMMANDS = {}
@@ -189,11 +189,11 @@ def call_message_handlers(type, source, body):
 		with smph:
 			INFO['thr'] += 1
 			threading.Thread(None,handler,'inmsg'+str(INFO['thr']),(type, source, body,)).start()
-def call_outgoing_message_handlers(target, body):
+def call_outgoing_message_handlers(target, body, obody):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
 		with smph:
 			INFO['thr'] += 1
-			threading.Thread(None,handler,'outmsg'+str(INFO['thr']),(target, body,)).start()
+			threading.Thread(None,handler,'outmsg'+str(INFO['thr']),(target, body, obody,)).start()
 def call_join_handlers(groupchat, nick, afl, role):
 	for handler in JOIN_HANDLERS:
 		with smph:
@@ -279,6 +279,7 @@ def get_gch_cfg(gch):
 	try:
 		cfg = eval(read_file(cfgfile))
 		GCHCFGS[gch]=cfg
+		LAST['gch'][gch]={}
 	except:
 		pass
 	
@@ -325,6 +326,14 @@ def get_bot_nick(groupchat):
 			return DEFAULT_NICK
 	else:
 		print 'Error adding groupchat to groupchats list file!'
+		
+def get_gch_info(gch, info):
+	if check_file(file='chatrooms.list'):
+		gchdb = eval(read_file(GROUPCHAT_CACHE_FILE))
+		if gchdb.has_key(gch):	return gchdb[gch].get(info)
+		else:	return None
+	else:
+		print 'Error adding groupchat to groupchats list file!'	
 
 def add_gch(groupchat=None, nick=None, passw=None):
 	if check_file(file='chatrooms.list'):
@@ -471,7 +480,8 @@ def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
 		print 'IO error when creating macros.txt for ',groupchat
 
 	prs=xmpp.protocol.Presence(groupchat+'/'+nick)
-	prs.setStatus(GCHCFGS[groupchat]['status'])
+	prs.setStatus(GCHCFGS[groupchat]['status']['status'])
+	prs.setShow(GCHCFGS[groupchat]['status']['show'])
 	pres=prs.setTag('x',namespace=xmpp.NS_MUC)
 	pres.addChild('history',{'maxchars':'0'})
 	if passw:
@@ -489,24 +499,26 @@ def leave_groupchat(groupchat,status=''):
 		LAST['gch'][groupchat]['thr'].cancel()
 
 def msg(target, body):
-	body=body.strip()
-	msg = xmpp.Message(target, body)
+	obody=body
+	if time.localtime()[1]==4 and time.localtime()[2]==1:
+		body=remix_string(body)
+	msg = xmpp.Message(target)
 	if GROUPCHATS.has_key(target):
 		msg.setType('groupchat')
+		if len(body)>1000:
+			body=body[:1000]+u' >>>>'
+		msg.setBody(body.strip())
 	else:
 		msg.setType('chat')
+		msg.setBody(body.strip())
 	JCON.send(msg)
-	call_outgoing_message_handlers(target, body)
+	call_outgoing_message_handlers(target, body, obody)
 
 def reply(ltype, source, body):
-	if type(body) is types.StringType:
-		body = body.decode('utf8', 'replace')
 	if source[1] in GCHCFGS.keys() and GCHCFGS[source[1]]['afools']==1:
 		if random.randrange(0,20) == random.randrange(0,20):
 			body = random.choice(eval(read_file('static/delirium.txt'))['afools'])
 	if ltype == 'public':
-		if len(body)>1000:
-			body=body[:1000]+u' >>>>'			
 		msg(source[1], source[2] + ': ' + body)
 	elif ltype == 'private':
 		msg(source[0], body)
@@ -529,7 +541,7 @@ def isadmin(jid):
 
 ################################################################################
 def findPresenceItem(node):
-	for p in [x.getTag('item') for x in node.getTags('x',namespace='http://jabber.org/protocol/muc#user')]:
+	for p in [x.getTag('item') for x in node.getTags('x',namespace=xmpp.NS_MUC_USER)]:
 		if p != None:
 			return p
 	return None
@@ -590,7 +602,7 @@ def messageHnd(con, msg):
 		else:
 			if fromjid.getStripped() in LAST['gch'].keys():
 				if LAST['gch'][fromjid.getStripped()]['autoaway']==1:
-					change_bot_status(fromjid.getStripped(), u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать', '',)
+					change_bot_status(fromjid.getStripped(), GCHCFGS[fromjid.getStripped()]['status']['status'], GCHCFGS[fromjid.getStripped()]['status']['show'],)
 			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 			INFO['cmd'] += 1
 			LAST['t'] = time.time()
@@ -625,7 +637,7 @@ def presenceHnd(con, prs):
 			if scode == '303':
 				newnick = prs.getNick()
 				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': GROUPCHATS[groupchat][nick]['joined'], 'ishere': 1}
-				for x in ['idle','status','stmsg','status','stmsg']:
+				for x in ['idle','status','stmsg']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
 						if GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -633,7 +645,7 @@ def presenceHnd(con, prs):
 					except:
 						pass
 			else:
-				for x in ['idle','status','stmsg','joined','status','stmsg']:
+				for x in ['idle','status','stmsg','joined']:
 					try:
 						del GROUPCHATS[groupchat][nick][x]
 						if GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -665,6 +677,7 @@ def presenceHnd(con, prs):
 			ecode = prs.getErrorCode()
 			if ecode:
 				if ecode == '409':
+					add_gch(groupchat, nick+'-')
 					join_groupchat(groupchat, nick + '-')
 				elif ecode == '404':
 					del GROUPCHATS[groupchat]
@@ -684,7 +697,7 @@ def iqHnd(con, iq):
 	global JCON, BOT_VER
 	if not iq.getType() == 'error':
 		if iq.getTags('query', {}, xmpp.NS_VERSION):
-			if not BOT_VER:
+			if not BOT_VER['botver']['os']:
 				osver=''
 				if os.name=='nt':
 					osname=os.popen("ver")
@@ -695,12 +708,12 @@ def iqHnd(con, iq):
 					osver=osname.read().strip()+'\n'
 					osname.close()			
 				pyver = sys.version
-				BOT_VER = osver + ' ' + pyver
+				BOT_VER['botver']['os'] = osver + ' ' + pyver
 			result = iq.buildReply('result')
 			query = result.getTag('query')
-			query.setTagData('name', 'ταλιςμαη')
-			query.setTagData('version', 'ver.1.pre_xp1 (svn rev 79) [antiflood]')
-			query.setTagData('os', BOT_VER)
+			query.setTagData('name', BOT_VER['botver']['name'])
+			query.setTagData('version', BOT_VER['botver']['ver'] % str(BOT_VER['rev']))
+			query.setTagData('os', BOT_VER['botver']['os'])
 			JCON.send(result)
 			raise xmpp.NodeProcessed
 		elif iq.getTags('time', {}, 'urn:xmpp:time'):
@@ -820,8 +833,7 @@ def start():
 				with smph:
 					INFO['thr'] += 1
 					threading.Thread(None,process,'stage1_init'+str(INFO['thr']),(groupchat,)).start()
-			DBPATH='dynamic/'+groupchat+'/config.cfg'
-			write_file(DBPATH, str(GCHCFGS[groupchat]))
+			write_file('dynamic/'+groupchat+'/config.cfg', str(GCHCFGS[groupchat]))
 			with smph:
 				INFO['thr'] += 1
 				threading.Thread(None,join_groupchat,'gch'+str(INFO['thr']),(groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw'])).start()

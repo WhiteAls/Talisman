@@ -61,7 +61,7 @@ def handler_idle_answ(coze, res, type, source, param):
 def handler_userinfo_idle(type, source, parameters):
 	if GROUPCHATS.has_key(source[1]):
 		if not parameters:
-			reply(type,source,u'и что я должен сказать? ;)')
+			reply(type,source,u'ииии?')
 			return
 		nick = parameters.strip()
 		if nick==source[2]:

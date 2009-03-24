@@ -21,18 +21,15 @@ version_pending=[]
 def handler_version(type, source, parameters):
 	nick = source[2]
 	groupchat=source[1]
-	jid=groupchat+'/'+nick
 	iq = xmpp.Iq('get')
 	id='vers'+str(random.randrange(1000, 9999))
 	globals()['version_pending'].append(id)
 	iq.setID(id)
 	iq.addChild('query', {}, [], 'jabber:iq:version');
 	if parameters:
-		args = parameters.split(' ')
-		nick = ' '.join(args[0:])
-		jid=groupchat+'/'+nick
-		if GROUPCHATS.has_key(source[1]):
-			nicks = GROUPCHATS[source[1]].keys()
+		jid=groupchat+'/'+parameters.strip()
+		if GROUPCHATS.has_key(groupchat):
+			nicks = GROUPCHATS[groupchat].keys()
 			param = parameters.strip()
 			if not nick in nicks:
 				iq.setTo(param)

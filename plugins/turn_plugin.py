@@ -42,15 +42,15 @@ def handler_turn_save_msg(type, source, body):
 	nick=source[2]
 	groupchat=source[1]
 	jid=get_true_jid(groupchat+'/'+nick)
-	if jid in turn_msgs.keys():
-		if jid in turn_msgs[groupchat].keys() and jid != groupchat:
+	if groupchat in turn_msgs.keys():
+		if jid in turn_msgs[groupchat].keys() and jid != groupchat and jid != JID:
 			turn_msgs[groupchat][jid]=body
 	
 def handler_turn_join(groupchat, nick, aff, role):
 	jid=get_true_jid(groupchat+'/'+nick)
 	if not groupchat in turn_msgs.keys():
 		turn_msgs[groupchat] = {}
-	if not jid in turn_msgs[groupchat].keys():
+	if not jid in turn_msgs[groupchat].keys() and jid != JID:
 		turn_msgs[groupchat][jid]=None
 
 

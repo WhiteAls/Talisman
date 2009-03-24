@@ -44,11 +44,10 @@ def handler_admin_join(type, source, parameters):
 			groupchat = parameters
 			reason = ''
 		get_gch_cfg(groupchat)
-		get_order_cfg(groupchat)		
-		get_commoff(groupchat)
-		set_default_gch_status(groupchat)
-		get_afools_state(groupchat)
-		get_autoaway_state(groupchat)
+		for process in STAGE1_INIT:
+			with smph:
+				INFO['thr'] += 1
+				threading.Thread(None,process,'atjoin_init'+str(INFO['thr']),(groupchat,)).start()
 		DBPATH='dynamic/'+groupchat+'/config.cfg'
 		write_file(DBPATH, str(GCHCFGS[groupchat]))
 		if passw:
@@ -247,10 +246,7 @@ def handler_changebotstatus(type, source, parameters):
 			except:
 				status=None
 		change_bot_status(source[1],status,show,0)
-		if GCHCFGS[source[1]]['autoaway']==1:
-			if LAST['gch'][source[1]]['thr']:
-				LAST['gch'][source[1]]['thr'].cancel()
-			GCHCFGS[source[1]]['autoaway']=0
+		GCHCFGS[gch]['status']={'status': status, 'show': show}
 	else:
 		stmsg=GROUPCHATS[source[1]][get_bot_nick(source[1])]['stmsg']
 		status=GROUPCHATS[source[1]][get_bot_nick(source[1])]['status']
@@ -260,19 +256,17 @@ def handler_changebotstatus(type, source, parameters):
 			reply(type,source, u'я сейчас '+status)
 			
 def get_autoaway_state(gch):
-	if not 'gch' in LAST:
-		LAST['gch']={}
-	if not gch in LAST['gch']:
-		LAST['gch'][gch]={}
 	if not 'autoaway' in GCHCFGS[gch]:
 		GCHCFGS[gch]['autoaway']=1
 	if GCHCFGS[gch]['autoaway']==1:
 		LAST['gch'][gch]['autoaway']=0
 		LAST['gch'][gch]['thr']=None
 		
-def set_default_gch_status(gch):		
-	if not 'status' in GCHCFGS[gch]:
-		GCHCFGS[gch]['status']=u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать'
+def set_default_gch_status(gch):
+	if isinstance(GCHCFGS[gch].get('status'), str): #temp workaround
+		GCHCFGS[gch]['status']={'status': u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать', 'show': u''}
+	elif not isinstance(GCHCFGS[gch].get('status'), dict):
+		GCHCFGS[gch]['status']={'status': u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать', 'show': u''}
 
 
 register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу. Если она запаролена то пишите пароль сразу после названия конфы.', 'зайти <конфа> [pass=пароль] [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря', 'зайти ы@conference.jabber.aq pass=1234 уря'])

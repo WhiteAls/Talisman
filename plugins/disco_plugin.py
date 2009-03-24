@@ -46,8 +46,12 @@ def handler_disco(type, source, parameters):
 		id='dis'+str(random.randrange(1, 9999))
 		globals()['disco_pending'].append(id)
 		iq.setID(id)
-		iq.addChild('query', {}, [], 'http://jabber.org/protocol/disco#items')
-		iq.setTo(tojid)
+		query=iq.addChild('query', {}, [], xmpp.NS_DISCO_ITEMS)
+		if len(tojid.split('#'))==2:
+			query.setAttr('node',tojid.split('#')[1])
+			iq.setTo(tojid.split('#')[0])
+		else:
+			iq.setTo(tojid)
 		JCON.SendAndCallForResponse(iq, handler_disco_ext, {'type': type, 'source': source, 'stop': stop, 'srch': srch, 'tojid': tojid})
 	else:
 		reply(type,source,u'ииии?')
@@ -74,13 +78,17 @@ def handler_disco_ext(coze, res, type, source, stop, srch, tojid):
 						disco.append([st[0],att['jid'],st[1]])
 						trig=1
 					except:
-						if tojid.count('@') or not trig:
-							if tojid.count('@'):
-								st=disco.append(att['name'])
-							else:
-								st=disco.append([att['name'],att['jid']])
+						if not trig:
+							temp=[]
+							if att.has_key('name'):
+								temp.append(att['name'])
+							if att.has_key('jid') and not tojid.count('@'):
+								temp.append(att['jid'])
+							if att.has_key('node'):
+								temp.append(att['node'])
+							disco.append(temp)
 				else:
-					disco.append(att['jid'])
+					disco.append([att['jid']])
 			if disco:
 				handler_disco_answ(type,source,stop,disco,srch)
 			else:
@@ -98,42 +106,37 @@ def handler_disco_answ(type,source,stop,disco,srch):
 	if total==stop:
 		reply(type, source, u'всего '+str(len(disco))+u' пунктов')
 		return
-	rep,dis = u'надискаверил:\n',[]
-	if len(disco[0])==3:
-		disco=sortdis(disco)
-		for x in disco:
+	rep,dis,disco = u'надискаверил:\n',[],sortdis(disco)
+	for item in disco:
+		if len(item)==3:
 			total+=1
 			if srch:
 				if srch.endswith('@'):
-					if x[1].startswith(srch):
-						dis.append(str(total)+u') '+x[0]+u' ['+x[1]+u']: '+str(x[2]))
+					if item[1].startswith(srch):
+						dis.append(str(total)+u') '+item[0]+u' ['+item[1]+u']: '+str(item[2]))
 						break
 					else:
 						continue
 				else:
-					if not x[0].count(srch) and not x[1].count(srch):
+					if not item[0].count(srch) and not item[1].count(srch):
 						continue
-			dis.append(str(total)+u') '+x[0]+u' ['+x[1]+u']: '+str(x[2]))
+			dis.append(str(total)+u') '+item[0]+u' ['+item[1]+u']: '+str(item[2]))
 			if len(dis)==stop:
 				break
-	elif len(disco[0])==2:
-		disco.sort()
-		for x in disco:
+		elif len(item)==2:
 			total+=1
 			if srch:
-				if not x[0].count(srch) and not x[1].count(srch):
+				if not item[0].count(srch) and not item[1].count(srch):
 					continue
-			dis.append(str(total)+u') '+x[0]+u' ['+x[1]+u']')
+			dis.append(str(total)+u') '+item[0]+u' ['+item[1]+u']')
 			if len(dis)==stop:
 				break
-	else:
-		disco.sort()
-		for x in disco:
+		else:
 			total+=1
 			if srch:
-				if not x.count(srch):
+				if not item[0].count(srch):
 					continue
-			dis.append(str(total)+u') '+x)
+			dis.append(str(total)+u') '+item[0])
 			if len(dis)==stop:
 				break
 	if dis:
@@ -162,4 +165,4 @@ def sortdis(dis):
 	
 disco=[]
 			
-register_command_handler(handler_disco, 'диско', ['мук','инфо','все'], 10, 'Показывает результаты обзора сервисов для указанного JID.\nВторой или третий (если также даётся ограничитель кол-ва) параметр - поиск. Ищет заданное слово в JID и описании элемента диско. Если поисковым словом задать имя конференции до названия сервера (например qwerty@), то покажет место этой конференции в общем рейтинге.\nВ общий чат может дать max 50 результатов, без указания кол-ва - 10.\n В приват может дать max 250, без указания кол-ва 50.', 'диско <сервер> <кол-во результатов> <поисковая строка>', ['диско jabber.aq','диско conference.jabber.aq 5','диско conference.jabber.aq qwerty','диско conference.jabber.aq 5 qwerty','диско conference.jabber.aq qwerty@'])
+register_command_handler(handler_disco, 'диско', ['мук','инфо','все'], 10, 'Показывает результаты обзора сервисов для указанного JID.\nТакже можно запросить обзор по узлу (node). Формат запроса jid#node.\nВторой или третий (если также даётся ограничитель кол-ва) параметр - поиск. Ищет заданное слово в JID и описании элемента диско. Если поисковым словом задать имя конференции до названия сервера (например qwerty@), то покажет место этой конференции в общем рейтинге.\nВ общий чат может дать max 50 результатов, без указания кол-ва - 10.\n В приват может дать max 250, без указания кол-ва 50.', 'диско <сервер> <кол-во результатов> <поисковая строка>', ['диско jabber.aq','диско conference.jabber.aq 5','диско conference.jabber.aq qwerty','диско conference.jabber.aq 5 qwerty','диско conference.jabber.aq qwerty@', 'диско jabber.aq#services'])

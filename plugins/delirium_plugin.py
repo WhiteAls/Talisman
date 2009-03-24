@@ -101,7 +101,7 @@ def handler_clean_conf(type, source, parameters):
 	if GROUPCHATS.has_key(source[1]):
 		for x in range(1, 20):
 			msg(source[1], '')
-#			time.sleep(1.3)
+			time.sleep(1.3)
 		reply(type,source,u'done')
 		
 def handler_afools_control(type, source, parameters):
@@ -157,12 +157,36 @@ def poke_work(gch,action=None,phrase=None):
 		elif action==3:
 			return pokedb
 		else:
-			pokes=[]
-			for poke in pokedb.itervalues():
-				pokes.append(poke)
-			return pokes
+			return pokedb.values()
 	else:
 		return None
+		
+def remix_string(parameters):
+	remixed=[]
+	for word in parameters.split():
+		tmp=[]
+		if len(word)<=1:
+			remixed.append(word)
+			continue
+		elif len(word)==2:
+			tmp=list(word)
+			random.shuffle(tmp)
+			remixed.append(u''.join(tmp))
+		elif len(word)==3:
+			tmp1=list(word[1:])
+			tmp2=list(word[:-1])
+			tmp=random.choice([tmp1,tmp2])
+			if tmp==tmp1:
+				random.shuffle(tmp)
+				remixed.append(word[0]+u''.join(tmp))
+			else:
+				random.shuffle(tmp)
+				remixed.append(u''.join(tmp)+word[-1])					
+		elif len(word)>=4:
+			tmp=list(word[1:-1])
+			random.shuffle(tmp)
+			remixed.append(word[0]+u''.join(tmp)+word[-1])
+	return u' '.join(remixed)
 	
 register_command_handler(handler_poke, 'тык', ['фан','все','тык'], 10, 'Тыкает юзера. Заставляет его обратить внимание на вас/на чат.\nlast10 вместо ника покажет список ников, которые тыкали последними.', 'тык <ник>|<параметр>', ['тык qwerty','тык + пришиб %s','тык - 2','тык *'])
 register_command_handler(handler_poke_add, 'тык+', ['фан','все','тык'], 20, 'Добавить пользовательскую фразу. Переменная %s во фразе обозначает место для вставки ника (обязательный параметр). Фраза должна быть написана от третьего лица, т.к. будет использоваться в виде "/me ваша фраза". max кол-во пользовательских фраз - 20.', 'тык+ <фраза>', ['тык+ побил %s'])
@@ -172,5 +196,6 @@ register_command_handler(handler_test, 'тест', ['фан','инфо','все'
 register_command_handler(handler_test, 'test', ['фан','инфо','все'], 0, 'Тупо отвечает пассед.', 'test', ['test'])
 register_command_handler(handler_clean_conf, 'фконфу', ['фан','мук','все'], 15, 'Очищает конференцию (считает до 20).', 'фконфу', ['фконфу'])
 register_command_handler(handler_afools_control, 'afools', ['фан','мук','все'], 30, 'Включает и выключает шуточки бота, которыми он порою подменяет (саму команду он всегда исполняет!) стандартный ответ команды.', 'afools <1|0>', ['afools 1','afools 0'])
+
 
 register_stage1_init(get_afools_state)
