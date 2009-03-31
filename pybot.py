@@ -36,10 +36,6 @@ import codecs
 import macros
 
 
-import locale
-locale.setlocale(locale.LC_CTYPE, "")
-
-
 ################################################################################
 GENERAL_CONFIG_FILE = 'config.txt'
 
@@ -72,7 +68,7 @@ AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0, 'gch':{}}
 INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
-BOT_VER = {'rev': 80, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
+BOT_VER = {'rev': 81, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
 ################################################################################
 
 COMMANDS = {}
@@ -225,7 +221,7 @@ def call_command_handlers(command, type, source, parameters, callee):
 				INFO['thr'] += 1
 				threading.Thread(None,COMMAND_HANDLERS[command],'command'+str(INFO['thr']),(type, source, parameters,)).start()		
 		else:
-			reply(type, source, 'ага, щаззз')
+			reply(type, source, u'ага, щаззз')
 
 ################################################################################
 
@@ -315,7 +311,7 @@ def get_true_jid(jid):
 			true_jid = stripped_jid
 	else:
 		true_jid = stripped_jid
-	return true_jid
+	return true_jid.lower()
 
 def get_bot_nick(groupchat):
 	if check_file(file='chatrooms.list'):
@@ -499,6 +495,8 @@ def leave_groupchat(groupchat,status=''):
 		LAST['gch'][groupchat]['thr'].cancel()
 
 def msg(target, body):
+	if not isinstance(body, unicode):
+		body = body.decode('utf8', 'replace')
 	obody=body
 	if time.localtime()[1]==4 and time.localtime()[2]==1:
 		body=remix_string(body)
@@ -515,6 +513,8 @@ def msg(target, body):
 	call_outgoing_message_handlers(target, body, obody)
 
 def reply(ltype, source, body):
+	if not isinstance(body, unicode):
+		body = body.decode('utf8', 'replace')
 	if source[1] in GCHCFGS.keys() and GCHCFGS[source[1]]['afools']==1:
 		if random.randrange(0,20) == random.randrange(0,20):
 			body = random.choice(eval(read_file('static/delirium.txt'))['afools'])

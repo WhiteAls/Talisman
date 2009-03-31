@@ -224,6 +224,7 @@ def handler_botautoaway_onoff(type, source, parameters):
 		else:
 			GCHCFGS[source[1]]['autoaway']=0
 			reply(type,source,u'автоотсутствие отключено')
+		get_autoaway_state(source[1])
 		write_file(DBPATH,str(GCHCFGS[source[1]]))
 	else:
 		ison=GCHCFGS[source[1]]['autoaway']
@@ -258,7 +259,7 @@ def handler_changebotstatus(type, source, parameters):
 def get_autoaway_state(gch):
 	if not 'autoaway' in GCHCFGS[gch]:
 		GCHCFGS[gch]['autoaway']=1
-	if GCHCFGS[gch]['autoaway']==1:
+	if GCHCFGS[gch]['autoaway']:
 		LAST['gch'][gch]['autoaway']=0
 		LAST['gch'][gch]['thr']=None
 		
