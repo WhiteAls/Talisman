@@ -51,15 +51,16 @@ def handler_total_in_muc(type, source, parameters):
 def handler_bot_uptime(type, source, parameters):
 	if INFO['start']:
 		uptime=int(time.time() - INFO['start'])
-		rep = u'я работаю без падений уже '+timeElapsed(uptime)
+		rep,mem = u'я работаю без падений уже '+timeElapsed(uptime),''
 		rep += u'\nбыло получено %s сообщений, обработано %s презенсов и %s iq-запросов, а также выполнено %s команд\n'%(str(INFO['msg']),str(INFO['prs']),str(INFO['iq']),str(INFO['cmd']))
 		if os.name=='posix':
 			try:
 				pr = os.popen('ps -o rss -p %s' % os.getpid())
 				pr.readline()
 				mem = pr.readline().strip()
-			finally:
 				pr.close()
+			except:
+				pass
 			if mem: rep += u'также мной съедено %s кб памяти, ' % mem
 		(user, system,qqq,www,eee,) = os.times()
 		rep += u'потрачено %.2f секунд процессора, %.2f секунд системного времени и в итоге %.2f секунд общесистемного времени\n' % (user, system, user + system)

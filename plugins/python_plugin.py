@@ -20,7 +20,7 @@
 
 def handler_python_eval(type, source, parameters):
 	try:
-		return_value = str(eval(unicode(parameters)))
+		return_value = str(eval(parameters))
 	except:
 		return_value = str(sys.exc_info()[0]) + ' - ' + str(sys.exc_info()[1])
 	reply(type, source, return_value)

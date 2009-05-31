@@ -150,19 +150,19 @@ def log_write(body, nick, type, jid, ismoder=0):
 	elif body[:3].lower() == '/me':
 		fp.write('<span class="emote">* %s%s</span><br />\n' % (nick, body[3:]))
 	elif type == 'public' or nick == DEFAULT_NICK:
-		if nick=='▌leave▐':
+		if nick=='@$$leave$$@':
 			fp.write('<span class="userleave">' + body + '</span><br />\n')
-		elif nick=='▌join▐':
+		elif nick=='@$$join$$@':
 			fp.write('<span class="userjoin">' + body + '</span><br />\n')
-		elif nick=='▌status▐':
+		elif nick=='@$$status$$@':
 			fp.write('<span class="statuschange">' + body + '</span><br />\n')
-		elif nick=='▌ra▐':
+		elif nick=='@$$ra$$@':
 			fp.write('<span class="rachange">' + body + '</span><br />\n')
-		elif nick=='▌userkick▐':
+		elif nick=='@$$userkick$$@':
 			fp.write('<span class="userkick">' + body + '</span><br />\n')
-		elif nick=='▌userban▐':
+		elif nick=='@$$userban$$@':
 			fp.write('<span class="userban">' + body + '</span><br />\n')
-		elif nick=='▌nickchange▐':
+		elif nick=='@$$nickchange$$@':
 			fp.write('<span class="nickchange">' + body + '</span><br />\n')
 		else:
 			if ismoder:
@@ -174,25 +174,25 @@ def log_write(body, nick, type, jid, ismoder=0):
 	fp.close()
 
 def log_handler_join(groupchat, nick, aff, role):
-	log_write('%s joins the room as %s and %s' % (nick, role, aff), '▌join▐', 'public', groupchat)
+	log_write('%s joins the room as %s and %s' % (nick, role, aff), '@$$join$$@', 'public', groupchat)
 
 def log_handler_leave(groupchat, nick, reason, code):
 	if code:
 		if code == '307':
 			if reason:
-				log_write('%s has been kicked (%s)' % (nick,reason), '▌userkick▐', 'public', groupchat)
+				log_write('%s has been kicked (%s)' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
 			else:
-				log_write('%s has been kicked' % (nick), '▌userkick▐', 'public', groupchat)			
+				log_write('%s has been kicked' % (nick), '@$$userkick$$@', 'public', groupchat)			
 		elif code == '301':
 			if reason:
-				log_write('%s has been banned (%s)' % (nick,reason), '▌userban▐', 'public', groupchat)
+				log_write('%s has been banned (%s)' % (nick,reason), '@$$userban$$@', 'public', groupchat)
 			else:
-				log_write('%s has been banned' % (nick), '▌userban▐', 'public', groupchat)			
+				log_write('%s has been banned' % (nick), '@$$userban$$@', 'public', groupchat)			
 	else:
 		if reason:
-			log_write('%s leaves the room (%s)' % (nick,reason), '▌leave▐', 'public', groupchat)
+			log_write('%s leaves the room (%s)' % (nick,reason), '@$$leave$$@', 'public', groupchat)
 		else:
-			log_write('%s leaves the room' % (nick), '▌leave▐', 'public', groupchat)
+			log_write('%s leaves the room' % (nick), '@$$leave$$@', 'public', groupchat)
 
 def log_handler_presence(prs):
 	stmsg,status,code,reason,newnick='','','','',''
@@ -202,7 +202,7 @@ def log_handler_presence(prs):
 	reason = prs.getReason()
 	if code == '303':
 		newnick = prs.getNick()
-		log_write('%s now is known as %s' % (nick,newnick), '▌nickchange▐', 'public', groupchat)
+		log_write('%s now is known as %s' % (nick,newnick), '@$$nickchange$$@', 'public', groupchat)
 	else:
 		if not prs.getType()=='unavailable':
 			try:
@@ -216,9 +216,9 @@ def log_handler_presence(prs):
 			if not status:
 				status = 'online'
 			if stmsg:
-				log_write('%s is now %s (%s)' % (nick,status,stmsg), '▌status▐', 'public', groupchat)
+				log_write('%s is now %s (%s)' % (nick,status,stmsg), '@$$status$$@', 'public', groupchat)
 			else:
-				log_write('%s is now %s' % (nick,status), '▌status▐', 'public', groupchat)	
+				log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)	
 			
 			
 if PUBLIC_LOG_DIR:

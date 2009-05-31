@@ -51,10 +51,8 @@ def handler_admin_join(type, source, parameters):
 		DBPATH='dynamic/'+groupchat+'/config.cfg'
 		write_file(DBPATH, str(GCHCFGS[groupchat]))
 		if passw:
-			add_gch(groupchat, DEFAULT_NICK)
 			join_groupchat(groupchat, DEFAULT_NICK)
 		else:
-			add_gch(groupchat, DEFAULT_NICK, passw)
 			join_groupchat(groupchat, DEFAULT_NICK, passw)
 		MACROS.load(groupchat)
 		reply(type, source, u'я зашёл в -> <' + groupchat + '>')

@@ -70,8 +70,8 @@ def iqkeepalive_and_s2scheck():
 		id = 'p'+str(random.randrange(1, 1000))
 		globals()['check_pending'].append(id)
 		iq.setID(id)
-		iq.addChild('ping', {}, [], 'urn:xmpp:ping');
-		iq.setTo(gch)
+		iq.addChild('ping', {}, [], 'urn:xmpp:ping')
+		iq.setTo(gch+'/'+get_gch_info(gch, 'nick'))
 		JCON.SendAndCallForResponse(iq, iqkeepalive_and_s2scheck_answ,{})
 	threading.Timer(300, iqkeepalive_and_s2scheck).start()
 
@@ -84,11 +84,11 @@ def iqkeepalive_and_s2scheck_answ(coze, res):
 		return
 	if res:
 		gch,error=res.getFrom().getStripped(),res.getErrorCode()
-		if error=='501':
+		if error in ['405',None]:
 			pass
 		else:
 			leave_groupchat(gch,u's2s lost?')
-			threading.Timer(60, join_groupchat,(gch,get_gch_info(gch, 'nick'),get_gch_info(gch, 'passw'))).start()
+			threading.Timer(60, join_groupchat,(gch,get_gch_info(gch, 'nick') if get_gch_info(gch, 'nick') else DEFAULT_NICK, get_gch_info(gch, 'passw'))).start()
 		
 
 

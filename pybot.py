@@ -68,7 +68,7 @@ AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0, 'gch':{}}
 INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
-BOT_VER = {'rev': 81, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
+BOT_VER = {'rev': 82, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
 ################################################################################
 
 COMMANDS = {}
@@ -311,12 +311,12 @@ def get_true_jid(jid):
 			true_jid = stripped_jid
 	else:
 		true_jid = stripped_jid
-	return true_jid.lower()
+	return true_jid
 
 def get_bot_nick(groupchat):
 	if check_file(file='chatrooms.list'):
 		gchdb = eval(read_file(GROUPCHAT_CACHE_FILE))
-		if gchdb.has_key(groupchat):
+		if gchdb.has_key(groupchat) and gchdb[groupchat]['nick']:
 			return gchdb[groupchat]['nick']
 		else:
 			return DEFAULT_NICK
@@ -474,6 +474,8 @@ def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
 		pass
 	else:
 		print 'IO error when creating macros.txt for ',groupchat
+		
+	add_gch(groupchat, nick, passw)
 
 	prs=xmpp.protocol.Presence(groupchat+'/'+nick)
 	prs.setStatus(GCHCFGS[groupchat]['status']['status'])
@@ -677,13 +679,11 @@ def presenceHnd(con, prs):
 			ecode = prs.getErrorCode()
 			if ecode:
 				if ecode == '409':
-					add_gch(groupchat, nick+'-')
 					join_groupchat(groupchat, nick + '-')
 				elif ecode == '404':
 					del GROUPCHATS[groupchat]
 				elif ecode in ['401','403','405',]:
-					del GROUPCHATS[groupchat]
-					add_gch(groupchat)
+					leave_groupchat(groupchat, u'got %s error code' % str(ecode))
 				elif ecode == '503':
 					threading.Timer(60, join_groupchat,(groupchat, nick)).start()
 		else:
@@ -755,8 +755,11 @@ def iqHnd(con, iq):
 			query.setTagData('display', timedisp)
 			JCON.send(result)
 			raise xmpp.NodeProcessed
-		elif iq.getTags('query', {}, 'urn:xmpp:ping'):
-			JCON.send(iq.buildReply('result'))
+		elif iq.getTags('ping', {}, 'urn:xmpp:ping'):
+			result = xmpp.Iq('result')
+			result.setTo(iq.getFrom())
+			result.setID(iq.getID())
+			JCON.send(result)
 			raise xmpp.NodeProcessed
 	call_iq_handlers(iq)
 	INFO['iq'] += 1
@@ -836,7 +839,7 @@ def start():
 			write_file('dynamic/'+groupchat+'/config.cfg', str(GCHCFGS[groupchat]))
 			with smph:
 				INFO['thr'] += 1
-				threading.Thread(None,join_groupchat,'gch'+str(INFO['thr']),(groupchat,groupchats[groupchat]['nick'],groupchats[groupchat]['passw'])).start()
+				threading.Thread(None,join_groupchat,'gch'+str(INFO['thr']),(groupchat,groupchats[groupchat]['nick'] if groupchats[groupchat]['nick'] else DEFAULT_NICK,groupchats[groupchat]['passw'])).start()
 				if groupchat in LAST['gch'].keys():
 					if GCHCFGS[groupchat]['autoaway']==1:
 						LAST['gch'][groupchat]['thr']=threading.Timer(600,change_bot_status,(groupchat, u'я ничего здесь не делаю с '+time.strftime('%d.%m.%Y@%H:%M:%S GMT', time.gmtime()), 'away',1))

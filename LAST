@@ -1,20 +1,6 @@
->>> pybot.py - some bugfixes and little changes
->>> LAST - info file for update_plugin.py
->>> access_plugin.py - more unicode
->>> admin_plugin.py - more flexibility on room join. little changes
->>> delirium_plugin.py - reverted pause between cleaning messages. giantomania was shrunk %) + secret code!
->>> disco_plugin.py - now disco is flexible. items may contain different number of subitems, unlike previous versions. also node disco was added
->>> idle_plugin.py - mmm... typo? :)
->>> log_plugin.py - little changes due to more_plugin.py
->>> order_plugin.py - refactored, it seems :) smile filter was deleted. also old checks in new places :)
->>> presence_plugin.py - i dont remember :D
->>> trans_plugin.py - superfluous
->>> turn_plugin.py - bugfixes
->>> version_plugin.py - i dont remember :(
->>> more_plugin.py - new plugin. shows the next portion of the text after >>> in public groupchat
->>> update_plugin.py - new plugin. (auto)notify first botadmin that new revision in botsvn is out
-====================================================
-HAPPY BIRTHDAY TO TALISMAN!!! 2 YEARS! CHEEEERS!!!!
-yes, at 25.03
-====================================================
-ps also this commit includes a brand new april fools ;)
+>>> admin_plugin.py - superfluous due to this revision of pybot.py
+>>> info_plugin.py - now without errors in console for *nix (i hope :D  )
+>>> log_plugin.py - reverted
+>>> presence_plugin.py - s2s down check was fixed (i hope)
+>>> pybot.py - reverted normalization. more checks for bot nick in groupchat list file. XEP-0199 reply was fixed :-[
+>>> python_plugin.py - less unicode :D
