@@ -494,7 +494,8 @@ def leave_groupchat(groupchat,status=''):
 	if GROUPCHATS.has_key(groupchat):
 		del GROUPCHATS[groupchat]
 		add_gch(groupchat)
-		LAST['gch'][groupchat]['thr'].cancel()
+		if 'thr' in LAST['gch'][groupchat]:
+			LAST['gch'][groupchat]['thr'].cancel()
 
 def msg(target, body):
 	if not isinstance(body, unicode):
@@ -602,14 +603,15 @@ def messageHnd(con, msg):
 		if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
 			return
 		else:
-			if fromjid.getStripped() in LAST['gch'].keys():
-				if LAST['gch'][fromjid.getStripped()]['autoaway']==1:
-					change_bot_status(fromjid.getStripped(), GCHCFGS[fromjid.getStripped()]['status']['status'], GCHCFGS[fromjid.getStripped()]['status']['show'],)
+			if fromjid.getStripped() in GROUPCHATS:			
+				if GCHCFGS[fromjid.getStripped()]['autoaway']==1:
+					if LAST['gch'][fromjid.getStripped()]['autoaway']==1:
+						change_bot_status(fromjid.getStripped(), GCHCFGS[fromjid.getStripped()]['status']['status'], GCHCFGS[fromjid.getStripped()]['status']['show'],)
 			call_command_handlers(command, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], unicode(parameters), rcmd)
 			INFO['cmd'] += 1
 			LAST['t'] = time.time()
 			LAST['c'] = command
-			if fromjid.getStripped() in LAST['gch'].keys():
+			if fromjid.getStripped() in GROUPCHATS:		
 				if GCHCFGS[fromjid.getStripped()]['autoaway']==1:
 					if LAST['gch'][fromjid.getStripped()]['thr']:
 						LAST['gch'][fromjid.getStripped()]['thr'].cancel()

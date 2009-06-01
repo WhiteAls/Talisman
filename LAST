@@ -1,6 +1,1 @@
->>> admin_plugin.py - superfluous due to this revision of pybot.py
->>> info_plugin.py - now without errors in console for *nix (i hope :D  )
->>> log_plugin.py - reverted
->>> presence_plugin.py - s2s down check was fixed (i hope)
->>> pybot.py - reverted normalization. more checks for bot nick in groupchat list file. XEP-0199 reply was fixed :-[
->>> python_plugin.py - less unicode :D
+>>> pybot.py - fixed autoaway bug. thx perk11!
