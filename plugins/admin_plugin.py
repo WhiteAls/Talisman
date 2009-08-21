@@ -30,9 +30,14 @@ def popups_check(gch):
 		return 1
 				
 def handler_admin_join(type, source, parameters):
+	if not source[1] in GROUPCHATS:
+		source[2]=source[1].split('@')[0]
 	if parameters:
 		passw=''
 		args = parameters.split()
+		if not args[0].count('@') or not args[0].count('.')>=1:
+			reply(type, source, u'прочитай помощь по команде')
+			return
 		if len(args)>1:
 			groupchat = args[0]
 			passw = string.split(args[1], 'pass=', 1)
@@ -55,16 +60,18 @@ def handler_admin_join(type, source, parameters):
 		else:
 			join_groupchat(groupchat, DEFAULT_NICK, passw)
 		MACROS.load(groupchat)
-		reply(type, source, u'я зашёл в -> <' + groupchat + '>')
+		reply(type, source, u'я зашёл в ' + groupchat)
 		if popups_check(groupchat):
 			if reason:
 				msg(groupchat, u'меня привёл '+source[2]+u' по причине:\n'+reason)
 			else:
 				msg(groupchat, u'меня привёл '+source[2])
 	else:
-		reply(type, source, u'необходимо написать конфу, а потом причину (не обязательно)')
+		reply(type, source, u'прочитай помощь по команде')
 
 def handler_admin_leave(type, source, parameters):
+	if not source[1] in GROUPCHATS:
+		source[2]=source[1].split('@')[0]
 	args = parameters.split()
 	if len(args)>1:
 		level=int(user_level(source[1]+'/'+source[2], source[1]))
@@ -87,6 +94,9 @@ def handler_admin_leave(type, source, parameters):
 		reason = ''
 		groupchat = args[0]
 	else:
+		if not source[1] in GROUPCHATS:
+			reply(type, source, u'это возможно только в конференции')
+			return
 		groupchat = source[1]
 		reason = ''
 	if popups_check(groupchat):
@@ -98,10 +108,13 @@ def handler_admin_leave(type, source, parameters):
 		leave_groupchat(groupchat, u'меня уводит '+source[2]+u' по причине:\n'+reason)
 	else:
 		leave_groupchat(groupchat,u'меня уводит '+source[2])
-	reply(type, source, u'я ушёл из -> <' + groupchat + '>')
+	reply(type, source, u'я ушёл из ' + groupchat)
 
 
 def handler_admin_msg(type, source, parameters):
+	if not parameters:
+		reply(type, source, u'прочитай помощь по команде')
+		return
 	msg(string.split(parameters)[0], string.join(string.split(parameters)[1:]))
 	reply(type, source, u'мессага ушла')
 	
@@ -112,10 +125,12 @@ def handler_glob_msg_help(type, source, parameters):
 		gch=GROUPCHATS.keys()
 		for x in gch:
 			if popups_check(x):
-				msg(x, u'Новости от '+source[2]+u':\n'+parameters+u'\nНапоминаю, что как всегда все помощь можно получить написав "помощь".\nО всех глюках, ошибках, ляпях, а также предложения и конструктивную критику прошу направлять мне таким образом: пишем "передать '+source[2]+u' и тут ваше сообщение", естественно без кавычек.\nСПАСИБО ЗА ВНИМАНИЕ!')
+				msg(x, u'Новости от '+source[2]+u':\n'+parameters+u'\nНапоминаю, что как всегда все помощь можно получить написав "помощь".\nО всех глюках, ошибках, ляпях, а также предложения и конструктивную критику прошу направлять мне таким образом: пишем "передать botadmin и тут ваше сообщение", естественно без кавычек.\nСПАСИБО ЗА ВНИМАНИЕ!')
 				totalblock = int(totalblock) + 1
 			total = int(total) + 1
 		reply(type, source, 'мессага ушла в '+str(totalblock)+' конференций (из '+str(total)+')')
+	else:
+		reply(type, source, u'прочитай помощь по команде')
 		
 def handler_glob_msg(type, source, parameters):
 	total = '0'
@@ -129,6 +144,8 @@ def handler_glob_msg(type, source, parameters):
 					totalblock = int(totalblock) + 1
 				total = int(total) + 1
 			reply(type, source, 'мессага ушла в '+str(totalblock)+' конференций (из '+str(total)+')')
+	else:
+		reply(type, source, u'прочитай помощь по команде')
 	
 
 def handler_admin_say(type, source, parameters):
@@ -136,13 +153,16 @@ def handler_admin_say(type, source, parameters):
 		args=parameters.split()[0]
 		msg(source[1], parameters)
 	else:
-		reply(type, source, u'мессагу написать не забыл?')
+		reply(type, source, u'прочитай помощь по команде')
 
 def handler_admin_restart(type, source, parameters):
+	if not source[1] in GROUPCHATS:
+		source[2]=source[1].split('@')[0]
 	if parameters:
 		reason = parameters
 	else:
 		reason = ''
+	gch=[]
 	if GROUPCHATS:
 		gch=GROUPCHATS.keys()
 	if reason:
@@ -163,10 +183,13 @@ def handler_admin_restart(type, source, parameters):
 	JCON.disconnect()
 
 def handler_admin_exit(type, source, parameters):
+	if not source[1] in GROUPCHATS:
+		source[2]=source[1].split('@')[0]
 	if parameters:
 		reason = parameters
 	else:
 		reason = ''
+	gch=[]
 	if GROUPCHATS:
 		gch=GROUPCHATS.keys()
 	if reason:
@@ -187,11 +210,14 @@ def handler_admin_exit(type, source, parameters):
 	os.abort()
 	
 def handler_popups_onoff(type, source, parameters):
+	if not source[1] in GROUPCHATS:
+		reply(type, source, u'это возможно только в конференции')
+		return
 	if parameters:
 		try:
 			parameters=int(parameters.strip())
 		except:
-			reply(type,source,u'синтакс инвалид')
+			reply(type,source,u'прочитай помощь по команде')
 			return		
 		DBPATH='dynamic/'+source[1]+'/config.cfg'
 		if parameters==1:
@@ -209,11 +235,14 @@ def handler_popups_onoff(type, source, parameters):
 			reply(type,source,u'здесь глобальные оповещения выключены')
 			
 def handler_botautoaway_onoff(type, source, parameters):
+	if not source[1] in GROUPCHATS:
+		reply(type, source, u'это возможно только в конференции')
+		return
 	if parameters:
 		try:
 			parameters=int(parameters.strip())
 		except:
-			reply(type,source,u'синтакс инвалид')
+			reply(type,source,u'прочитай помощь по команде')
 			return		
 		DBPATH='dynamic/'+source[1]+'/config.cfg'
 		if parameters==1:
@@ -268,14 +297,14 @@ def set_default_gch_status(gch):
 		GCHCFGS[gch]['status']={'status': u'напишите "помощь" и следуйте указаниям, чтобы понять как со мной работать', 'show': u''}
 
 
-register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конфу. Если она запаролена то пишите пароль сразу после названия конфы.', 'зайти <конфа> [pass=пароль] [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря', 'зайти ы@conference.jabber.aq pass=1234 уря'])
-register_command_handler(handler_admin_leave, 'свал', ['админ','мук','все'], 20, 'Заставляет выйти из текущей или определённой конфы.', 'свал <конфа> [причина]', ['свал ы@conference.jabber.aq спать', 'свал спать','свал'])
-register_command_handler(handler_admin_msg, 'мессага', ['админ','мук','все'], 40, 'Отправляет мессагу от имени бота определённому JID-у.', 'мессага <jid> <мессага>', ['мессага guy@jabber.aq здорово чувак!'])
-register_command_handler(handler_admin_say, 'сказать', ['админ','мук','все'], 20, 'Говорить через бота.', 'сказать <мессага>', ['сказать салют пиплы'])
-register_command_handler(handler_admin_restart, 'рестарт', ['суперадмин','все'], 100, 'Рестартит бота.', 'рестарт [причина]', ['рестарт','рестарт гы'])
-register_command_handler(handler_admin_exit, 'пшёл', ['суперадмин','все'], 100, 'Полный выход.', 'пшёл [причина]', ['пшёл','пшёл глюки'])
-register_command_handler(handler_glob_msg, 'globmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
-register_command_handler(handler_glob_msg_help, 'hglobmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот.', 'globmsg [мессага]', ['globmsg всем привет!'])
+register_command_handler(handler_admin_join, 'зайти', ['суперадмин','мук','все'], 40, 'Зайти в определённую конференцию. Если она запаролена то пишите пароль сразу после её названия.', 'зайти <конференция> [pass=пароль] [причина]', ['зайти ы@conference.jabber.aq', 'зайти ы@conference.jabber.aq уря', 'зайти ы@conference.jabber.aq pass=1234 уря'])
+register_command_handler(handler_admin_leave, 'свал', ['админ','мук','все'], 20, 'Заставляет выйти из текущей или определённой конференции.', 'свал <конференция> [причина]', ['свал ы@conference.jabber.aq спать', 'свал спать','свал'])
+register_command_handler(handler_admin_msg, 'мессага', ['админ','мук','все'], 40, 'Отправляет сообщение от имени бота на определённый JID.', 'мессага <jid> <сообщение>', ['мессага guy@jabber.aq здорово чувак!'])
+register_command_handler(handler_admin_say, 'сказать', ['админ','мук','все'], 20, 'Говорить через бота в конференции.', 'сказать <сообщение>', ['сказать салют пиплы'])
+register_command_handler(handler_admin_restart, 'рестарт', ['суперадмин','все'], 100, 'Перезапускает бота.', 'рестарт [причина]', ['рестарт','рестарт ы!'])
+register_command_handler(handler_admin_exit, 'пшёл', ['суперадмин','все'], 100, 'Остановка и полный выход бота.', 'пшёл [причина]', ['пшёл','пшёл глюки'])
+register_command_handler(handler_glob_msg, 'globmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конференциям, в которых сидит бот.', 'globmsg [сообщение]', ['globmsg всем привет!'])
+register_command_handler(handler_glob_msg_help, 'hglobmsg', ['суперадмин','мук','все'], 100, 'Разослать сообщение по всем конфам, в которых сидит бот. Сообщение будет содержать в себе предустановленный заголовок с короткой справкой об испольовании бота.', 'hglobmsg [сообщение]', ['hglobmsg всем привет!'])
 register_command_handler(handler_popups_onoff, 'popups', ['админ','мук','все'], 30, 'Отключает (0) или включает (1) сообщения о входах/выходах, рестартах/выключениях, а также глобальные новости. Без параметра покажет текущее состояние.', 'popups [1|0]', ['popups 1','popups'])
 register_command_handler(handler_botautoaway_onoff, 'autoaway', ['админ','мук','все'], 30, 'Отключает (0) или включает (1) автосмену статуса бота на away при отсутствии команд в течении 10 минут. Без параметра покажет текущее состояние.', 'autoaway [1|0]', ['autoaway 1','autoaway'])
 register_command_handler(handler_changebotstatus, 'stch', ['админ','мук','все'], 20, 'Меняет статус бота на указанный из списка:\naway - отсутствую,\nxa - давно отсутствую,\ndnd - не беспокоить,\nchat - хочу чатиться,\nа также статусное сообщение (если оно даётся).', 'stch [статус] [сообщение]', ['stch away','stch away я сдох'])

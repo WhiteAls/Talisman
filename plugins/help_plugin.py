@@ -49,11 +49,15 @@ def handler_help_commands(type, source, parameters):
 			return
 		for cat in catcom:
 			if has_access(source, COMMANDS[cat]['access'],groupchat):
-				if cat in COMMOFF[source[1]]:
-					dsbl.append(cat)
+				if source[1] in COMMOFF:
+					if cat in COMMOFF[source[1]]:
+						dsbl.append(cat)
+					else:
+						rep.append(cat)
+						total = total + 1
 				else:
 					rep.append(cat)
-					total = total + 1
+					total = total + 1					
 		if rep:
 			if type == 'public':
 				reply(type,source,u'ушли')

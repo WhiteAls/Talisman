@@ -87,7 +87,6 @@ def iqkeepalive_and_s2scheck_answ(coze, res):
 		if error in ['405',None]:
 			pass
 		else:
-			leave_groupchat(gch,u's2s lost?')
 			threading.Timer(60, join_groupchat,(gch,get_gch_info(gch, 'nick') if get_gch_info(gch, 'nick') else DEFAULT_NICK, get_gch_info(gch, 'passw'))).start()
 		
 

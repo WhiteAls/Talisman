@@ -153,7 +153,7 @@ def handler_query_all(type, source, parameters):
 		if num == 0:
 			reply(type, source, 'база пуста!')
 			return
-		reply(type, source, ', '.join(localdb.keys()))
+		reply(type, source, ', '.join(sorted(localdb.keys())))
 	else:
 		reply(type,source,u'ошибка при создании базы. скажите об этом админу бота')
 		return

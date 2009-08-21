@@ -1,1 +1,8 @@
->>> pybot.py - fixed autoaway bug. thx perk11!
+tags/starting this revision: [1]work on "to roster" answers, [2]help should be a more helpful, [3]fixes, [4]bugfixes, [5]new features 
+
+>>> pybot.py - [3]thread timer cancel on rapid join/leave (autoaway) fix. [5]conference number in "Entering Rooms" console message
+>>> access_plugin - [1] [2] [3]login must be succesful, even when in public. answer about success always privately
+>>> admin_plugin.py - [1] [2] [3]node of joiner JID instead resource when join/leave/restart/exit from roster. [4]exit/restart from roster in case of no conferences
+>>> help_plugin.py - [4]give commands into the roster
+>>> presence_plugin.py - [4]rejoin on s2s lost
+>>> query_plugin.py - [5]alphabetically sort ???all output

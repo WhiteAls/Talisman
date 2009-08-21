@@ -68,7 +68,7 @@ AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0, 'gch':{}}
 INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
-BOT_VER = {'rev': 82, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
+BOT_VER = {'rev': 84, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
 ################################################################################
 
 COMMANDS = {}
@@ -495,7 +495,7 @@ def leave_groupchat(groupchat,status=''):
 		del GROUPCHATS[groupchat]
 		add_gch(groupchat)
 		if 'thr' in LAST['gch'][groupchat]:
-			LAST['gch'][groupchat]['thr'].cancel()
+			if not LAST['gch'][groupchat]['thr'] is None: LAST['gch'][groupchat]['thr'].cancel()
 
 def msg(target, body):
 	if not isinstance(body, unicode):
@@ -827,10 +827,10 @@ def start():
 	
 #	JCON.getRoster()
 	JCON.sendInitPresence()
-	print 'Entering Rooms'
 
 	if check_file(file='chatrooms.list'):
 		groupchats = eval(read_file(GROUPCHAT_CACHE_FILE))
+		print 'Entering %s Rooms' % str(len(groupchats))
 		for groupchat in groupchats:
 			get_gch_cfg(groupchat)
 			MACROS.init(groupchat)
