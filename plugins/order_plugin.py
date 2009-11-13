@@ -41,14 +41,14 @@ def order_check_time_flood(gch, jid, nick):
 			return True
 		return False
 
-def order_check_len_flood(mlen, body, gch, jid, nick):			
+def order_check_len_flood(mlen, body, gch, jid, nick):
 	if len(body)>mlen:
 		order_stats[gch][jid]['devoice']['time']=time.time()
 		order_stats[gch][jid]['devoice']['cnd']=1
 		order_kick(gch, nick, u'флуд')
 		return True
 	return False
-				
+
 def order_check_obscene(body, gch, jid, nick):
 	if order_check_obscene_words(body):
 		order_stats[gch][jid]['devoice']['time']=time.time()
@@ -56,7 +56,7 @@ def order_check_obscene(body, gch, jid, nick):
 		order_kick(gch, nick, u'нецензурно')
 		return True
 	return False
-			
+
 def order_check_caps(body, gch, jid, nick):
 	ccnt=0
 	nicks = GROUPCHATS[gch].keys()
@@ -72,8 +72,8 @@ def order_check_caps(body, gch, jid, nick):
 		order_kick(gch, nick, u'слишком много капса')
 		return True
 	return False
-		
-def order_check_like(body, gch, jid, nick):		
+
+def order_check_like(body, gch, jid, nick):
 	lcnt=0
 	lastmsg=order_stats[gch][jid]['msgtime']
 	if lastmsg and order_stats[gch][jid]['msgbody']:
@@ -113,7 +113,7 @@ def order_kick(groupchat, nick, reason):
 	kick.setTagData('reason', get_bot_nick(groupchat)+': '+reason)
 	iq.addChild(node=query)
 	JCON.send(iq)
-	
+
 def order_visitor(groupchat, nick, reason):
 	iq = xmpp.Iq('set')
 	iq.setTo(groupchat)
@@ -124,7 +124,7 @@ def order_visitor(groupchat, nick, reason):
 	visitor.setTagData('reason', get_bot_nick(groupchat)+u': '+reason)
 	iq.addChild(node=query)
 	JCON.send(iq)
-	
+
 def order_ban(groupchat, nick, reason):
 	iq = xmpp.Iq('set')
 	iq.setTo(groupchat)
@@ -135,7 +135,7 @@ def order_ban(groupchat, nick, reason):
 	ban.setTagData('reason', get_bot_nick(groupchat)+u': '+reason)
 	iq.addChild(node=query)
 	JCON.send(iq)
-	
+
 def order_unban(groupchat, jid):
 	iq = xmpp.Iq('set')
 	iq.setTo(groupchat)
@@ -145,7 +145,7 @@ def order_unban(groupchat, jid):
 	query.addChild('item', {'jid':jid, 'affiliation':'none'})
 	iq.addChild(node=query)
 	JCON.send(iq)
-	
+
 def order_check_idle():
 	for gch in GROUPCHATS.keys():
 		if GCHCFGS[gch]['filt']['idle']['cond']==1:
@@ -158,10 +158,10 @@ def order_check_idle():
 						if idle > timee:
 							order_kick(gch, nick, u'молчание более '+timeElapsed(idle))
 	threading.Timer(120,order_check_idle).start()
-	
+
 ####################################################################################################
 
-def handler_order_message(type, source, body):
+def handler_order_message(raw, type, source, body):
 	nick=source[2]
 	groupchat=source[1]
 	if groupchat in GROUPCHATS.keys() and user_level(source,groupchat)<11:
@@ -179,7 +179,7 @@ def handler_order_message(type, source, body):
 				if GCHCFGS[groupchat]['filt']['like']==1:
 					if order_check_like(body, groupchat, jid, nick):	return
 				order_stats[groupchat][jid]['msgtime']=time.time()
-				
+
 def handler_order_join(groupchat, nick, aff, role):
 	jid=get_true_jid(groupchat+'/'+nick)
 	if nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
@@ -201,7 +201,7 @@ def handler_order_join(groupchat, nick, aff, role):
 
 			if GCHCFGS[groupchat]['filt']['fly']['cond']==1:
 				lastprs=order_stats[groupchat][jid]['prstime']['fly']
-				order_stats[groupchat][jid]['prstime']['fly']=time.time()	
+				order_stats[groupchat][jid]['prstime']['fly']=time.time()
 				if now-lastprs<=70:
 					order_stats[groupchat][jid]['prs']['fly']+=1
 					if order_stats[groupchat][jid]['prs']['fly']>4:
@@ -217,20 +217,20 @@ def handler_order_join(groupchat, nick, aff, role):
 							return
 				else:
 					order_stats[groupchat][jid]['prs']['fly']=0
-			
-			if GCHCFGS[groupchat]['filt']['obscene']==1:		
+
+			if GCHCFGS[groupchat]['filt']['obscene']==1:
 				if order_check_obscene(nick, groupchat, jid, nick):	return
-			
-			if GCHCFGS[groupchat]['filt']['len']==1:	
+
+			if GCHCFGS[groupchat]['filt']['len']==1:
 				if order_check_len_flood(20, nick, groupchat, jid, nick):	return
-			
+
 		elif nick in GROUPCHATS[groupchat]:
 			order_stats[groupchat][jid]={'kicks': 0, 'devoice': {'cnd': 0, 'time': 0}, 'msgbody': None, 'prstime': {'fly': 0, 'status': 0}, 'prs': {'fly': 0, 'status': 0}, 'msg': 0, 'msgtime': 0}
 
 	elif groupchat in order_stats and jid in order_stats[groupchat]:
 		del order_stats[groupchat][jid]
 	else:
-		pass			
+		pass
 
 def handler_order_presence(prs):
 	ptype = prs.getType()
@@ -241,7 +241,7 @@ def handler_order_presence(prs):
 	stmsg = prs.getStatus()
 	jid=get_true_jid(groupchat+'/'+nick)
 	item=findPresenceItem(prs)
-	
+
 	if groupchat in order_stats and jid in order_stats[groupchat]:
 		if item['affiliation'] in ['member','admin','owner']:
 			del order_stats[groupchat][jid]
@@ -249,7 +249,7 @@ def handler_order_presence(prs):
 	else:
 		if item['affiliation']=='none':
 			order_stats[groupchat][jid]={'kicks': 0, 'devoice': {'cnd': 0, 'time': 0}, 'msgbody': None, 'prstime': {'fly': 0, 'status': 0}, 'prs': {'fly': 0, 'status': 0}, 'msg': 0, 'msgtime': 0}
-	
+
 	if nick in GROUPCHATS[groupchat] and user_level(groupchat+'/'+nick,groupchat)<11:
 		if groupchat in order_stats and jid in order_stats[groupchat]:
 			now = time.time()
@@ -269,9 +269,9 @@ def handler_order_presence(prs):
 							order_kick(groupchat, nick, u'презенс-флуд')
 							return
 
-				if GCHCFGS[groupchat]['filt']['obscene']==1:		
+				if GCHCFGS[groupchat]['filt']['obscene']==1:
 					if order_check_obscene(nick, groupchat, jid, nick):	return
-				
+
 				if GCHCFGS[groupchat]['filt']['prsstlen']==1 and stmsg:
 					if order_check_len_flood(200, nick, groupchat, jid, nick):	return
 
@@ -353,7 +353,7 @@ def handler_order_filt(type, source, parameters):
 					reply(type,source,u'фильтрация капса включена')
 					GCHCFGS[source[1]]['filt']['caps']=1
 				else:
-					reply(type,source,u'синтакс инвалид')	
+					reply(type,source,u'синтакс инвалид')
 			elif parameters[0]=='prsstlen':
 				if parameters[1]=='0':
 					reply(type,source,u'фильтрация длинных статусных сообщений отключена')
@@ -380,7 +380,7 @@ def handler_order_filt(type, source, parameters):
 						reply(type,source,u'синтакс инвалид')
 					if int(parameters[2]) in xrange(0,121):
 						reply(type,source,u'разморозка установлена на '+parameters[2]+u' секунд')
-						GCHCFGS[source[1]]['filt']['fly']['time']=int(parameters[2])	
+						GCHCFGS[source[1]]['filt']['fly']['time']=int(parameters[2])
 					else:
 						reply(type,source,u'не более двух минут (120 секунд)')
 				elif parameters[1]=='mode':
@@ -390,9 +390,9 @@ def handler_order_filt(type, source, parameters):
 							GCHCFGS[source[1]]['filt']['fly']['mode']='ban'
 						else:
 							reply(type,source,u'за полёты будем кикать')
-							GCHCFGS[source[1]]['filt']['fly']['mode']='kick'	
+							GCHCFGS[source[1]]['filt']['fly']['mode']='kick'
 					else:
-						reply(type,source,u'синтакс инвалид')		
+						reply(type,source,u'синтакс инвалид')
 				elif parameters[1]=='0':
 					reply(type,source,u'фильтр полётов отключен')
 					GCHCFGS[source[1]]['filt']['fly']['cond']=0
@@ -409,7 +409,7 @@ def handler_order_filt(type, source, parameters):
 						reply(type,source,u'синтакс инвалид')
 					if int(parameters[2]) in xrange(2,10):
 						reply(type,source,u'автобан после '+parameters[2]+u' киков')
-						GCHCFGS[source[1]]['filt']['kicks']['cnt']=int(parameters[2])	
+						GCHCFGS[source[1]]['filt']['kicks']['cnt']=int(parameters[2])
 					else:
 						reply(type,source,u'от 2 до 10 киков')
 				elif parameters[1]=='0':
@@ -425,7 +425,7 @@ def handler_order_filt(type, source, parameters):
 					try:
 						int(parameters[2])
 					except:
-						reply(type,source,u'синтакс инвалид')			
+						reply(type,source,u'синтакс инвалид')
 					reply(type,source,u'кик за молчание после '+parameters[2]+u' секунд ('+timeElapsed(int(parameters[2]))+u')')
 					GCHCFGS[source[1]]['filt']['idle']['time']=int(parameters[2])
 				elif parameters[1]=='0':
@@ -436,7 +436,7 @@ def handler_order_filt(type, source, parameters):
 					GCHCFGS[source[1]]['filt']['idle']['cond']=1
 			else:
 				reply(type,source,u'синтакс инвалид')
-				return					
+				return
 			DBPATH='dynamic/'+source[1]+'/config.cfg'
 			write_file(DBPATH, str(GCHCFGS[source[1]]))
 		else:
@@ -508,12 +508,12 @@ def handler_order_filt(type, source, parameters):
 
 def get_order_cfg(gch):
 	if not 'filt' in GCHCFGS[gch]:
-		GCHCFGS[gch]['filt']={}		
+		GCHCFGS[gch]['filt']={}
 	for x in ['time','presence','len','like','caps','prsstlen','obscene','kicks','fly','excess','idle']:
 		if x == 'excess':
 			if not x in GCHCFGS[gch]['filt']:
 				GCHCFGS[gch]['filt'][x]={'cond':0, 'mode': 'kick'}
-			continue		
+			continue
 		if x == 'kicks':
 			if not x in GCHCFGS[gch]['filt']:
 				GCHCFGS[gch]['filt'][x]={'cond':1, 'cnt': 2}

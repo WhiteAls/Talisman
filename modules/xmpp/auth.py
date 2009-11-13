@@ -12,7 +12,7 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: auth.py,v 1.39 2008/02/08 09:00:55 normanr Exp $
+# $Id: auth.py,v 1.41 2008/09/13 21:45:21 normanr Exp $
 
 """
 Provides library with all Non-SASL and SASL authentication mechanisms.
@@ -137,11 +137,13 @@ class SASL(PlugIn):
         self._owner.RegisterHandler('challenge',self.SASLHandler,xmlns=NS_SASL)
         self._owner.RegisterHandler('failure',self.SASLHandler,xmlns=NS_SASL)
         self._owner.RegisterHandler('success',self.SASLHandler,xmlns=NS_SASL)
-        if "DIGEST-MD5" in mecs:
+        if "ANONYMOUS" in mecs and self.username == None:
+            node=Node('auth',attrs={'xmlns':NS_SASL,'mechanism':'ANONYMOUS'})
+        elif "DIGEST-MD5" in mecs:
             node=Node('auth',attrs={'xmlns':NS_SASL,'mechanism':'DIGEST-MD5'})
         elif "PLAIN" in mecs:
             sasl_data='%s\x00%s\x00%s'%(self.username+'@'+self._owner.Server,self.username,self.password)
-            node=Node('auth',attrs={'xmlns':NS_SASL,'mechanism':'PLAIN'},payload=[base64.encodestring(sasl_data)])
+            node=Node('auth',attrs={'xmlns':NS_SASL,'mechanism':'PLAIN'},payload=[base64.encodestring(sasl_data).replace('\r','').replace('\n','')])
         else:
             self.startsasl='failure'
             self.DEBUG('I can only use DIGEST-MD5 and PLAIN mecanisms.','error')

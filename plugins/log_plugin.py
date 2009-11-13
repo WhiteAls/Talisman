@@ -4,7 +4,7 @@
 #  Talisman plugin
 #  log_plugin.py
 
-#  Initial Copyright © Anaлl Verrier <elghinn@free.fr> 
+#  Initial Copyright © Anaлl Verrier <elghinn@free.fr>
 #  Modifications Copyright © 2007 Als <Als@exploit.in>
 
 #  This program is free software; you can redistribute it and/or modify
@@ -111,7 +111,7 @@ def log_regex_url(matchobj):
 	# 06.03.05(Sun) slipstream@yandex.ru urls parser
 	return '<a href="' + matchobj.group(0) + '">' + matchobj.group(0) + '</a>'
 
-def log_handler_message(type, source, body):
+def log_handler_message(raw, type, source, body):
 	if not body:
 		return
 	if type == 'public' and PUBLIC_LOG_DIR:
@@ -182,12 +182,12 @@ def log_handler_leave(groupchat, nick, reason, code):
 			if reason:
 				log_write('%s has been kicked (%s)' % (nick,reason), '@$$userkick$$@', 'public', groupchat)
 			else:
-				log_write('%s has been kicked' % (nick), '@$$userkick$$@', 'public', groupchat)			
+				log_write('%s has been kicked' % (nick), '@$$userkick$$@', 'public', groupchat)
 		elif code == '301':
 			if reason:
 				log_write('%s has been banned (%s)' % (nick,reason), '@$$userban$$@', 'public', groupchat)
 			else:
-				log_write('%s has been banned' % (nick), '@$$userban$$@', 'public', groupchat)			
+				log_write('%s has been banned' % (nick), '@$$userban$$@', 'public', groupchat)
 	else:
 		if reason:
 			log_write('%s leaves the room (%s)' % (nick,reason), '@$$leave$$@', 'public', groupchat)
@@ -218,9 +218,9 @@ def log_handler_presence(prs):
 			if stmsg:
 				log_write('%s is now %s (%s)' % (nick,status,stmsg), '@$$status$$@', 'public', groupchat)
 			else:
-				log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)	
-			
-			
+				log_write('%s is now %s' % (nick,status), '@$$status$$@', 'public', groupchat)
+
+
 if PUBLIC_LOG_DIR:
 	register_message_handler(log_handler_message)
 	register_join_handler(log_handler_join)

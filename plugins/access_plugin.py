@@ -5,7 +5,7 @@
 #  access_plugin.py
 
 #  Initial Copyright © 2002-2005 Mike Mintz <mikemintz@gmail.com>
-#  Modifications Copyright © 2007 Als <Als@exploit.in>
+#  Modifications Copyright © Als <Als@exploit.in>
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -34,13 +34,13 @@ def handler_access_logout(type, source, parameters):
 	reply(type, source, u'доступ снят')
 
 def handler_access_view_access(type, source, parameters):
-	accdesc={'-100':u'(полный игнор)','-1':u'(заблокирован)','0':u'(никто)','1':u'(бедный мембер :D )','10':u'(юзер)','11':u'(мембер)','15':u'(модер)','16':u'(модер)','20':u'(админ)','30':u'(овнер)','40':u'(джойнер)','100':u'(админ бота)'}
+	accdesc={'-100':u'(полный игнор)','-1':u'(заблокирован)','0':u'(никто)','1':u'(пасхалка :) )','10':u'(юзер)','11':u'(мембер)','15':u'(модер)','16':u'(модер)','20':u'(админ)','30':u'(овнер)','40':u'(джойнер)','100':u'(админ бота)'}
 	if not parameters:
 		level=str(user_level(source[1]+'/'+source[2], source[1]))
 		if level in accdesc.keys():
 			levdesc=accdesc[level]
 		else:
-			levdesc=''		
+			levdesc=''
 		reply(type, source, level+u' '+levdesc)
 	else:
 		if not source[1] in GROUPCHATS:
@@ -67,13 +67,13 @@ def handler_access_set_access(type, source, parameters):
 			int(splitdata[1].strip())
 		except:
 			reply(type, source, u'ошибочный запрос. прочитай помощь по использованию команды')
-			return				
+			return
 		if int(splitdata[1].strip())>100 or int(splitdata[1].strip())<-100:
 			reply(type, source, u'ошибочный запрос. прочитай помощь по использованию команды')
-			return		
+			return
 	nicks=GROUPCHATS[source[1]]
 	if not splitdata[0].strip() in nicks and GROUPCHATS[source[1]][splitdata[0].strip()]['ishere']==0:
-		reply(type, source, u'а он тут? :-O')
+		reply(type, source, u'а он тут?')
 		return
 	tjidto=get_true_jid(source[1]+'/'+splitdata[0].strip())
 	tjidsource=get_true_jid(source)
@@ -87,14 +87,14 @@ def handler_access_set_access(type, source, parameters):
 		else:
 			if tjidto==tjidsource:
 				if int(splitdata[1]) > int(jidacc):
-					reply(type, source, u'ага, щаззз')
+					reply(type, source, u'недостаточно прав')
 					return
 			elif int(toacc) > int(jidacc):
-				reply(type, source, u'ага, щаззз')
-				return		
+				reply(type, source, u'недостаточно прав')
+				return
 			elif int(splitdata[1]) >= int(jidacc):
-				reply(type, source, u'ага, щаззз')
-				return	
+				reply(type, source, u'недостаточно прав')
+				return
 	else:
 		if tjidsource in ADMINS:
 			pass
@@ -102,10 +102,10 @@ def handler_access_set_access(type, source, parameters):
 			if tjidto==tjidsource:
 				pass
 			elif int(toacc) > int(jidacc):
-				reply(type, source, u'ага, щаззз')
+				reply(type, source, u'недостаточно прав')
 				return
 
-	if len(splitdata) == 1:		
+	if len(splitdata) == 1:
 		change_access_perm(source[1], tjidto)
 		if splitdata[0].strip()==source[2]:
 			reply(type, source, u'постоянный доступ снят. тебе необходимо перезайти в конференцию')
@@ -116,8 +116,8 @@ def handler_access_set_access(type, source, parameters):
 		reply(type, source, u'доступ выдан до выхода из конференции')
 	elif len(splitdata) == 3:
 		change_access_perm(source[1], tjidto, splitdata[1].strip())
-		reply(type, source, u'выдан постоянный доступ')		
-		
+		reply(type, source, u'выдан постоянный доступ')
+
 def handler_access_set_access_glob(type, source, parameters):
 	if not source[1] in GROUPCHATS:
 		reply(type, source, u'это возможно только в конференции')
@@ -125,11 +125,11 @@ def handler_access_set_access_glob(type, source, parameters):
 	if parameters:
 		splitdata = parameters.strip().split()
 		if len(splitdata)<1 or len(splitdata)>2:
-			reply(type, source, u'эээ?')
+			reply(type, source, u'ошибочный запрос. прочитай помощь по использованию команды')
 			return
 		nicks=GROUPCHATS[source[1]].keys()
 		if not splitdata[0].strip() in nicks and GROUPCHATS[source[1]][splitdata[0].strip()]['ishere']==0:
-			reply(type, source, u'а он тут? :-O')
+			reply(type, source, u'а он тут?')
 			return
 		tjidto=get_true_jid(source[1]+'/'+splitdata[0])
 		if len(splitdata)==2:
@@ -138,7 +138,7 @@ def handler_access_set_access_glob(type, source, parameters):
 		else:
 			change_access_perm_glob(tjidto)
 			reply(type, source, u'снял')
-			
+
 def get_access_levels():
 	global GLOBACCESS
 	global ACCBYCONFFILE
@@ -148,10 +148,10 @@ def get_access_levels():
 		write_file(GLOBACCESS_FILE, str(GLOBACCESS))
 	ACCBYCONFFILE = eval(read_file(ACCBYCONF_FILE))
 
-register_command_handler(handler_access_login, 'логин', ['доступ','админ','все'], 0, 'Залогиниться как админиcтратор бота. Использовать только в привате!', 'логин <пароль>', ['логин мой_пароль'])
-register_command_handler(handler_access_login, 'логаут', ['доступ','админ','все'], 0, 'Разлогиниться.', 'логаут', ['логаут'])
-register_command_handler(handler_access_view_access, 'доступ', ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.\n-100 - полный игнор, все сообщения от юзера с таким доступом будут пропускатся на уровне ядра\n-1 - не сможет сделать ничего\n0 - очень ограниченное кол-во команд и макросов, автоматически присваивается визиторам (visitor)\n10 - стандартный набор команд и макросов, автоматически присваивается партисипантам (participant)\n11 - расширенный набор команд и макросов (например доступ к !!!), автоматически присваивается мемберам (member)\n15 (16) - модераторский набор команд и макросов, автоматически присваивается модераторам (moderator)\n20 - админский набор команд и макросов, автоматически присваивается админам (admin)\n30 - овнерский набор команд и макросов, автоматически присваиватся овнерам (owner)\n40 - не реализовано сейчсас толком, позволяет юзеру с этим доступом заводить и выводить бота из конференций\n100 - администратор бота, может всё', 'доступ [ник]', ['доступ', 'доступ guy'])
-register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает или снимает (если ник писать без уровня, после снятия доступа нужно обязательно перезайти в конференцию) уровень доступа для определённого ника на определённый уровень. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота или пользователя из конференции.\n-100 - полный игнор, все сообщения от юзера с таким доступом будут пропускатся на уровне ядра\n-1 - не сможет сделать ничего\n0 - очень ограниченное кол-во команд и макросов, автоматически присваивается визиторам (visitor)\n10 - стандартный набор команд и макросов, автоматически присваивается партисипантам (participant)\n11 - расширенный набор команд и макросов (например доступ к !!!), автоматически присваивается мемберам (member)\n15 (16) - модераторский набор команд и макросов, автоматически присваевается модераторам (moderator)\n20 - админский набор команд и макросов, автоматически присваивается админам (admin)\n30 - овнерский набор команд и макросов, автоматически присваиватся овнерам (owner)\n40 - не реализовано сейчсас толком, позволяет юзеру с этим доступом заводить и выводить бота из конференций\n100 - администратор бота, может всё', 'дать_доступ <ник> <уровень> [навсегда]', ['дать_доступ guy 100', 'дать_доступ guy 100 что-нибудь'])
-register_command_handler(handler_access_set_access_glob, 'globacc', ['доступ','суперадмин','все'], 100, 'Устанавливает или снимает (если ник писать без уровня) уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО.', 'globacc <ник> <уровень>', ['globacc guy 100','globacc guy'])
+register_command_handler(handler_access_login, 'логин', ['доступ','админ','все'], 0, 'Авторизоваться как админиcтратор бота. Использовать только в привате!', 'логин <пароль>', ['логин мой_пароль'])
+register_command_handler(handler_access_login, 'логаут', ['доступ','админ','все'], 0, 'Снять авторизацию.', 'логаут', ['логаут'])
+register_command_handler(handler_access_view_access, 'доступ', ['доступ','админ','все'], 0, 'Показывает уровень доступа определённого ника.\n-100 - абсолютное игнорирование, все сообщения от пользователя с таким доступом будут пропускатся на уровне ядра бота\n-1 - не сможет сделать ничего\n0 - очень ограниченное кол-во команд и макросов, автоматически присваивается гостям (visitor)\n10 - стандартный набор команд и макросов, автоматически присваивается пользователям (participant)\n11 - расширенный набор команд и макросов, автоматически присваивается участникам (member)\n15 (16) - набор команд и макросов для модераторов, автоматически присваивается модераторам (moderator)\n20 - набор команд и макросов для администраторов, автоматически присваивается администраторам конференции (admin)\n30 - набор команд и макросов для владельца, автоматически присваиватся владельцам конференции (owner)\n40 - не реализовано сейчсас толком, позволяет пользователю с этим доступом заводить и выводить бота из конференций + все возможности доступа 30\n100 - администратор бота, может всё.', 'доступ [ник]', ['доступ', 'доступ guy'])
+register_command_handler(handler_access_set_access, 'дать_доступ', ['доступ','админ','все'], 15, 'Устанавливает или снимает (если ник писать без уровня, после снятия доступа нужно обязательно перезайти в конференцию) уровень доступа для определённого ника на определённый уровень. Поддерживаются только ники без пробела. Если указываеться третий параметр, то изменение происходит навсегда, иначе установленный уровень будет действовать до выхода бота или пользователя из конференции.\n-100 - абсолютное игнорирование, все сообщения от пользователя с таким доступом будут пропускатся на уровне ядра бота\n-1 - не сможет сделать ничего\n0 - очень ограниченное кол-во команд и макросов, автоматически присваивается гостям (visitor)\n10 - стандартный набор команд и макросов, автоматически присваивается пользователям (participant)\n11 - расширенный набор команд и макросов, автоматически присваивается участникам (member)\n15 (16) - набор команд и макросов для модераторов, автоматически присваивается модераторам (moderator)\n20 - набор команд и макросов для администраторов, автоматически присваивается администраторам конференции (admin)\n30 - набор команд и макросов для владельца, автоматически присваиватся владельцам конференции (owner)\n40 - не реализовано сейчсас толком, позволяет пользователю с этим доступом заводить и выводить бота из конференций + все возможности доступа 30\n100 - администратор бота, может всё.', 'дать_доступ <ник> [уровень] [навсегда]', ['дать_доступ guy 100', 'дать_доступ guy 100 что-нибудь'])
+register_command_handler(handler_access_set_access_glob, 'globacc', ['доступ','суперадмин','все'], 100, 'Устанавливает или снимает (если ник писать без уровня) уровень доступа для определённого ника на определённый уровень ГЛОБАЛЬНО. Поддерживаются только ники без пробела.', 'globacc <ник> [уровень]', ['globacc guy 100','globacc guy'])
 
 register_stage0_init(get_access_levels)

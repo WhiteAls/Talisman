@@ -24,7 +24,7 @@ turn_msgs={}
 def handler_turn_last(type, source, parameters):
 	nick=source[2]
 	groupchat=source[1]
-	jid=get_true_jid(groupchat+'/'+nick)	
+	jid=get_true_jid(groupchat+'/'+nick)
 	if parameters:
 		reply(type,source,reduce(lambda x,y:global_en2ru_table.get(x,x)+global_en2ru_table.get(y,y),parameters))
 	else:
@@ -33,11 +33,11 @@ def handler_turn_last(type, source, parameters):
 			return
 		if turn_msgs[groupchat][jid] == u'turn':
 			reply(type,source,u'ага, щаззз')
-			return		
+			return
 		tmsg=turn_msgs[groupchat][jid]
 		reply(type,source,reduce(lambda x,y:global_en2ru_table.get(x,x)+global_en2ru_table.get(y,y),tmsg))
 
-def handler_turn_save_msg(type, source, body):
+def handler_turn_save_msg(raw, type, source, body):
 	time.sleep(1)
 	nick=source[2]
 	groupchat=source[1]
@@ -45,7 +45,7 @@ def handler_turn_save_msg(type, source, body):
 	if groupchat in turn_msgs.keys():
 		if jid in turn_msgs[groupchat].keys() and jid != groupchat and jid != JID:
 			turn_msgs[groupchat][jid]=body
-	
+
 def handler_turn_join(groupchat, nick, aff, role):
 	jid=get_true_jid(groupchat+'/'+nick)
 	if not groupchat in turn_msgs.keys():

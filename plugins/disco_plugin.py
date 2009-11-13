@@ -41,7 +41,7 @@ def handler_disco(type, source, parameters):
 			if type == 'public':
 				if stop>50: stop='50'
 			else:
-				if stop>250: stop='250'			
+				if stop>250: stop='250'
 		iq = xmpp.Iq('get')
 		id='dis'+str(random.randrange(1, 9999))
 		globals()['disco_pending'].append(id)
@@ -70,10 +70,15 @@ def handler_disco_ext(coze, res, type, source, stop, srch, tojid):
 	if res:
 		if res.getType() == 'result':
 			props=res.getQueryChildren()
+			if not isinstance(props, list):
+				reply(type, source, u'пустое диско')
+				return
 			for x in props:
 				att=x.getAttrs()
 				if att.has_key('name'):
 					try:
+						if tojid.count('@'):
+							raise TypeError
 						st=re.search('^(.*) \((.*)\)$', att['name']).groups()
 						disco.append([st[0],att['jid'],st[1]])
 						trig=1
@@ -99,8 +104,8 @@ def handler_disco_ext(coze, res, type, source, stop, srch, tojid):
 	else:
 		rep = u'аблом...'
 	reply(type, source, rep)
-	
-	
+
+
 def handler_disco_answ(type,source,stop,disco,srch):
 	total=0
 	if total==stop:
@@ -145,7 +150,7 @@ def handler_disco_answ(type,source,stop,disco,srch):
 	else:
 		rep=u'пустое диско'
 	reply(type, source, rep+u'\n'.join(dis))
-	
+
 def sortdis(dis):
 	disd,diss,disr=[],[],[]
 	for x in dis:
@@ -162,7 +167,7 @@ def sortdis(dis):
 	for x in diss:
 		disr.append(x)
 	return disr
-	
+
 disco=[]
-			
+
 register_command_handler(handler_disco, 'диско', ['мук','инфо','все'], 10, 'Показывает результаты обзора сервисов для указанного JID.\nТакже можно запросить обзор по узлу (node). Формат запроса jid#node.\nВторой или третий (если также даётся ограничитель кол-ва) параметр - поиск. Ищет заданное слово в JID и описании элемента диско. Если поисковым словом задать имя конференции до названия сервера (например qwerty@), то покажет место этой конференции в общем рейтинге.\nВ общий чат может дать max 50 результатов, без указания кол-ва - 10.\n В приват может дать max 250, без указания кол-ва 50.', 'диско <сервер> <кол-во результатов> <поисковая строка>', ['диско jabber.aq','диско conference.jabber.aq 5','диско conference.jabber.aq qwerty','диско conference.jabber.aq 5 qwerty','диско conference.jabber.aq qwerty@', 'диско jabber.aq#services'])

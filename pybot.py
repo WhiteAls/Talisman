@@ -68,7 +68,7 @@ AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0, 'gch':{}}
 INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
-BOT_VER = {'rev': 84, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
+BOT_VER = {'rev': 85, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
 ################################################################################
 
 COMMANDS = {}
@@ -118,14 +118,14 @@ def read_file(filename):
 	data = fp.read()
 	fp.close()
 	return data
-	
+
 def write_file_gag(filename, data):
 	mtx.acquire()
 	fp = file(filename, 'w')
 	fp.write(data)
 	fp.close()
 	mtx.release()
-	
+
 def write_file(filename, data):
 	with wsmph:
 		write_file_gag(filename, data)
@@ -180,11 +180,11 @@ def register_command_handler(instance, command, category=[], access=0, desc='', 
 	COMMAND_HANDLERS[command] = instance
 	COMMANDS[command] = {'category': category, 'access': access, 'desc': desc, 'syntax': syntax, 'examples': examples}
 
-def call_message_handlers(type, source, body):
+def call_message_handlers(raw, type, source, body):
 	for handler in MESSAGE_HANDLERS:
 		with smph:
 			INFO['thr'] += 1
-			threading.Thread(None,handler,'inmsg'+str(INFO['thr']),(type, source, body,)).start()
+			threading.Thread(None,handler,'inmsg'+str(INFO['thr']),(raw, type, source, body,)).start()
 def call_outgoing_message_handlers(target, body, obody):
 	for handler in OUTGOING_MESSAGE_HANDLERS:
 		with smph:
@@ -204,12 +204,12 @@ def call_iq_handlers(iq):
 	for handler in IQ_HANDLERS:
 		with smph:
 			INFO['thr'] += 1
-			threading.Thread(None,handler,'iq'+str(INFO['thr']),(iq,)).start()		
+			threading.Thread(None,handler,'iq'+str(INFO['thr']),(iq,)).start()
 def call_presence_handlers(prs):
 	for handler in PRESENCE_HANDLERS:
 		with smph:
 			INFO['thr'] += 1
-			threading.Thread(None,handler,'prs'+str(INFO['thr']),(prs,)).start()				
+			threading.Thread(None,handler,'prs'+str(INFO['thr']),(prs,)).start()
 
 def call_command_handlers(command, type, source, parameters, callee):
 	real_access = MACROS.get_access(callee, source[1])
@@ -219,9 +219,9 @@ def call_command_handlers(command, type, source, parameters, callee):
 		if has_access(source, real_access, source[1]):
 			with smph:
 				INFO['thr'] += 1
-				threading.Thread(None,COMMAND_HANDLERS[command],'command'+str(INFO['thr']),(type, source, parameters,)).start()		
+				threading.Thread(None,COMMAND_HANDLERS[command],'command'+str(INFO['thr']),(type, source, parameters,)).start()
 		else:
-			reply(type, source, u'ага, щаззз')
+			reply(type, source, u'недостаточно прав')
 
 ################################################################################
 
@@ -250,7 +250,7 @@ def find_plugins():
 	else:
 		print '\nthere are not unloadable plug-ins'
 	return valid_plugins
-	
+
 ################################################################################
 
 def load_plugins():
@@ -266,7 +266,7 @@ def load_plugins():
 	print '\nloaded',len(plugins),'plug-ins:'
 	loaded=', '.join(plugins)
 	print loaded,'\n'
-				
+
 def get_gch_cfg(gch):
 	cfgfile='dynamic/'+gch+'/config.cfg'
 	if not check_file(gch,'config.cfg'):
@@ -278,7 +278,7 @@ def get_gch_cfg(gch):
 		LAST['gch'][gch]={}
 	except:
 		pass
-	
+
 def upkeep():
 	tmr=threading.Timer(60, upkeep)
 	tmr.start()
@@ -291,7 +291,7 @@ def upkeep():
 			pass
 	import gc
 	gc.collect()
-		
+
 ################################################################################
 
 def get_true_jid(jid):
@@ -322,14 +322,14 @@ def get_bot_nick(groupchat):
 			return DEFAULT_NICK
 	else:
 		print 'Error adding groupchat to groupchats list file!'
-		
+
 def get_gch_info(gch, info):
 	if check_file(file='chatrooms.list'):
 		gchdb = eval(read_file(GROUPCHAT_CACHE_FILE))
 		if gchdb.has_key(gch):	return gchdb[gch].get(info)
 		else:	return None
 	else:
-		print 'Error adding groupchat to groupchats list file!'	
+		print 'Error adding groupchat to groupchats list file!'
 
 def add_gch(groupchat=None, nick=None, passw=None):
 	if check_file(file='chatrooms.list'):
@@ -367,7 +367,7 @@ def timeElapsed(time):
 	if time>86400: rep = u'%d дн %s' % (days, rep)
 	if time>2592000: rep = u'%d мес %s' % (months, rep)
 	return rep
-	
+
 def change_bot_status(gch,status,show,auto=0):
 	prs=xmpp.protocol.Presence(gch+'/'+get_bot_nick(gch))
 	if status:
@@ -435,7 +435,7 @@ def change_access_perm_glob(source, level=0):
 		del temp_access[jid]
 	write_file(GLOBACCESS_FILE, str(temp_access))
 	get_access_levels()
-	
+
 def change_access_temp_glob(source, level=0):
 	global GLOBACCESS
 	jid = get_true_jid(source)
@@ -474,7 +474,7 @@ def join_groupchat(groupchat=None, nick=DEFAULT_NICK, passw=None):
 		pass
 	else:
 		print 'IO error when creating macros.txt for ',groupchat
-		
+
 	add_gch(groupchat, nick, passw)
 
 	prs=xmpp.protocol.Presence(groupchat+'/'+nick)
@@ -553,8 +553,6 @@ def messageHnd(con, msg):
 	msgtype = msg.getType()
 	fromjid = msg.getFrom()
 	INFO['msg'] += 1
-	if fromjid.getStripped() not in GROUPCHATS and fromjid.getStripped() not in ADMINS:
-		return
 	if user_level(fromjid,fromjid.getStripped())==-100:
 		return
 	if msg.timestamp:
@@ -565,11 +563,11 @@ def messageHnd(con, msg):
 	if not body:
 		return
 	if len(body)>7000:
-		body=body[:7000]+u' >>>>'	
+		body=body[:7000]+u' >>>>'
 	if msgtype == 'groupchat':
 		mtype='public'
 		if GROUPCHATS.has_key(fromjid.getStripped()) and GROUPCHATS[fromjid.getStripped()].has_key(fromjid.getResource()):
-			GROUPCHATS[fromjid.getStripped()][fromjid.getResource()]['idle'] = time.time()	
+			GROUPCHATS[fromjid.getStripped()][fromjid.getResource()]['idle'] = time.time()
 	elif msgtype == 'error':
 		if msg.getErrorCode()=='500':
 			time.sleep(0.6)
@@ -577,12 +575,12 @@ def messageHnd(con, msg):
 		elif msg.getErrorCode()=='406':
 			join_groupchat(fromjid.getStripped(), DEFAULT_NICK)
 			time.sleep(0.6)
-			JCON.send(xmpp.Message(fromjid, body, 'groupchat'))			
+			JCON.send(xmpp.Message(fromjid, body, 'groupchat'))
 		return
 	else:
 		mtype='private'
-	call_message_handlers(mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
-	
+	call_message_handlers(msg, mtype, [fromjid, fromjid.getStripped(), fromjid.getResource()], body)
+
 	bot_nick = get_bot_nick(fromjid.getStripped())
 	if bot_nick == fromjid.getResource():
 		return
@@ -603,7 +601,7 @@ def messageHnd(con, msg):
 		if fromjid.getStripped() in COMMOFF and command in COMMOFF[fromjid.getStripped()]:
 			return
 		else:
-			if fromjid.getStripped() in GROUPCHATS:			
+			if fromjid.getStripped() in GROUPCHATS:
 				if GCHCFGS[fromjid.getStripped()]['autoaway']==1:
 					if LAST['gch'][fromjid.getStripped()]['autoaway']==1:
 						change_bot_status(fromjid.getStripped(), GCHCFGS[fromjid.getStripped()]['status']['status'], GCHCFGS[fromjid.getStripped()]['status']['show'],)
@@ -611,7 +609,7 @@ def messageHnd(con, msg):
 			INFO['cmd'] += 1
 			LAST['t'] = time.time()
 			LAST['c'] = command
-			if fromjid.getStripped() in GROUPCHATS:		
+			if fromjid.getStripped() in GROUPCHATS:
 				if GCHCFGS[fromjid.getStripped()]['autoaway']==1:
 					if LAST['gch'][fromjid.getStripped()]['thr']:
 						LAST['gch'][fromjid.getStripped()]['thr'].cancel()
@@ -627,7 +625,7 @@ def presenceHnd(con, prs):
 	nick = fromjid.getResource()
 	item = findPresenceItem(prs)
 	INFO['prs'] += 1
-	
+
 	if ptype == 'subscribe':
 		JCON.send(xmpp.protocol.Presence(to=fromjid, typ='subscribed'))
 	elif ptype == 'unsubscribe':
@@ -637,7 +635,7 @@ def presenceHnd(con, prs):
 		if ptype == 'unavailable':
 			jid = item['jid']
 			scode = prs.getStatusCode()
-			reason = prs.getStatus()
+			reason = prs.getReason() or prs.getStatus()
 			if scode == '303':
 				newnick = prs.getNick()
 				GROUPCHATS[groupchat][newnick] = {'jid': jid, 'idle': time.time(), 'joined': GROUPCHATS[groupchat][nick]['joined'], 'ishere': 1}
@@ -665,7 +663,7 @@ def presenceHnd(con, prs):
 				time.sleep(2)
 				msg(groupchat, u'моя функциональность в полной мере без прав модератора невозможна')
 				time.sleep(1)
-				leave_groupchat(groupchat, u'отсутствие прав модератора')        
+				leave_groupchat(groupchat, u'отсутствие прав модератора')
 				return
 			else:
 				if nick in GROUPCHATS[groupchat] and GROUPCHATS[groupchat][nick]['jid']==jid and GROUPCHATS[groupchat][nick]['ishere']==1:
@@ -704,11 +702,11 @@ def iqHnd(con, iq):
 				if os.name=='nt':
 					osname=os.popen("ver")
 					osver=osname.read().strip().decode('cp866')+'\n'
-					osname.close()			
+					osname.close()
 				else:
 					osname=os.popen("uname -sr", 'r')
 					osver=osname.read().strip()+'\n'
-					osname.close()			
+					osname.close()
 				pyver = sys.version
 				BOT_VER['botver']['os'] = osver + ' ' + pyver
 			result = iq.buildReply('result')
@@ -753,7 +751,6 @@ def iqHnd(con, iq):
 			result.setID(iq.getID())
 			query = result.addChild('query', {}, [], 'jabber:iq:time')
 			query.setTagData('utc', timeutc)
-			query.setTagData('tz', timetz)
 			query.setTagData('display', timedisp)
 			JCON.send(result)
 			raise xmpp.NodeProcessed
@@ -787,7 +784,7 @@ def start():
 	print '\n...---===STARTING BOT===---...\n'
 	global JCON
 	JCON = xmpp.Client(server=SERVER, port=PORT, debug=[])
-	
+
 	load_plugins()
 
 	print 'Waiting For Connection...\n'
@@ -812,7 +809,7 @@ def start():
 		print 'Logged In'
 	if auth!='sasl':
 		print 'Warning: unable to perform SASL auth. Old authentication method used!'
-		
+
 	for process in STAGE0_INIT:
 		with smph:
 			INFO['thr'] += 1
@@ -824,7 +821,7 @@ def start():
 	JCON.RegisterDisconnectHandler(dcHnd)
 	JCON.UnregisterDisconnectHandler(JCON.DisconnectHandler)
 	print 'Handlers Registered'
-	
+
 #	JCON.getRoster()
 	JCON.sendInitPresence()
 
@@ -850,17 +847,17 @@ def start():
 		print 'Error: unable to create chatrooms list file!'
 
 #	load_plugins()
-	
+
 
 	print '\nOk, now i\'m ready to work :)\n'
-		
+
 	INFO['start'] = time.time()
 	upkeep()
 	for process in STAGE2_INIT:
 		with smph:
 			INFO['thr'] += 1
 			threading.Thread(None,process,'stage2_init'+str(INFO['thr'])).start()
-			
+
 	while 1:
 		JCON.Process(10)
 

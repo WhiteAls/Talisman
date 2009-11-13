@@ -17,6 +17,9 @@
 #  GNU General Public License for more details.
 
 def handler_commoff(type,source,parameters):
+	if not source[1] in GROUPCHATS:
+		reply(type, source, u'это возможно только в конференции')
+		return
 	na=[u'доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
 	valcomm,notvalcomm,alrcomm,npcomm,vcnt,ncnt,acnt,nocnt,rep,commoff=u'',u'',u'',u'',0,0,0,0,u'',[]
 	if not source[1] in COMMOFF:
@@ -34,7 +37,7 @@ def handler_commoff(type,source,parameters):
 						valcomm+=str(vcnt)+u') '+y+u'\n'
 					else:
 						acnt+=1
-						alrcomm+=str(acnt)+u') '+y+u'\n'						
+						alrcomm+=str(acnt)+u') '+y+u'\n'
 				else:
 					ncnt+=1
 					npcomm+=str(ncnt)+u') '+y+u'\n'
@@ -42,13 +45,13 @@ def handler_commoff(type,source,parameters):
 				nocnt+=1
 				notvalcomm+=str(nocnt)+u') '+y+u'\n'
 		if valcomm:
-			rep+=u'для этой конфы были отключены следующие команды:\n'+valcomm
+			rep+=u'были отключены следующие команды:\n'+valcomm
 		if alrcomm:
-			rep+=u'\nследующие команды не были отключены, поскольку они уже отключены:\n'+alrcomm
+			rep+=u'\nследующие команды уже отключены:\n'+alrcomm
 		if notvalcomm:
-			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
+			rep+=u'\nперечисленное ниже не является командами:\n'+notvalcomm
 		if npcomm:
-			rep+=u'\nследующие команды отключать вообще нельзя:\n'+npcomm
+			rep+=u'\nследующие команды неотключаемы:\n'+npcomm
 		if not GCHCFGS[source[1]].has_key('commoff'):
 			GCHCFGS[source[1]]['commoff']='commoff'
 			GCHCFGS[source[1]]['commoff']=[]
@@ -60,14 +63,17 @@ def handler_commoff(type,source,parameters):
 			vcnt+=1
 			valcomm+=str(vcnt)+u') '+x+u'\n'
 		if valcomm:
-			rep=u'в этой конфе отключены следующие команды:\n'+valcomm
+			rep=u'в этой конференции отключены следующие команды:\n'+valcomm
 		else:
-			rep=u'в этой конфе включены все команды'
-			
-		
+			rep=u'в этой конференции включены все команды'
+
+
 	reply(type,source,rep.strip())
-		
+
 def handler_common(type,source,parameters):
+	if not source[1] in GROUPCHATS:
+		reply(type, source, u'это возможно только в конференции')
+		return
 	na=[u'доступ',u'eval',u'логин',u'логаут',u'!stanza',u'unglobacc',u'свал',u'рестарт',u'globacc',u'команды',u'sh',u'exec',u'commoff',u'common']
 	valcomm,notvalcomm,alrcomm,npcomm,vcnt,ncnt,acnt,nocnt,rep,commoff=u'',u'',u'',u'',0,0,0,0,u'',[]
 	if not source[1] in COMMOFF:
@@ -85,7 +91,7 @@ def handler_common(type,source,parameters):
 						valcomm+=str(vcnt)+u') '+y+u'\n'
 					else:
 						acnt+=1
-						alrcomm+=str(acnt)+u') '+y+u'\n'						
+						alrcomm+=str(acnt)+u') '+y+u'\n'
 				else:
 					ncnt+=1
 					npcomm+=str(ncnt)+u') '+y+u'\n'
@@ -93,13 +99,13 @@ def handler_common(type,source,parameters):
 				nocnt+=1
 				notvalcomm+=str(nocnt)+u') '+y+u'\n'
 		if valcomm:
-			rep+=u'для этой конфы были включены следующие команды:\n'+valcomm
+			rep+=u'следующие команды были включены:\n'+valcomm
 		if alrcomm:
 			rep+=u'\nследующие команды не были включены, поскольку они не были отключены:\n'+alrcomm
 		if notvalcomm:
-			rep+=u'\nперечисленные ниже команды вообще не команды :) :\n'+notvalcomm
+			rep+=u'\nперечисленное ниже не является командами:\n'+notvalcomm
 		if npcomm:
-			rep+=u'\nследующие команды не отключаются вообще:\n'+npcomm
+			rep+=u'\nследующие команды неотключаемы:\n'+npcomm
 		if not GCHCFGS[source[1]].has_key('commoff'):
 			GCHCFGS[source[1]]['commoff']='commoff'
 			GCHCFGS[source[1]]['commoff']=[]
@@ -108,9 +114,9 @@ def handler_common(type,source,parameters):
 		get_commoff(source[1])
 	else:
 		rep=u'ииии?'
-		
+
 	reply(type,source,rep.strip())
-	
+
 def get_commoff(gch):
 	try:
 		if GCHCFGS[gch].has_key('commoff'):
@@ -121,9 +127,9 @@ def get_commoff(gch):
 			COMMOFF[gch]=[]
 	except:
 		pass
-	
-	
-register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 20, 'Отключает определённые команды для текущей конфы, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])
-register_command_handler(handler_common, 'common', ['админ','мук','все'], 20, 'Включает определённые команды для текущей конфы.', 'common [команды]', ['common тык диско версия пинг'])
+
+
+register_command_handler(handler_commoff, 'commoff', ['админ','мук','все'], 20, 'Отключает определённые команды для текущей конференции, без параметров показывает список уже отключенных команд.', 'commoff [команды]', ['commoff','commoff тык диско версия пинг'])
+register_command_handler(handler_common, 'common', ['админ','мук','все'], 20, 'Включает определённые команды для текущей конференции.', 'common [команды]', ['common тык диско версия пинг'])
 
 register_stage1_init(get_commoff)
