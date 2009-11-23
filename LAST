@@ -1,16 +1,4 @@
 tags: [1]work on "to roster" answers, [2]help should be a more helpful, [3]fixes, [4]bugfixes, [5]new features, [6]trailing spaces was stripped
 
->>> pybot.py - [2]historical "ага, щаззз" was changed. [3][5][6]
->>> [4]xmpppy update!!! yeah!!! no more bugs with some bad stanzas
->>> access_plugin.py - [2][6]
->>> admin_plugin.py - [2]
->>> commoff_plugin.py - [1][2][6]
->>> disco_plugin.py - [4][6]
->>> google_plugin.py - [4]full rewrite due to Google SOAP API death. now google_plugin.py uses JSON API (part of AJAX API). YOU NEED Python 2.6.x or simplejson module installed to use this plugin!!!
->>> log_plugin.py - [5]due to core changes
->>> more_plugin.py - [3]code was cleaned. [2][4][6]
->>> order_plugin.py - [5]due to core changes. [6]
->>> [5]due to core changes. [6]
->>> modules - SOAP.py and google.py are not longer needed
-
-SUDDENLY! some plugins in branches tree. exclusively for some sites by me :)
+>>> trans_plugin.py - [4]full rewrite. now trans_plugin.py uses JSON API (part of AJAX API). YOU NEED Python 2.6.x or simplejson module installed to use this plugin!!! dont forget to update your translate macroses (due to syntax change) [2][5]
+>>> google_plugin.py - [4]correct error reporting

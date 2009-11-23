@@ -25,21 +25,20 @@ def google_remove_html(text):
 
 def google_search(query):
 	try:
-		req = urllib2.urlopen('http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s' % urllib2.quote(query.encode('utf8')))
+		req = urllib2.urlopen('http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s' % urllib2.quote(query.encode('utf-8')))
 	except urllib2.HTTPError, e:
-		reply(type,source,str(e))
-		return
+		return str(e)
 	answ=json.load(req)
-	results=answ['responseData']['results']
-	if results:
+	if answ['responseStatus']!=200:
+		return str(answ['responseStatus'])+': '+answ['responseDetails']
+	elif answ['responseData']:
+		results=answ['responseData']['results']
 		titleNoFormatting=results[0]['titleNoFormatting']
 		content=results[0]['content']
 		url=results[0]['unescapedUrl']
 		return google_remove_html(titleNoFormatting+u'\n'+content+u'\n'+url)
-	elif answ['responseDetails']:
-		return answ['responseDetails']
 	else:
-		return
+		return u'неизвестная ошибка'
 
 
 def handler_google_google(type, source, parameters):

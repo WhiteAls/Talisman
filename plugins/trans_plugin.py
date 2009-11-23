@@ -16,52 +16,66 @@
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-	
+
 import urllib
 import httplib
-import re
 
-def google_translate(from_lang, to_lang, text):
-	params = urllib.urlencode({"langpair":"%s|%s" %(from_lang, to_lang), "text":text,"ie":"UTF8", "oe":"UTF8"})
-	conn = httplib.HTTPConnection("translate.google.com")
-	conn.request("POST", "/translate_t", params)
+trans_langs={u'en': u'английский', u'ja': u'японский', u'ru': u'русский', u'auto': u'Определить язык', u'sq': u'албанский', u'en': u'английский', u'ar': u'арабский', u'af': u'африкаанс', u'be': u'белорусский', u'bg': u'болгарский', u'cy': u'валлийский', u'hu': u'венгерский', u'vi': u'вьетнамский', u'gl': u'галисийский', u'nl': u'голландский', u'el': u'греческий', u'da': u'датский', u'iw': u'иврит', u'yi': u'идиш', u'id': u'индонезийский', u'ga': u'ирландский', u'is': u'исландский', u'es': u'испанский', u'it': u'итальянский', u'ca': u'каталанский', u'zh-CN': u'китайский', u'ko': u'корейский', u'lv': u'латышский', u'lt': u'литовский', u'mk': u'македонский', u'ms': u'малайский', u'mt': u'мальтийский', u'de': u'немецкий', u'no': u'норвежский', u'fa': u'персидский', u'pl': u'польский', u'pt': u'португальский', u'ro': u'румынский', u'ru': u'русский', u'sr': u'сербский', u'sk': u'словацкий', u'sl': u'словенский', u'sw': u'суахили', u'tl': u'тагальский', u'th': u'тайский', u'tr': u'турецкий', u'uk': u'украинский', u'fi': u'финский', u'fr': u'французский', u'hi': u'хинди', u'hr': u'хорватский', u'cs': u'чешский', u'sv': u'шведский', u'et': u'эстонский', u'ja': u'японский'}
 
-	resp = conn.getresponse()
-	s = resp.read()
-	conn.close()
-
-	match = re.compile('<div id=result_box.*?>(.*?)</div>',re.DOTALL).search(s)
-	data = match.groups()[0]
-	return unicode(data, "utf-8").strip()
-	
-	
 def handler_google_trans(type,source,parameters):
-	if parameters.strip()==u'языки':
-		if type == 'public':
-			reply(type,source,u'ушли')
-		reply('private',source,u'английский – французский (ef)\n\
-английский – немецкий (ed)\n\
-английский – итальянский (ei)\n\
-английский – корейский (ek)\n\
-английский – японский (ej)\n\
-английский – русский (er)\n\
-русский – английский (re)\n\
-английский – испанский (es)\n\
-английский – португальский (ep)\n\
-немецкий – французский (df)\n')
-		return
-	stsp=string.split(parameters, ' ', 1)
-	if not len(stsp)>=2:
-		reply(type,source,u'чего-то не хватает, прочти хелп')
-	langpairs={'er': 'en ru', 're': 'ru en','ef': 'en fr','ed': 'en de', 'df': 'de fr','ei': 'en it', 'es': 'en sp', 'ep': 'en pt', 'ek': 'en ko', 'ej': 'en ja', 'ar': 'auto ru'}
-	if langpairs.has_key(stsp[0]):
-		pair=langpairs[stsp[0]]
-		pair=string.split(pair, ' ', 1)
-		answ = google_translate(pair[0],pair[1],stsp[1].encode('utf-8'))
-		answ=answ.replace('&apos;', '\\').replace('&gt;', '>').replace('&lt;', '<').replace('<br>', '\n').replace('&quot;', '"').replace('&#39;', '\'')
-		reply(type,source,unicode(answ))
+	param=parameters.split(None, 2)
+	if param[0] in trans_langs.keys() and param[1] in trans_langs.keys() and len(param)>=3:
+		(fl, tl, text)=param
+		if fl=='auto':
+			if tl=='auto':
+				reply(type, source, u'ошибочный запрос. прочитай помощь по использованию команды')
+				return
+			else:
+				answ=google_detect_lang(text)
+				if answ in trans_langs.keys():
+					fl=answ
+				else:
+					reply(type, source, answ)
+					return
+		answ=google_translate(text, fl, tl)
+		answ=answ.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"')
+		reply(type,source,answ)
 	else:
-		reply(type,source,u'что это за язык?')
-		
+		reply(type, source, u'ошибочный запрос. прочитай помощь по использованию команды')
 
-register_command_handler(handler_google_trans, 'перевод', ['инфо','все'], 10, 'Переводит фразу на одном языке в другой. Подробнее - напишите "перевод языки".', 'перевод <исходный_язык> <нужный_язык> <фраза>', ['перевод er hello', 'перевод re привет'])
+def google_translate(text, from_lang, to_lang):
+	try:
+		req = urllib2.urlopen('http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=%s&langpair=%s%s' % (urllib2.quote(text.encode('utf-8')), from_lang+'%7C', to_lang))
+	except urllib2.HTTPError, e:
+		return str(e)
+	answ=json.load(req)
+	if answ['responseStatus']!=200:
+		return str(answ['responseStatus'])+': '+answ['responseDetails']
+	elif answ['responseData']:
+		return answ['responseData']['translatedText']
+	else:
+		return u'неизвестная ошибка'
+
+def google_detect_lang(text):
+	try:
+		req = urllib2.urlopen('http://ajax.googleapis.com/ajax/services/language/detect?v=1.0&q=' + urllib2.quote(text.encode('utf-8')))
+	except urllib2.HTTPError, e:
+		return str(e)
+	answ=json.load(req)
+	if answ['responseStatus']!=200:
+		return str(answ['responseStatus'])+': '+answ['responseDetails']
+	elif answ['responseData']:
+		return answ['responseData']['language']
+	else:
+		return u'неизвестная ошибка'
+
+
+try:
+	import json
+	register_command_handler(handler_google_trans, 'перевод', ['инфо','все'], 10, 'Перевод с одного языка в другой. Используется Google Translate. Доступные для перевода языки:\n' + ', '.join(sorted([x.encode('utf-8')+': '+y.encode('utf-8') for x,y in trans_langs.iteritems()])), 'перевод <исходный_язык> <нужный_язык> <фраза>', ['перевод en ru hello', 'перевод ru en привет'])
+except ImportError:
+	try:
+		import simplejson as json
+		register_command_handler(handler_google_trans, 'перевод', ['инфо','все'], 10, 'Перевод с одного языка в другой. Используется Google Translate. Доступные для перевода языки:\n' + ', '.join(sorted([x.encode('utf-8')+': '+y.encode('utf-8') for x,y in trans_langs.iteritems()])), 'перевод <исходный_язык> <нужный_язык> <фраза>', ['перевод en ru hello', 'перевод ru en привет'])
+	except:
+		print '====================================================\nYou need Python 2.6.x or simple_json package installed to use trans_plugin.py!!!\n====================================================\n'
