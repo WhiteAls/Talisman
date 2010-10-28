@@ -362,10 +362,10 @@ def timeElapsed(time):
 	days, hours = divmod(hours, 24)
 	months, days = divmod(days, 30)
 	rep = u'%d сек' % (round(seconds))
-	if time>60: rep = u'%d мин %s' % (minutes, rep)
-	if time>3600: rep = u'%d час %s' % (hours, rep)
-	if time>86400: rep = u'%d дн %s' % (days, rep)
-	if time>2592000: rep = u'%d мес %s' % (months, rep)
+	if time>=60: rep = u'%d мин %s' % (minutes, rep)
+	if time>=3600: rep = u'%d час %s' % (hours, rep)
+	if time>=86400: rep = u'%d дн %s' % (days, rep)
+	if time>=2592000: rep = u'%d мес %s' % (months, rep)
 	return rep
 
 def change_bot_status(gch,status,show,auto=0):
