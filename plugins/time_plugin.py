@@ -6,6 +6,7 @@
 
 #  Initial Copyright © 2007 Als <Als@exploit.in>
 #  Modifications Copyright © 2007 dimichxp <dimichxp@gmail.com>
+#  Modifications Copyright © 2010 Tuarisa <Tuarisa@gmail.com>
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -183,6 +184,9 @@ def gettime_xep0202_answ(coze, res, nick, type, source):
 					hours=int(hours)+int(tzh)
 					minutes=int(minutes)+int(tzm)
 				if hours >= 24: day = int(day) + 1
+				if hours < 0: 
+					day = int(day)-1
+					hours = 24 + int(hours)
 				while hours>=24:
 					hours=int(hours)-24
 				while minutes>=60:

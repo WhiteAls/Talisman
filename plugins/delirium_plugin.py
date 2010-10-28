@@ -5,6 +5,7 @@
 #  commoff_plugin.py
 
 #  Initial Copyright © 2007 Als <Als@exploit.in>
+#  Modifications Copyright © 2010 Tuarisa <Tuarisa@gmail.com>
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -105,6 +106,7 @@ def handler_clean_conf(type, source, parameters):
 		reply(type,source,u'done')
 		
 def handler_afools_control(type, source, parameters):
+	DBPATH='dynamic/'+source[1]+'/config.cfg'
 	if parameters:
 		try:
 			int(parameters)
@@ -115,9 +117,11 @@ def handler_afools_control(type, source, parameters):
 		if parameters=="1":
 			GCHCFGS[source[1]]['afools']=1
 			reply(type,source,u'шуточки включены')
+			write_file(DBPATH, str(GCHCFGS[source[1]]))
 		else:
 			GCHCFGS[source[1]]['afools']=0
-			reply(type,source,u'шуточки отключены')			
+			reply(type,source,u'шуточки отключены')
+			write_file(DBPATH, str(GCHCFGS[source[1]]))			
 	else:
 		if GCHCFGS[source[1]]['afools']==1:
 			reply(type,source,u'здесь шуточки включены')
