@@ -24,7 +24,7 @@ trans_langs={u'en': u'английский', u'ja': u'японский', u'ru': 
 
 def handler_google_trans(type,source,parameters):
 	param=parameters.split(None, 2)
-	if param[0] in trans_langs.keys() and param[1] in trans_langs.keys() and len(param)>=3:
+	if len(param)>=3 and param[0] in trans_langs.keys() and param[1] in trans_langs.keys():
 		(fl, tl, text)=param
 		if fl=='auto':
 			if tl=='auto':

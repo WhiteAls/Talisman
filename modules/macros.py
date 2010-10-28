@@ -32,7 +32,7 @@ def xml_esc(s):
 	s = s.replace('&', '&amp;')
 	s = s.replace('\"', '&quot;')
 	return s
-	
+
 def macro_get_rand(args, source):
 	try:
 		f=int(args[0])
@@ -68,7 +68,7 @@ def write_file(filename, data):
 	fp = file(filename, 'w')
 	fp.write(data)
 	fp.close()
-		
+
 class MacroCommands:
 	commands={
 	          'rand':         [2, macro_get_rand    ],
@@ -76,7 +76,7 @@ class MacroCommands:
                   'xml_escape':   [1, macro_xml_escape  ],
 		  'context':      [1, macro_context     ]
 		 }
-	
+
 	def map_char(self, x, i):
 		st=i['state']
 		if i['esc']:
@@ -108,7 +108,7 @@ class MacroCommands:
 	def get_map(self, inp):
 		i={'level': 0, 'state': 'null', 'esc': False}
 		return [self.map_char(x, i) for x in list(inp)]
-	
+
 	def parse_cmd(self, me):
 		i = 0
 		m = self.get_map(me)
@@ -118,13 +118,13 @@ class MacroCommands:
 				args[m[i]-1]+=me[i]
 			i+=1
 		return args
-		
+
 	def execute_cmd(self, cmd, args, source):
 		if self.commands.has_key(cmd):
 			if self.commands[cmd][0] <= len(args):
 				return self.commands[cmd][1](args, source)
 		return ''
-		
+
 	def proccess(self, cmd, source):
 		command = cmd[0]
 		args = cmd[1:]
@@ -133,11 +133,11 @@ class MacroCommands:
 class Macros:
 	gmacrolist={}
 	gaccesslist={}
-	
+
 	macrolist={}
-	accesslist={}		
+	accesslist={}
 	macrocmds = MacroCommands()
-	
+
 	def init(self,gch):
 		self.gmacrolist = eval(read_file("dynamic/macros.txt"))
 		self.gaccesslist = eval(read_file("dynamic/macroaccess.txt"))
@@ -191,14 +191,14 @@ class Macros:
 				self.accesslist[gch]=gch
 				self.accesslist[gch]={}
 		except:
-			pass		
-		
+			pass
+
 	def flush(self):
 		for x in self.macrolist.keys():
 			write_file('dynamic/'+x+'/macros.txt', str(self.macrolist[x]))
 		for x in self.accesslist.keys():
 			write_file('dynamic/'+x+'/macroaccess.txt', str(self.accesslist[x]))
-		
+
 	def add(self, mapee, map, gch=''):
 		if gch:
 			if not self.macrolist.has_key(gch):
@@ -207,15 +207,15 @@ class Macros:
 			self.macrolist[gch][mapee]=map
 		else:
 			self.gmacrolist[mapee]=map
-		
+
 	def remove(self, mapee, gch=None):
 		if gch:
 			if self.macrolist[gch].has_key(mapee):
 				del self.macrolist[gch][mapee]
 		else:
 			if self.gmacrolist.has_key(mapee):
-				del self.gmacrolist[mapee]			
-			
+				del self.gmacrolist[mapee]
+
 	def map_char(self, x, i):
 		ret=i['level']
 		if i['esc']:
@@ -235,7 +235,7 @@ class Macros:
 	def get_map(self, inp):
 		i={'larg': False, 'level': 1, 'esc': False}
 		return [self.map_char(x, i) for x in list(inp)]
-	
+
 	def parse_cmd(self, me):
 		i=0
 		m = self.get_map(me)
@@ -248,10 +248,10 @@ class Macros:
 
 	def expand(self, cmd, source):
 		if type(cmd) is None:
-			return ''		
+			return ''
 		exp=''
 		cl=self.parse_cmd(cmd)
-		if (len(cl)<1):
+		if (len(cl)<1) or not cl[0].strip():
 			return cmd
 		command=cl[0].split()[0].lower()
 		args=cl[1:]
@@ -273,7 +273,7 @@ class Macros:
 			return cmd
 		rexp = self.expand(exp, source)
 		return rexp
-		
+
 	def comexp(self, cmd, source, key=''):
 		if type(cmd) is None:
 			return ''
@@ -301,7 +301,7 @@ class Macros:
 			return cmd
 		rexp = self.comexp(exp, source, key)
 		return rexp
-		
+
 	def apply(self, macro, args, source):
 		expanded = macro
 		m=self.macrocmds.parse_cmd(macro)
@@ -322,7 +322,7 @@ class Macros:
 				return expanded
 			expanded = expanded.replace(j, args[index])
 		return expanded
-		
+
 	def get_access(self, macro, gch):
 		try:
 			if self.accesslist[gch].has_key(macro):
@@ -334,12 +334,12 @@ class Macros:
 				return self.gaccesslist[macro]
 		except:
 			return -1
-		
+
 	def give_access(self, macro, access, gch=None):
 		if gch:
 			if not self.accesslist.has_key(gch):
 				self.accesslist[gch]=gch
-				self.accesslist[gch]={}			
+				self.accesslist[gch]={}
 			self.accesslist[gch][macro] = access
 		else:
 			if not self.gaccesslist.has_key(macro):

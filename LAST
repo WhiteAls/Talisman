@@ -1,4 +1,9 @@
 tags: [1]work on "to roster" answers, [2]help should be a more helpful, [3]fixes, [4]bugfixes, [5]new features, [6]trailing spaces was stripped
 
->>> trans_plugin.py - [4]full rewrite. now trans_plugin.py uses JSON API (part of AJAX API). YOU NEED Python 2.6.x or simplejson module installed to use this plugin!!! dont forget to update your translate macroses (due to syntax change) [2][5]
->>> google_plugin.py - [4]correct error reporting
+>>> macros.py - [6]
+>>> google_plugin.py - [5]now with (strawberry flavor!) more results of last search. use "гугль +"
+>>> horoscope_plugin.py - [5]full rewrite. now uses ignio.com. also available day selection (yesterday, today and tomorrow)
+>>> trans_plugin.py - [3]
+
+in branches we have one more new plugin and unstable order_plugin.py, powered by filter_plugin.py
+since jabber.ru team realize new function called "premoderation" in conferences we have implemented it into a bot. more info (in russian): http://jabber-ru.ya.ru/replies.xml?item_no=4659 and talisman@conference.jabber.ru
