@@ -68,7 +68,7 @@ AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0, 'gch':{}}
 INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
-BOT_VER = {'rev': 86, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
+BOT_VER = {'rev': 90, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
 ################################################################################
 
 COMMANDS = {}

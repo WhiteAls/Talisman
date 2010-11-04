@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #  Talisman plugin
-#  commoff_plugin.py
+#  delirium_plugin.py
 
 #  Initial Copyright © 2007 Als <Als@exploit.in>
 #  Modifications Copyright © 2010 Tuarisa <Tuarisa@gmail.com>
