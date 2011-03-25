@@ -190,7 +190,7 @@ def remix_string(parameters):
 			remixed.append(word[0]+u''.join(tmp)+word[-1])
 	return u' '.join(remixed)
 
-if time.localtime()[1]==3 and time.localtime()[2]==26:
+if time.localtime()[1]==4 and time.localtime()[2]==1:
 	def msg(target, body):
 		if not isinstance(body, unicode):
 			body = body.decode('utf8', 'replace')
