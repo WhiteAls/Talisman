@@ -53,10 +53,10 @@ def handler_poke(type, source, parameters):
 			else:
 				reply(type, source, u'а он тут? :-O')
 		else:
-			reply(type, source, u'шибко умный, да? ]:->')	
+			reply(type, source, u'шибко умный, да? ]:->')
 	else:
 		reply(type, source, u'мазохист? :D')
-		
+
 def handler_poke_add(type, source, parameters):
 	if not parameters:
 		reply(type, source, u'ииии?')
@@ -68,7 +68,7 @@ def handler_poke_add(type, source, parameters):
 		reply(type, source, u'добавлено')
 	else:
 		reply(type, source, u'больше нельзя')
-		
+
 def handler_poke_del(type, source, parameters):
 	if not parameters:
 		reply(type, source, u'ииии?')
@@ -84,7 +84,7 @@ def handler_poke_del(type, source, parameters):
 		reply(type, source, u'удалено')
 	else:
 		reply(type, source, u'такой нет')
-		
+
 def handler_poke_list(type, source, parameters):
 	rep,res=u'',poke_work(source[1],3)
 	if res:
@@ -94,19 +94,18 @@ def handler_poke_list(type, source, parameters):
 		reply(type,source,rep.strip())
 	else:
 		reply(type,source,u'нет пользовательских фраз')
-		
+
 def handler_test(type, source, parameters):
 	reply(type,source,u'пассед')
-	
+
 def handler_clean_conf(type, source, parameters):
 	if GROUPCHATS.has_key(source[1]):
 		for x in range(1, 20):
 			msg(source[1], '')
 			time.sleep(1.3)
 		reply(type,source,u'done')
-		
+
 def handler_afools_control(type, source, parameters):
-	DBPATH='dynamic/'+source[1]+'/config.cfg'
 	if parameters:
 		try:
 			int(parameters)
@@ -117,22 +116,21 @@ def handler_afools_control(type, source, parameters):
 		if parameters=="1":
 			GCHCFGS[source[1]]['afools']=1
 			reply(type,source,u'шуточки включены')
-			write_file(DBPATH, str(GCHCFGS[source[1]]))
 		else:
 			GCHCFGS[source[1]]['afools']=0
 			reply(type,source,u'шуточки отключены')
-			write_file(DBPATH, str(GCHCFGS[source[1]]))			
 	else:
 		if GCHCFGS[source[1]]['afools']==1:
 			reply(type,source,u'здесь шуточки включены')
 		else:
 			reply(type,source,u'здесь шуточки отключены')
-	
-			
+	save_gch_cfg(source[1])
+
+
 def get_afools_state(gch):
 	if not 'afools' in GCHCFGS[gch]:
 		GCHCFGS[gch]['afools']=1
-		
+
 def poke_work(gch,action=None,phrase=None):
 	DBPATH='dynamic/'+gch+'/delirium.txt'
 	if check_file(gch,'delirium.txt'):
@@ -164,7 +162,7 @@ def poke_work(gch,action=None,phrase=None):
 			return pokedb.values()
 	else:
 		return None
-		
+
 def remix_string(parameters):
 	remixed=[]
 	for word in parameters.split():
@@ -185,13 +183,31 @@ def remix_string(parameters):
 				remixed.append(word[0]+u''.join(tmp))
 			else:
 				random.shuffle(tmp)
-				remixed.append(u''.join(tmp)+word[-1])					
+				remixed.append(u''.join(tmp)+word[-1])
 		elif len(word)>=4:
 			tmp=list(word[1:-1])
 			random.shuffle(tmp)
 			remixed.append(word[0]+u''.join(tmp)+word[-1])
 	return u' '.join(remixed)
-	
+
+if time.localtime()[1]==3 and time.localtime()[2]==26:
+	def msg(target, body):
+		if not isinstance(body, unicode):
+			body = body.decode('utf8', 'replace')
+		obody=body
+		body=google_translate(body, u'ru', random.choice(trans_langs.keys()))
+		msg = xmpp.Message(target)
+		if GROUPCHATS.has_key(target):
+			msg.setType('groupchat')
+			if len(body)>1000:
+				body=body[:1000]+u' >>>>'
+			msg.setBody(body.strip())
+		else:
+			msg.setType('chat')
+			msg.setBody(body.strip())
+		JCON.send(msg)
+		call_outgoing_message_handlers(target, body, obody)
+
 register_command_handler(handler_poke, 'тык', ['фан','все','тык'], 10, 'Тыкает юзера. Заставляет его обратить внимание на вас/на чат.\nlast10 вместо ника покажет список ников, которые тыкали последними.', 'тык <ник>|<параметр>', ['тык qwerty','тык + пришиб %s','тык - 2','тык *'])
 register_command_handler(handler_poke_add, 'тык+', ['фан','все','тык'], 20, 'Добавить пользовательскую фразу. Переменная %s во фразе обозначает место для вставки ника (обязательный параметр). Фраза должна быть написана от третьего лица, т.к. будет использоваться в виде "/me ваша фраза". max кол-во пользовательских фраз - 20.', 'тык+ <фраза>', ['тык+ побил %s'])
 register_command_handler(handler_poke_del, 'тык-', ['фан','все','тык'], 20, 'Удалить пользовательскую фразу. Пишем номер удаляемой фразы и она удаляется навсегда. Пронумерованный список выдаёт команда "тык*". Удалить все фразы можно с помощью символа "*" вместо номера фразы.', 'тык- <номер>', ['тык- 5','тык- *'])
