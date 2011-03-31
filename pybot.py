@@ -68,7 +68,7 @@ AFFILIATIONS={'none':0, 'member':1, 'admin':5, 'owner':15}
 
 LAST = {'c':'', 't':0, 'gch':{}}
 INFO = {'start': 0, 'msg': 0, 'prs':0, 'iq':0, 'cmd':0, 'thr':0}
-BOT_VER = {'rev': 92, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
+BOT_VER = {'rev': 93, 'botver': {'name': 'ταλιςμαη', 'ver': 'ver.1.pre_xp1 (svn rev %s) [antiflood]', 'os': ''}}
 ################################################################################
 
 COMMANDS = {}
@@ -501,8 +501,6 @@ def msg(target, body):
 	if not isinstance(body, unicode):
 		body = body.decode('utf8', 'replace')
 	obody=body
-	if time.localtime()[1]==4 and time.localtime()[2]==1:
-		body=remix_string(body)
 	msg = xmpp.Message(target)
 	if GROUPCHATS.has_key(target):
 		msg.setType('groupchat')
